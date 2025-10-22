@@ -1,5 +1,6 @@
 # DashMed
 
+> Le depot github a été recréé pour des raisons de sécurité.
 > Tableau de bord santé intelligent et adaptatif pour le suivi de patients
 
 [![PHP](https://img.shields.io/badge/PHP-8.0+-777BB4?style=flat&logo=php&logoColor=white)](https://php.net)
