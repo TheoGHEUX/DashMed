@@ -1,0 +1,141 @@
+.topbar {
+    background: #fff;
+    border-bottom: 1px solid var(--line);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.topbar .container {
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 0 20px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 1001;
+}
+
+.brand-name {
+    font-weight: 600;
+}
+
+.logo {
+    display: block;
+    width: 30px;
+}
+
+.mainnav {
+    display: flex;
+    gap: 36px;
+    margin-inline: auto;
+}
+
+.mainnav a {
+    color: #222;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.mainnav a:hover, .login-btn:hover {
+    color: #717171;
+}
+
+.mainnav a.current {
+    color: #12C9D4;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.login-btn {
+    color: #222;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.login-btn:hover {
+    color: #000;
+}
+
+.nav-login {
+    display: none;
+}
+
+.burger-menu {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    z-index: 1001;
+}
+
+.burger-menu span {
+    display: block;
+    width: 25px;
+    height: 3px;
+    background: #222;
+    transition: all 0.3s ease;
+}
+
+.burger-menu.active span:nth-child(1) {
+    transform: rotate(45deg) translate(7px, 7px);
+}
+
+.burger-menu.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.burger-menu.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -7px);
+}
+
+@media (max-width: 768px) {
+    .login-btn {
+        display: none;
+    }
+
+    .burger-menu {
+        display: flex;
+    }
+
+    .mainnav {
+        position: fixed;
+        top: 64px;
+        left: 0;
+        width: 100%;
+        height: calc(100vh - 64px);
+        background: #fff;
+        flex-direction: column;
+        gap: 0;
+        margin: 0;
+        padding: 20px;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
+
+    .mainnav.active {
+        transform: translateX(0);
+    }
+
+    .mainnav a {
+        padding: 15px 0;
+        border-bottom: 1px solid var(--line, #eee);
+        font-size: 16px;
+    }
+
+    .nav-login {
+        display: block;
+    }
+}

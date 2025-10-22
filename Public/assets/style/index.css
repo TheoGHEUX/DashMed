@@ -1,0 +1,148 @@
+.hero {
+    background: linear-gradient(180deg, #ffffff, #f8fbfd);
+}
+
+.hero__inner {
+    display: grid;
+    grid-template-columns: 1.1fr .9fr;
+    gap: 36px;
+    align-items: center;
+    padding: 36px 0 24px;
+}
+
+.hero__text h1 {
+    margin: 8px 0 12px;
+    font-size: 32px;
+    line-height: 1.2;
+}
+
+.lead {
+    margin: 0 0 18px;
+    color: #404349;
+    font-size: 15px;
+}
+
+.cta {
+    display: flex;
+    gap: 12px;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 46px;
+    padding: 0 18px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    font-weight: 600;
+    text-decoration: none;
+    transition: .15s;
+}
+
+.btn-primary {
+    background: var(--brand);
+    color: #fff;
+    box-shadow: 0 10px 22px rgba(18, 201, 212, .28);
+}
+
+.btn-primary:hover {
+    filter: brightness(1.03);
+}
+
+.btn-ghost {
+    background: #fff;
+    border-color: var(--line);
+    color: #1f2937;
+}
+
+.btn-ghost:hover {
+    border-color: #cfd6df;
+}
+
+.hero__illus {
+    position: relative;
+    height: 220px;
+}
+
+.card {
+    position: absolute;
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .06);
+}
+
+.demo1 {
+    width: 220px;
+    height: 140px;
+    top: 30px;
+    right: 40px;
+}
+
+.demo2 {
+    width: 180px;
+    height: 120px;
+    top: 80px;
+    right: 180px;
+}
+
+.features {
+    padding: 34px 0;
+}
+
+.features h2 {
+    text-align: center;
+    margin: 0 0 20px;
+    font-size: 22px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.feature {
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: #fff;
+    text-align: center;
+}
+
+.feature .icon {
+    font-size: 26px;
+    margin-bottom: 8px;
+}
+
+.feature h3 {
+    margin: 6px 0;
+    font-size: 16px;
+}
+
+.feature p {
+    margin: 0;
+    color: #52606b;
+    font-size: 14px;
+}
+
+@media (max-width: 900px) {
+    .hero__inner {
+        grid-template-columns: 1fr;
+    }
+
+    .hero__illus {
+        order: -1;
+        height: 180px;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .topbar .container {
+        justify-content: space-between;
+    }
+}

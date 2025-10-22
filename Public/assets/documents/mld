@@ -1,0 +1,12 @@
+MEDECIN = (med_id INT, prenom VARCHAR(100), nom VARCHAR(100), email VARCHAR(190), mdp VARCHAR(255), compte_actif LOGICAL, date_creation DATETIME, date_activation DATETIME, date_derniere_maj DATETIME, specialite VARCHAR(50));
+PATIENT = (pt_id INT, prenom VARCHAR(100), nom VARCHAR(100), email VARCHAR(190), sexe VARCHAR(1), groupe_sanguin VARCHAR(50), date_naissance DATE, telephone VARCHAR(10), ville VARCHAR(50), code_postal VARCHAR(50), adresse VARCHAR(50));
+MESURES = (id_mesure INT, type_mesure VARCHAR(50), unite VARCHAR(50), #pt_id);
+RENDEZ_VOUS = (id_rdv INT, date_rdv DATE, heure TIME, motif VARCHAR(50), statut VARCHAR(50), #med_id, #pt_id);
+GRAPHIQUE = (graph_id INT, titre VARCHAR(50), type VARCHAR(50), #id_mesure);
+SEUIL_ALERTE = (seuil_id INT, seuil_min DOUBLE, seuil_max DOUBLE, #id_mesure);
+ALERTE = (alerte_id INT, date_alerte DATE, statut VARCHAR(50), #seuil_id);
+HISTORIQUE_CONSOLE = (log_id INT, type_action VARCHAR(50), date_action DATETIME, #graph_id, #med_id);
+PREFERENCES_MEDECIN = (id_prefp INT, theme VARCHAR(50), langue VARCHAR(50), #med_id);
+PASSWORD_RESETS = (id INT, email VARCHAR(50), token_hash VARCHAR(64), expires_at DATETIME, used_at DATETIME, created_at DATETIME);
+VALEURS_MESURES = (id_val BIGINT, valeur DOUBLE, date_mesure DATE, heure_mesure TIME, #id_mesure);
+SUIVRE = (#med_id, #pt_id, date_debut DATE, date_fin DATE);
