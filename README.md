@@ -8,41 +8,46 @@
 	<img src="https://img.shields.io/badge/Prototype-Work%20in%20progress-orange?style=for-the-badge" alt="Prototype banner" />
 </p>
 
-DashMed est une application web conçue pour centraliser et visualiser les données médicales des patients. Elle s'adresse principalement aux équipes médicales et paramédicales qui souhaitent suivre l'état de santé de leurs patients de façon simple et rapide.
+<!-- badge 'Clinique Ready' removed as requested -->
+
+DashMed est une application web pensée pour centraliser et présenter clairement les données médicales des patients. 
+
+Elle aide les médecins et les équipes soignantes à suivre l'évolution d'un patient, repérer rapidement les tendances importantes et gagner du temps lors des consultations.
 
 ## Ce que fait DashMed
 
-- Centralise les données de santé (mesures, rendez-vous, notes).
-- Présente des tableaux de bord visuels pour suivre les tendances (tension, fréquence cardiaque, glycémie, etc.).
-- Permet la gestion basique des utilisateurs (inscription / connexion) et un espace privé pour les professionnels.
-- Interface pensée pour être claire, accessible et utilisable sur mobile.
+- Centralise les données de santé : mesures, rendez-vous et notes cliniques.
+- Tableaux de bord visuels pour repérer les tendances (tension, pouls, glycémie...).
+- Espace privé sécurisé pour les professionnels (connexion simple).
+- Interface responsive, conçue pour une lecture rapide sur mobile et tablette.
 
 ## Pour qui
 
-- Médecins et infirmiers souhaitant un aperçu rapide des paramètres de leurs patients.
-- Étudiants et équipes en formation qui veulent expérimenter une application de suivi médical.
+- Médecins et équipes soignantes qui veulent un aperçu rapide, fiable et actionnable des paramètres de leurs patients.
 
 ## Pourquoi l'utiliser
 
-- Gain de temps : visualisation rapide des tendances importantes.
-- Accessibilité : interface responsive pour tablettes et smartphones.
-- Sécurité et respect des bonnes pratiques (structure pensée pour habiller une base de données sécurisée).
+- Gain de temps : les informations clés sont visibles en un coup d'œil.
+- Lecture optimisée : design épuré et navigation fluide, même sur mobile.
+- Conçu pour l'usage clinique : pensées pour aider la prise de décision sans surcharge d'informations.
 
 ## État actuel
 
-DashMed est une application web pensée pour rendre le suivi médical clair, visuel et rapide. Son interface moderne met en avant les mesures importantes et les tendances pour aider les professionnels à prendre des décisions informées.
+DashMed propose une vue claire et visuelle du suivi médical. 
+
+Les tableaux de bord mettent en avant ce qui compte : tendances, alertes visuelles et accès rapide aux rendez-vous.
 
 ## Points forts
 
-- Tableaux de bord visuels et synthétiques
-- Vue responsive adaptée aux mobiles et tablettes
-- Design épuré pour une lecture rapide des informations clés
+- Tableaux de bord synthétiques et visuels
+- Lecture optimisée sur mobile et tablette
+- Interface épurée, pensée pour la pratique clinique
 
 ## Fonctionnalités visibles
 
-- Visualisation des tendances (tension, pouls, glycémie, température)
-- Liste simple des rendez-vous et activités récentes
-- Espace privé pour les professionnels (connexion sécurisée)
+- Visualisation des tendances : tension, pouls, glycémie, température.
+- Gestion simple des rendez-vous et activités récentes.
+- Espace privé sécurisé pour les professionnels.
 
 ## Contact
 
