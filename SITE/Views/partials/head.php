@@ -23,14 +23,13 @@
     ?>
     <link rel="icon" href="/assets/images/logo.png">
     <?php
-    // Scripts spécifiques à la page
+    // Scripts spécifiques à la page (toujours inclus avant le script de header)
     if (!empty($pageScripts)) {
         foreach ($pageScripts as $src) {
             echo '<script src="' . htmlspecialchars($src, ENT_QUOTES) . '" defer></script>' . PHP_EOL;
         }
-    } else {
-        // Script global par défaut
-        echo '<script src="/assets/script/header_responsive.js" defer></script>' . PHP_EOL;
     }
+    // Script global du header (doit toujours être chargé pour le menu burger)
+    echo '<script src="/assets/script/header_responsive.js" defer></script>' . PHP_EOL;
     ?>
 </head>

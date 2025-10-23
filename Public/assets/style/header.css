@@ -17,6 +17,25 @@
     padding: 0 20px;
 }
 
+.topbar {
+    background: #fff;
+    border-bottom: 1px solid var(--line);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.topbar .container {
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 0 20px;
+}
+
 .brand {
     display: flex;
     align-items: center;
@@ -59,10 +78,7 @@
     color: #222;
     text-decoration: none;
     font-size: 14px;
-}
-
-.login-btn:hover {
-    color: #000;
+    font-weight: 400; /* ne pas afficher en gras */
 }
 
 .nav-login {
@@ -120,9 +136,10 @@
         gap: 0;
         margin: 0;
         padding: 20px;
-        transform: translateX(-100%);
-        transition: transform 0.3s ease;
-        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        transform: translateX(-105%); /* push fully out of viewport */
+        transition: transform 0.28s cubic-bezier(.2,.9,.2,1);
+        box-shadow: 2px 0 10px rgba(0,0,0,0.08);
+        z-index: 1100; /* above topbar */
     }
 
     .mainnav.active {
@@ -137,5 +154,15 @@
 
     .nav-login {
         display: block;
+        font-weight: 400;
+        color: #0b6e4f;
     }
+}
+
+/* Accessibility: focus styles for keyboard users */
+.mainnav a:focus,
+.burger-menu:focus,
+.login-btn:focus {
+    outline: 3px solid rgba(18,201,212,0.18);
+    outline-offset: 2px;
 }

@@ -10,16 +10,20 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         </div>
 
         <!-- Navigation principale -->
-        <nav class="mainnav" aria-label="Navigation principale">
+        <!-- Navigation principale -->
+        <nav id="mainnav" class="mainnav" aria-label="Navigation principale" aria-hidden="false">
             <a href="/"<?= ($currentPath === '/' ? ' class="current"' : '') ?>>Accueil</a>
             <a href="/map"<?= ($currentPath === '/map' ? ' class="current"' : '') ?>>Plan du site</a>
-            <a href="/legal-notices"<?= ($currentPath === '/legal-notices' ? ' class="current"' : '') ?>>Mentions légales</a>
+            <a href="/mentions-legales"<?= ($currentPath === '/mentions-legales' || $currentPath === '/legal-notices' ? ' class="current"' : '') ?>>Mentions légales</a>
+            <!-- Login affich\u00e9 en mobile dans le menu -->
+            <a href="/login" class="nav-login">Connexion</a>
         </nav>
-         <a href="/login" class="login-btn">Connexion</a>
+        <!-- Bouton de connexion visible sur desktop (masqu\u00e9 sur mobile via CSS) -->
+        <a href="/login" class="login-btn">Connexion</a>
 
 
         <!-- Burger menu pour responsive -->
-        <button class="burger-menu" aria-label="Menu" aria-expanded="false">
+        <button class="burger-menu" aria-label="Menu" aria-expanded="false" aria-controls="mainnav">
             <span></span>
             <span></span>
             <span></span>

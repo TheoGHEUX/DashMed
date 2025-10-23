@@ -43,7 +43,7 @@ include __DIR__ . '/partials/head.php';
                 <li>
                     <span>Informations</span>
                     <ul class="level-2">
-                        <li><a href="/legal-notices">Mentions légales</a></li>
+                        <li><a href="/mentions-legales">Mentions légales</a></li>
                         <li><a href="/map">Plan du site</a></li>
                     </ul>
                 </li>
