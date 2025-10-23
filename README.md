@@ -2,9 +2,6 @@
 
 > Le dépôt GitHub a été recréé pour des raisons de sécurité.
 
-[![PHP](https://img.shields.io/badge/PHP-8.0+-777BB4?style=flat&logo=php&logoColor=white)](https://php.net)
-[![MySQL](https://img.shields.io/badge/MySQL-5.7+-4479A1?style=flat&logo=mysql&logoColor=white)](https://mysql.com)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 <p align="center">
 	<img src="https://img.shields.io/badge/DashMed-Suivi%20m%C3%A9dical-12C9D4?style=for-the-badge&logo=healthicons" alt="DashMed banner" />
