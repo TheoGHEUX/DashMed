@@ -12,7 +12,7 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         <!-- Navigation principale -->
         <nav id="mainnav" class="mainnav" aria-label="Navigation principale" aria-hidden="false">
             <a href="/accueil"<?= ($currentPath === '/accueil' ? ' class="current"' : '') ?>>Accueil</a>
-            <a href="/dashboard"<?= ($currentPath === '/dashboard' ? ' class="current"' : '') ?>>Dashboard</a>
+            <a href="/dashboard"<?= ($currentPath === '/dashboard' ? ' class="current"' : '') ?>>Tableau de bord</a>
             <a href="/profile"<?= ($currentPath === '/profile' ? ' class="current"' : '') ?>>Profil</a>
             <!-- Logout en mobile -->
             <a href="/logout" class="nav-login">Deconnexion</a>
