@@ -57,18 +57,35 @@ final class AuthController
         if (!$errors) {
             $hash = password_hash($password, PASSWORD_DEFAULT);
             try {
-                if (User::create($old['name'], $old['last_name'], $old['email'], $hash)) {
-                    // Envoi de mail (ne bloque pas si échec normalement...)
-                    $mailSent = Mailer::sendRegistrationEmail($old['email'], $old['name']);
-                    $success = $mailSent
-                        ? 'Compte créé !!! Un email de confirmation a été envoyé'
-                        : 'Compte créé. (Attention: le mail de bienvenue n’a pas pu être envoyé.)';
-                    $old = ['name' => '', 'email' => ''];
+                // Créer le compte avec activation requise
+                $token = User::createWithActivation($old['name'], $old['last_name'], $old['email'], $hash);
+
+                if ($token) {
+                    // Construction de l'URL d'activation
+                    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+                    $host = $_SERVER['HTTP_HOST'];
+                    $activationUrl = $protocol . '://' . $host . '/activate?token=' . urlencode($token);
+
+                    // Envoi du mail d'activation
+                    $mailSent = Mailer::sendActivationEmail($old['email'], $old['name'], $activationUrl);
+
+                    if ($mailSent) {
+                        $success = 'Compte créé avec succès ! 🎉<br><br>'
+                            . 'Un email d\'activation a été envoyé à <strong>' . htmlspecialchars($old['email']) . '</strong>.<br>'
+                            . 'Veuillez vérifier votre boîte de réception (et vos spams) et cliquer sur le lien pour activer votre compte.<br><br>'
+                            . '<em>Le lien est valable 24 heures.</em>';
+                    } else {
+                        $success = 'Compte créé, mais l\'email d\'activation n\'a pas pu être envoyé.<br>'
+                            . 'Veuillez contacter le support technique.';
+                    }
+
+                    $old = ['name' => '', 'last_name' => '', 'email' => ''];
                 } else {
-                    $errors[] = 'Insertion échouée.';
+                    $errors[] = 'Erreur lors de la création du compte. Veuillez réessayer.';
                 }
             } catch (\Throwable $e) {
-                $errors[] = 'Erreur base.';
+                $errors[] = 'Erreur système. Veuillez réessayer plus tard.';
+                error_log('Erreur inscription : ' . $e->getMessage());
             }
         }
 
@@ -78,7 +95,6 @@ final class AuthController
     public function showLogin(): void
     {
         $errors = [];
-        // Affiche un message si on arrive depuis une réinitialisation réussie
         $success = (isset($_GET['reset']) && $_GET['reset'] === '1')
             ? 'Votre mot de passe a été réinitialisé. Vous pouvez vous connecter.'
             : '';
@@ -89,54 +105,56 @@ final class AuthController
     public function login(): void
     {
         if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+
         $errors = [];
         $success = '';
         $email = strtolower(trim((string)($_POST['email'] ?? '')));
         $password = (string)($_POST['password'] ?? '');
         $csrf = (string)($_POST['csrf_token'] ?? '');
-        $old = ['email' => $email];
 
         if (!Csrf::validate($csrf)) {
-            $errors[] = 'Session expirée ou jeton CSRF invalide. Veuillez réessayer.';
-        }
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors[] = 'Adresse email invalide.';
-        }
-        if ($email === '' || $password === '') {
-            $errors[] = 'Champs requis.';
+            $errors[] = 'Session expirée ou jeton CSRF invalide.';
         }
 
         if (!$errors) {
             $user = User::findByEmail($email);
+
             if (!$user || !password_verify($password, $user['password'])) {
                 $errors[] = 'Identifiants invalides.';
+            } elseif (!$user['compte_actif']) {
+                $errors[] = 'Votre compte n\'est pas encore activé. '
+                    . 'Veuillez vérifier vos emails et cliquer sur le lien d\'activation. '
+                    . 'Pensez à vérifier vos spams !';
             } else {
+                // Connexion réussie
                 session_regenerate_id(true);
-                // Normalise le nom (prend name ou first_name)
-                $first = $user['name'] ?? ($user['first_name'] ?? '');
-                $last  = $user['last_name'] ?? '';
+                $first = $user['prenom'] ?? '';
+                $last  = $user['nom'] ?? '';
                 $_SESSION['user'] = [
-                    'id'    => (int)$user['user_id'],
+                    'id'    => (int)$user['med_id'],
                     'email' => $user['email'],
-                    'name'  => trim($first.' '.$last)
+                    'name'  => trim($first . ' ' . $last)
                 ];
                 header('Location: /accueil');
                 exit;
             }
         }
 
+        $old = ['email' => $email];
         require __DIR__ . '/../Views/auth/login.php';
     }
 
     public function logout(): void
     {
+        if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+
         $_SESSION = [];
         if (ini_get('session.use_cookies')) {
             $p = session_get_cookie_params();
             setcookie(session_name(), '', time() - 42000, $p['path'], $p['domain'], $p['secure'], $p['httponly']);
         }
         session_destroy();
-        header('Location: /login');
+        header('Location: /');
         exit;
     }
 }

@@ -113,4 +113,35 @@ final class Mailer
         $content = implode("\r\n", $lines);
         return (bool) @file_put_contents($file, $content);
     }
+
+    /**
+     * Envoi d'un email d'activation de compte
+     */
+    public static function sendActivationEmail(string $to, string $name, string $activationUrl): bool
+    {
+        $from = 'dashmed-site@alwaysdata.net';
+        $subject = 'Activez votre compte DashMed';
+
+        $headers = [
+            'From: DashMed <' . $from . '>',
+            'Reply-To: ' . $from,
+            'MIME-Version: 1.0',
+            'Content-Type: text/html; charset=UTF-8',
+        ];
+
+        $safeName = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
+        $safeUrl = htmlspecialchars($activationUrl, ENT_QUOTES, 'UTF-8');
+
+        $body = '<!doctype html><html><body>'
+            . "<p>Bonjour {$safeName},</p>"
+            . '<p>Bienvenue sur DashMed ! Pour finaliser la création de votre compte, veuillez cliquer sur le lien ci-dessous :</p>'
+            . "<p><a href=\"{$safeUrl}\">Activer mon compte</a></p>"
+            . "<p>Ou copiez ce lien dans votre navigateur :<br>{$safeUrl}</p>"
+            . "<p>Ce lien est valable pendant 24 heures.</p>"
+            . '<p>Si vous n\'êtes pas à l\'origine de cette inscription, ignorez cet email.</p>'
+            . '<p>À très vite,<br>L\'équipe DashMed</p>'
+            . '</body></html>';
+
+        return self::send($to, $subject, $body, $headers, $from);
+    }
 }

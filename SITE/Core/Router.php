@@ -18,7 +18,7 @@ final class Router
 {
     private string $path;
     private string $method;
-    
+
     private const ROUTES = [
         'public' => [
             '/' => [HomeController::class, 'index'],
@@ -79,11 +79,11 @@ final class Router
         if ($this->tryRoute(self::ROUTES['public'])) {
             return;
         }
-        
+
         if ($this->tryRoute(self::ROUTES['auth'])) {
             return;
         }
-        
+
         if ($this->tryRoute(self::ROUTES['protected'], true)) {
             return;
         }
@@ -107,7 +107,7 @@ final class Router
         [$controllerClass, $postMethod, $getMethod] = array_pad($route, 3, null);
 
         $controller = new $controllerClass();
-        
+
         // Si c'est une route avec méthode unique (ex: logout, show)
         if ($getMethod === null) {
             $controller->$postMethod();
