@@ -1,3 +1,7 @@
+-- TABLE ALERTE À FAIRE
+-- COMMENTAIRE : IL FAUT REVOIR LE MODÈLE DE LA TABLE MESURE :
+-- PROPOSITION : METTRE LES MESURES EN ELLES-MÊMES DANS UNE AUTRE TABLE,
+-- ET ID_MESURE SERA DONC ASSOCIÉ À UN ENSEMBLE DE VALEURS NUMÉRIQUES DE CETTE NOUVELLE TABLE
 
 DROP TABLE IF EXISTS PASSWORD_RESETS;
 DROP TABLE IF EXISTS ALERTE;
@@ -74,7 +78,7 @@ CREATE TABLE SUIVRE (
                         date_fin DATE,
                         CONSTRAINT pk_suivre PRIMARY KEY (med_id, pt_id),
                         CONSTRAINT fk_suivre FOREIGN KEY (med_id) REFERENCES MEDECIN (med_id),
-                        CONSTRAINT fk2_suivre FOREIGN KEY (pt_id) REFERENCES PATIENT (pt_id)
+                        CONSTRAINT fk2_suivre FOREIGN KEY (pt_id) REFERENCES PATIENT (pt_id) ON DELETE CASCADE
 );
 
 -- TABLE RENDEZ_VOUS
@@ -98,7 +102,7 @@ CREATE TABLE MESURES (
                          type_mesure VARCHAR(100) NOT NULL,
                          unite VARCHAR(10) NOT NULL,
                          CONSTRAINT pk_mesures PRIMARY KEY (id_mesure),
-                         CONSTRAINT fk_mesures FOREIGN KEY (pt_id) REFERENCES PATIENT (pt_id)
+                         CONSTRAINT fk_mesures FOREIGN KEY (pt_id) REFERENCES PATIENT (pt_id) ON DELETE CASCADE
 );
 
 -- TABLE VALEURS_MESURES
@@ -109,7 +113,7 @@ CREATE TABLE VALEURS_MESURES (
                                  heure_mesure TIME NOT NULL,
                                  id_mesure BIGINT,
                                  CONSTRAINT pk_val_mesures PRIMARY KEY (id_val),
-                                 CONSTRAINT fk_val_mesures FOREIGN KEY (id_mesure) REFERENCES MESURES (id_mesure)
+                                 CONSTRAINT fk_val_mesures FOREIGN KEY (id_mesure) REFERENCES MESURES (id_mesure) ON DELETE CASCADE
 );
 
 -- TABLE PREFERENCES_MEDECIN
@@ -119,7 +123,7 @@ CREATE TABLE PREFERENCES_MEDECIN (
                                      theme VARCHAR(20),
                                      langue VARCHAR(50),
                                      CONSTRAINT pk_preferences PRIMARY KEY (id_prefp),
-                                     CONSTRAINT fk_preferences FOREIGN KEY (med_id) REFERENCES MEDECIN (med_id)
+                                     CONSTRAINT fk_preferences FOREIGN KEY (med_id) REFERENCES MEDECIN (med_id) ON DELETE CASCADE
 );
 
 -- TABLE HISTORIQUE_CONSOLE
@@ -130,7 +134,7 @@ CREATE TABLE HISTORIQUE_CONSOLE (
                                     date_action DATE NOT NULL,
                                     heure_action TIME NOT NULL,
                                     CONSTRAINT pk_historique PRIMARY KEY (log_id),
-                                    CONSTRAINT fk_historique FOREIGN KEY (med_id) REFERENCES MEDECIN (med_id)
+                                    CONSTRAINT fk_historique FOREIGN KEY (med_id) REFERENCES MEDECIN (med_id) ON DELETE CASCADE
 );
 
 -- TABLE GRAPHIQUE
@@ -150,17 +154,17 @@ CREATE TABLE SEUIL_ALERTE (
                               seuil_min REAL NOT NULL,
                               seuil_max REAL NOT NULL,
                               CONSTRAINT pk_seuil PRIMARY KEY (seuil_id),
-                              CONSTRAINT fk_seuil FOREIGN KEY (id_mesure) REFERENCES MESURES (id_mesure)
+                              CONSTRAINT fk_seuil FOREIGN KEY (id_mesure) REFERENCES MESURES (id_mesure) ON DELETE CASCADE
 );
 
 -- TABLE ALERTE
 CREATE TABLE ALERTE (
                         alerte_id INT,
                         date_alerte DATETIME NOT NULL,
-                        statut VARCHAR(50) CHECK (statut IN ('préoccupant', 'critique', 'fatal')),
+                        statut VARCHAR(50) NOT NULL CHECK (statut IN ('RAS','préoccupant', 'critique', 'fatal')),
                         seuil_id INT,
                         CONSTRAINT pk_alerte PRIMARY KEY (alerte_id),
-                        CONSTRAINT fk_alerte FOREIGN KEY (seuil_id) REFERENCES SEUIL_ALERTE (seuil_id)
+                        CONSTRAINT fk_alerte FOREIGN KEY (seuil_id) REFERENCES SEUIL_ALERTE (seuil_id) ON DELETE CASCADE
 );
 
 -- TABLE PASSWORD_RESETS
