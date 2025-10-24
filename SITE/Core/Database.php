@@ -37,7 +37,7 @@ final class Database
             // Si .env fourni, priorité aux valeurs DB_*; sinon, défauts locaux inoffensifs (aucune crédential sensible en dur)
             $host = $env['DB_HOST'] ?? '127.0.0.1';
             $port = $env['DB_PORT'] ?? '3306';
-            $db   = $env['DB_NAME'] ?? 'dashmed-site_db';
+            $db   = $env['DB_NAME'] ?? 'dashmed-site_db_2';
             $user = $env['DB_USER'] ?? 'root';
             $pass = $env['DB_PASS'] ?? '';
 
