@@ -91,6 +91,18 @@ final class AuthController
         if (session_status() !== PHP_SESSION_ACTIVE) session_start();
         $errors = [];
         $success = '';
+        // Simple rate-limiting (per session) to mitigate brute-force
+        $maxAttempts = 5;
+        $windowSeconds = 900; // 15 minutes
+        $now = time();
+        $attempts = $_SESSION['login_attempts'] ?? [];
+        // purge old attempts
+        $attempts = array_filter($attempts, function ($ts) use ($now, $windowSeconds) {
+            return ($now - $ts) <= $windowSeconds;
+        });
+        if (count($attempts) >= $maxAttempts) {
+            $errors[] = 'Trop de tentatives de connexion. Veuillez attendre et réessayer plus tard.';
+        }
         $email = strtolower(trim((string)($_POST['email'] ?? '')));
         $password = (string)($_POST['password'] ?? '');
         $csrf = (string)($_POST['csrf_token'] ?? '');
@@ -110,6 +122,9 @@ final class AuthController
             $user = User::findByEmail($email);
             if (!$user || !password_verify($password, $user['password'])) {
                 $errors[] = 'Identifiants invalides.';
+                // record failed attempt
+                $attempts[] = $now;
+                $_SESSION['login_attempts'] = $attempts;
             } else {
                 session_regenerate_id(true);
                 // Normalise le nom (prend name ou first_name)
@@ -120,6 +135,8 @@ final class AuthController
                     'email' => $user['email'],
                     'name'  => trim($first.' '.$last)
                 ];
+                // clear failed attempts on successful login
+                unset($_SESSION['login_attempts']);
                 header('Location: /accueil');
                 exit;
             }

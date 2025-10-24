@@ -28,6 +28,22 @@ final class ForgottenPasswordController
     {
         $errors = [];
         $success = '';
+        // Simple rate-limiting per session to avoid abuse of password reset endpoint
+        if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+        $maxAttempts = 5;
+        $windowSeconds = 3600; // 1 hour
+        $now = time();
+        $fpAttempts = $_SESSION['forgot_password_attempts'] ?? [];
+        $fpAttempts = array_filter($fpAttempts, function ($ts) use ($now, $windowSeconds) {
+            return ($now - $ts) <= $windowSeconds;
+        });
+        if (count($fpAttempts) >= $maxAttempts) {
+            // Keep UI neutral, set success message and redirect
+            $success = "Si un compte existe à cette adresse mail, un lien de réinitialisation a été envoyé.\nVeuillez attendre avant de refaire une demande.";
+            $_SESSION['success'] = $success;
+            header('Location: /forgotten-password');
+            exit;
+        }
         $old = [
             'email' => trim((string)($_POST['email'] ?? '')),
         ];
@@ -88,7 +104,10 @@ final class ForgottenPasswordController
             $_SESSION['old'] = $old;
         }
 
-        $_SESSION['success'] = $success;
+    // record this forgot-password request timestamp
+    $fpAttempts[] = $now;
+    $_SESSION['forgot_password_attempts'] = $fpAttempts;
+    $_SESSION['success'] = $success;
         header('Location: /forgotten-password');
         exit;
     }
