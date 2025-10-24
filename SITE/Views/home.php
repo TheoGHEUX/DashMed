@@ -1,6 +1,6 @@
 <?php
 /**
- * Fichier : index.php
+ * Fichier : home.php
  * Page d'accueil de l'application DashMed.
  *
  * Présente le service et ses avantages, invite à l'inscription ou à la connexion.
@@ -31,15 +31,16 @@ include __DIR__ . '/partials/head.php';
 <?php include __DIR__ . '/partials/headerPublic.php'; ?>
 <main>
     <section class="hero">
-        <div class="container hero__inner">
-            <div class="hero__text">
-                <h1>Votre tableau de bord santé, simple et moderne</h1>
+        <h1>Votre tableau de bord santé, simple et moderne</h1>
+        <div class="cadre-hero">
+            <img src="/assets/images/dashboard.webp" alt="Tableau de bord médical moderne" class="hero-bg" />
+            <div class="hero-content">
                 <p class="lead">
                     DashMed centralise vos données de santé pour mieux suivre vos objectifs,
                     visualiser vos progrès et rester informé.
                 </p>
                 <div class="cta">
-                    <a class="btn btn-primary" href="/register">S’inscrire</a>
+                    <a class="btn btn-primary" href="/register">S'inscrire</a>
                     <a class="btn btn-ghost" href="/login">Se connecter</a>
                 </div>
             </div>
@@ -49,15 +50,15 @@ include __DIR__ . '/partials/head.php';
     <section class="features">
         <h1>Pourquoi choisir DashMed ?</h1>
         <div class="cadre-features">
-            <img src="/assets/images/suivi.webp" alt="image representant un graphique de suivi" class="suivi-clair" />
+            <img src="/assets/images/suivi.webp" alt="image representant un graphique de suivi" />
             <div class="suivi-content">
                 <h2>Suivi clair</h2>
-                <p>Des indicateurs lisibles et des graphiques pour comprendre vos mesures en un coup d’œil.</p>
+                <p>Des indicateurs lisibles et des graphiques pour comprendre vos mesures en un coup d'œil.</p>
             </div>
         </div>
 
         <div class="cadre-features">
-            <img src="/assets/images/securite.webp" alt="image representant un cadenas sur un serveur" class="securite" />
+            <img src="/assets/images/securite.webp" alt="image representant un cadenas sur un serveur" />
             <div class="securite-content">
                 <h2>Sécurité</h2>
                 <p>Vos données sont chiffrées et hébergées sur des serveurs conformes aux standards.</p>
@@ -65,7 +66,7 @@ include __DIR__ . '/partials/head.php';
         </div>
 
         <div class="cadre-features">
-            <img src="/assets/images/personnalisable.webp" alt="image de personne qui " class="personnalisable" />
+            <img src="/assets/images/personnalisable.webp" alt="image de personnalisation" />
             <div class="personnalisable-content">
                 <h2>Personnalisable</h2>
                 <p>Adaptez vos tableaux, vos unités et vos objectifs selon votre pratique.</p>
