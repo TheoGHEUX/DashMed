@@ -19,9 +19,21 @@ final class User
         if (self::$schema !== null) return self::$schema;
         $pdo = Database::getConnection();
         $exists = function (string $table) use ($pdo): bool {
-            $st = $pdo->prepare('SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?');
-            $st->execute([$table]);
-            return (bool)$st->fetchColumn();
+            // Vérifie via information_schema puis via SHOW TABLES LIKE pour robustesse (certains hébergeurs restreignent information_schema)
+            try {
+                $st = $pdo->prepare('SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?');
+                $st->execute([$table]);
+                if ($st->fetchColumn()) return true;
+            } catch (\Throwable $e) {
+                // ignore et tente une autre méthode
+            }
+            try {
+                $st2 = $pdo->prepare('SHOW TABLES LIKE ?');
+                $st2->execute([$table]);
+                return (bool)$st2->fetchColumn();
+            } catch (\Throwable $e) {
+                return false;
+            }
         };
         if ($exists('medecin')) {
             return self::$schema = [
@@ -42,6 +54,18 @@ final class User
                 'email'    => 'email',
                 'password' => 'password',
             ];
+        }
+        // Journalise un diagnostic avant d'échouer
+        try {
+            $dbName = $pdo->query('SELECT DATABASE()')->fetchColumn() ?: '(inconnue)';
+            $tables = [];
+            $q = $pdo->query('SHOW TABLES');
+            if ($q) {
+                $tables = $q->fetchAll(PDO::FETCH_COLUMN) ?: [];
+            }
+            error_log('[UserModel] Aucun schéma utilisateur détecté. DB="'.$dbName.'" Tables=['.implode(',', $tables).']');
+        } catch (\Throwable $e) {
+            error_log('[UserModel] Diagnostic schema impossible: '.$e->getMessage());
         }
         throw new \RuntimeException("Aucune table d'utilisateurs trouvée (medecin ou users). Créez la table requise ou ajustez le modèle.");
     }
