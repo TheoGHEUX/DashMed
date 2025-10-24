@@ -47,24 +47,28 @@ include __DIR__ . '/partials/head.php';
     </section>
 
     <section class="features">
-        <div class="container">
-            <h2>Pourquoi choisir DashMed ?</h2>
-            <div class="grid">
-                <article class="feature">
-                    <div class="icon">📊</div>
-                    <h3>Suivi clair</h3>
-                    <p>Des indicateurs lisibles et des graphiques pour comprendre vos mesures en un coup d’œil.</p>
-                </article>
-                <article class="feature">
-                    <div class="icon">🔒</div>
-                    <h3>Sécurité</h3>
-                    <p>Vos données sont chiffrées et hébergées sur des serveurs conformes aux standards.</p>
-                </article>
-                <article class="feature">
-                    <div class="icon">⚙️</div>
-                    <h3>Personnalisable</h3>
-                    <p>Adaptez vos tableaux, vos unités et vos objectifs selon votre pratique.</p>
-                </article>
+        <h1>Pourquoi choisir DashMed ?</h1>
+        <div class="cadre-features">
+            <img src="/assets/images/suivi.webp" alt="image representant un graphique de suivi" class="suivi-clair" />
+            <div class="suivi-content">
+                <h2>Suivi clair</h2>
+                <p>Des indicateurs lisibles et des graphiques pour comprendre vos mesures en un coup d’œil.</p>
+            </div>
+        </div>
+
+        <div class="cadre-features">
+            <img src="/assets/images/securite.webp" alt="image representant un cadenas sur un serveur" class="securite" />
+            <div class="securite-content">
+                <h2>Sécurité</h2>
+                <p>Vos données sont chiffrées et hébergées sur des serveurs conformes aux standards.</p>
+            </div>
+        </div>
+
+        <div class="cadre-features">
+            <img src="/assets/images/personnalisable.webp" alt="image de personne qui " class="personnalisable" />
+            <div class="personnalisable-content">
+                <h2>Personnalisable</h2>
+                <p>Adaptez vos tableaux, vos unités et vos objectifs selon votre pratique.</p>
             </div>
         </div>
     </section>
