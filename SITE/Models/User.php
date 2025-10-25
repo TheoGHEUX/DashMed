@@ -9,7 +9,7 @@ final class User
     public static function emailExists(string $email): bool
     {
         $pdo = Database::getConnection();
-        $st = $pdo->prepare('SELECT 1 FROM users WHERE LOWER(email) = LOWER(?) LIMIT 1');
+        $st = $pdo->prepare('SELECT 1 FROM MEDECIN WHERE LOWER(email) = LOWER(?) LIMIT 1');
         $st->execute([$email]);
         return (bool) $st->fetchColumn();
     }
@@ -18,9 +18,11 @@ final class User
     public static function create(string $name, string $lastName, string $email, string $hash): bool
     {
         $pdo = Database::getConnection();
+        // Map vers le nouveau schéma MEDECIN
+        // prenom=name, nom=lastName, mdp=hash, compte_actif=1 par défaut, date_creation/derniere_maj = NOW()
         $st = $pdo->prepare(
-            'INSERT INTO users (name, last_name, email, password, created_at, updated_at)
-             VALUES (?, ?, ?, ?, NOW(), NOW())'
+            'INSERT INTO MEDECIN (prenom, nom, email, mdp, compte_actif, date_creation, date_derniere_maj)
+             VALUES (?, ?, ?, ?, 1, NOW(), NOW())'
         );
         return $st->execute([$name, $lastName, strtolower(trim($email)), $hash]);
     }
@@ -30,8 +32,13 @@ final class User
     {
         $pdo = Database::getConnection();
         $st = $pdo->prepare('
-            SELECT user_id, name, last_name, email, password
-            FROM users
+            SELECT 
+                med_id   AS user_id,
+                prenom   AS name,
+                nom      AS last_name,
+                email,
+                mdp      AS password
+            FROM MEDECIN
             WHERE LOWER(email) = LOWER(?)
             LIMIT 1
         ');
@@ -44,9 +51,14 @@ final class User
     {
         $pdo = Database::getConnection();
         $st = $pdo->prepare('
-            SELECT user_id, name, last_name, email, password
-            FROM users
-            WHERE user_id = ?
+            SELECT 
+                med_id   AS user_id,
+                prenom   AS name,
+                nom      AS last_name,
+                email,
+                mdp      AS password
+            FROM MEDECIN
+            WHERE med_id = ?
             LIMIT 1
         ');
         $st->execute([$id]);
@@ -57,14 +69,14 @@ final class User
     public static function updatePassword(int $id, string $hash): bool
     {
         $pdo = Database::getConnection();
-        $st = $pdo->prepare('UPDATE users SET password = ?, updated_at = NOW() WHERE user_id = ?');
+        $st = $pdo->prepare('UPDATE MEDECIN SET mdp = ?, date_derniere_maj = NOW() WHERE med_id = ?');
         return $st->execute([$hash, $id]);
     }
 
     public static function updateEmail(int $id, string $newEmail): bool
     {
         $pdo = Database::getConnection();
-        $st = $pdo->prepare('UPDATE users SET email = ?, updated_at = NOW() WHERE user_id = ?');
+        $st = $pdo->prepare('UPDATE MEDECIN SET email = ?, date_derniere_maj = NOW() WHERE med_id = ?');
         return $st->execute([strtolower(trim($newEmail)), $id]);
     }
 
