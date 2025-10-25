@@ -12,6 +12,7 @@ use Controllers\ProfileController;
 use Controllers\ResetPasswordController;
 use Controllers\ChangePasswordController;
 use Controllers\ChangeMailController;
+use Core\Database;
 
 
 final class Router
@@ -67,6 +68,68 @@ final class Router
         if ($this->path === '/health') {
             header('Content-Type: text/plain; charset=utf-8');
             echo 'OK';
+            exit;
+        }
+
+        // DB health (diagnostic sécurisé)
+        if ($this->path === '/health/db') {
+            // Lecture minimale de .env pour APP_DEBUG/HEALTH_KEY
+            $root = dirname(__DIR__, 2);
+            $envFile = $root . DIRECTORY_SEPARATOR . '.env';
+            $env = [];
+            if (is_file($envFile) && is_readable($envFile)) {
+                $lines = @file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+                if ($lines !== false) {
+                    foreach ($lines as $line) {
+                        $line = trim($line);
+                        if ($line === '' || str_starts_with($line, '#') || str_starts_with($line, ';')) continue;
+                        if (strpos($line, '=') === false) continue;
+                        [$k, $v] = explode('=', $line, 2);
+                        $k = trim($k); $v = trim($v);
+                        if ($v !== '' && (($v[0] === '"' && substr($v, -1) === '"') || ($v[0] === "'" && substr($v, -1) === "'"))) {
+                            $v = substr($v, 1, -1);
+                        }
+                        $env[$k] = $v;
+                    }
+                }
+            }
+
+            $debug = ($env['APP_DEBUG'] ?? '') === '1';
+            $keyOk = isset($_GET['key']) && ($_GET['key'] === ($env['HEALTH_KEY'] ?? ''));
+            if (!$debug && !$keyOk) {
+                http_response_code(403);
+                header('Content-Type: text/plain; charset=utf-8');
+                echo 'Forbidden';
+                exit;
+            }
+
+            header('Content-Type: application/json; charset=utf-8');
+            try {
+                $pdo = Database::getConnection();
+                $dbName = $pdo->query('SELECT DATABASE()')->fetchColumn() ?: null;
+                $tables = [];
+                $q = $pdo->query('SHOW TABLES');
+                if ($q) { $tables = $q->fetchAll(\PDO::FETCH_COLUMN) ?: []; }
+
+                $columns = [];
+                foreach (['medecin', 'users'] as $t) {
+                    try {
+                        $st = $pdo->query('SHOW COLUMNS FROM `'.$t.'`');
+                        if ($st) {
+                            $columns[$t] = $st->fetchAll(\PDO::FETCH_COLUMN) ?: [];
+                        }
+                    } catch (\Throwable $e) { /* ignore */ }
+                }
+
+                echo json_encode([
+                    'database' => $dbName,
+                    'tables'   => $tables,
+                    'columns'  => $columns,
+                ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            } catch (\Throwable $e) {
+                http_response_code(500);
+                echo json_encode(['error' => $e->getMessage()]);
+            }
             exit;
         }
 
