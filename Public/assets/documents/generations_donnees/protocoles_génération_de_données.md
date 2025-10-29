@@ -14,3 +14,26 @@ INSERT INTO PATIENT (pt_id, prenom, nom, email, sexe, groupe_sanguin, date_naiss
   
 Prompt : « Génére des INSERT INTO en sql pour 44 nouveaux patients en suivant le même paterne suivant tout en ajoutant une adresse plutôt que NULL. »
 
+### Protocole pour générer des mesures
+
+-	Création à la main de mesures qui serviront de modèles pour en générer d’autres :
+
+INSERT INTO MESURES (id_mesure,pt_id,type_mesure,unite)
+VALUES
+(1,1,"Température corporelle","°C"),
+(2,1,"Tension arterielle","mmHg"),
+(3,1,"Fréquence cardiaque","bpm");
+
+-	Génération de nouvelles mesures :
+
+### Protocole pour générer des valeurs
+
+-	Création à la main de valeurs qui serviront de modèles pour en générer d’autres :
+
+INSERT INTO VALEURS_MESURES (id_val, valeur, date_mesure, heure_mesure, id_mesure) VALUES
+(1,37.2,'2025-12-02','14:53:00',1),
+(2,37.3,'2025-12-02','14:54:00',1),
+(3,37.1,'2025-12-02','14:55:00',1);
+
+-	Génération d'une cinquentaine de valeurs pour chaque mesure :
+
