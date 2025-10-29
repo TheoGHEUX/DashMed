@@ -222,7 +222,9 @@ final class AuthController
                         'id'        => $user['user_id'],
                         'email'     => $user['email'],
                         'name'      => $user['name'],
-                        'last_name' => $user['last_name']
+                        'last_name' => $user['last_name'],
+                        'sexe'      => $user['sexe'],           // ← AJOUT
+                        'specialite'=> $user['specialite']      // ← AJOUT
                     ];
 
                     // Redirection vers le tableau de bord

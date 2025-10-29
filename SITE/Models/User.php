@@ -14,28 +14,28 @@ final class User
         return (bool) $st->fetchColumn();
     }
 
-    // Création prénom + nom  + hash du mot de passe
     public static function create(string $name, string $lastName, string $email, string $hash, string $sexe, string $specialite): bool
     {
         $pdo = Database::getConnection();
         $st = $pdo->prepare(
             'INSERT INTO MEDECIN (prenom, nom, email, mdp, sexe, specialite, compte_actif, date_creation, date_derniere_maj)
-         VALUES (?, ?, ?, ?, ?, ?, 1, NOW(), NOW())'
+             VALUES (?, ?, ?, ?, ?, ?, 1, NOW(), NOW())'
         );
         return $st->execute([$name, $lastName, strtolower(trim($email)), $hash, $sexe, $specialite]);
     }
 
-    // Récupération pour la connexion
     public static function findByEmail(string $email): ?array
     {
         $pdo = Database::getConnection();
         $st = $pdo->prepare('
             SELECT 
-                med_id   AS user_id,
-                prenom   AS name,
-                nom      AS last_name,
+                med_id      AS user_id,
+                prenom      AS name,
+                nom         AS last_name,
                 email,
-                mdp      AS password
+                mdp         AS password,
+                sexe,
+                specialite
             FROM MEDECIN
             WHERE LOWER(email) = LOWER(?)
             LIMIT 1
@@ -50,11 +50,13 @@ final class User
         $pdo = Database::getConnection();
         $st = $pdo->prepare('
             SELECT 
-                med_id   AS user_id,
-                prenom   AS name,
-                nom      AS last_name,
+                med_id      AS user_id,
+                prenom      AS name,
+                nom         AS last_name,
                 email,
-                mdp      AS password
+                mdp         AS password,
+                sexe,
+                specialite
             FROM MEDECIN
             WHERE med_id = ?
             LIMIT 1
@@ -77,6 +79,4 @@ final class User
         $st = $pdo->prepare('UPDATE MEDECIN SET email = ?, date_derniere_maj = NOW() WHERE med_id = ?');
         return $st->execute([strtolower(trim($newEmail)), $id]);
     }
-
-    
 }

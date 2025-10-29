@@ -3,17 +3,8 @@
  * Fichier : profile.php
  * Page de profil utilisateur de l'application DashMed.
  *
- * Affiche les informations de l'utilisateur connecté (nom, prénom, email) et propose
- * des actions sur le compte (modifier email, supprimer compte). Sécurisée via session utilisateur.
- *
- * Variables dynamiques :
- * - $pageTitle       (string)  Titre de la page
- * - $pageDescription (string)  Description pour les métadonnées
- * - $pageStyles      (array)   Styles CSS spécifiques
- * - $pageScripts     (array)   Scripts JS spécifiques
- *
  * @package DashMed
- * @version 1.0
+ * @version 2.0
  * @author FABRE Alexis, GHEUX Théo, JACOB Alexandre, TAHA CHAOUI Amir, UYSUN Ali
  */
 
@@ -54,6 +45,14 @@ include __DIR__ . '/partials/head.php';
                 <tr>
                     <th scope="row">Nom</th>
                     <td><?= htmlspecialchars($last) ?></td>
+                </tr>
+                <tr>
+                    <th scope="row">Sexe</th>
+                    <td><?= htmlspecialchars($user['sexe'] === 'M' ? 'Homme' : 'Femme') ?></td>
+                </tr>
+                <tr>
+                    <th scope="row">Spécialité</th>
+                    <td><?= htmlspecialchars($user['specialite'] ?? '') ?></td>
                 </tr>
                 <tr>
                     <th scope="row">Adresse email</th>
