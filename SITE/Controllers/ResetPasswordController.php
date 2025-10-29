@@ -85,7 +85,7 @@ final class ResetPasswordController
 
                 // 2) Mettre à jour le mot de passe de l'utilisateur correspondant à l'email récupéré
                 $hash = password_hash($password, PASSWORD_DEFAULT);
-                $u = $pdo->prepare('UPDATE users SET password = ?, updated_at = NOW() WHERE LOWER(email) = LOWER(?)');
+                $u = $pdo->prepare('UPDATE MEDECIN SET mdp = ?, date_derniere_maj = NOW() WHERE LOWER(email) = LOWER(?)');
                 $u->execute([$hash, $emailFromToken]);
 
                 if ($u->rowCount() === 0) {

@@ -7,11 +7,57 @@ use Core\Mailer;
 
 final class AuthController
 {
+    // Liste complète des spécialités médicales valides
+    private const SPECIALITES_VALIDES = [
+        'Addictologie',
+        'Algologie',
+        'Allergologie',
+        'Anesthésie-Réanimation',
+        'Cancérologie',
+        'Cardio-vasculaire HTA',
+        'Chirurgie',
+        'Dermatologie',
+        'Diabétologie-Endocrinologie',
+        'Génétique',
+        'Gériatrie',
+        'Gynécologie-Obstétrique',
+        'Hématologie',
+        'Hépato-gastro-entérologie',
+        'Imagerie médicale',
+        'Immunologie',
+        'Infectiologie',
+        'Médecine du sport',
+        'Médecine du travail',
+        'Médecine générale',
+        'Médecine légale',
+        'Médecine physique et de réadaptation',
+        'Néphrologie',
+        'Neurologie',
+        'Nutrition',
+        'Ophtalmologie',
+        'ORL',
+        'Pédiatrie',
+        'Pneumologie',
+        'Psychiatrie',
+        'Radiologie',
+        'Rhumatologie',
+        'Sexologie',
+        'Toxicologie',
+        'Urologie'
+    ];
+
     public function showRegister(): void
     {
         $errors = [];
         $success = '';
-        $old = ['name' => '', 'last_name' => '', 'email' => ''];
+        $old = [
+            'name' => '',
+            'last_name' => '',
+            'email' => '',
+            'sexe' => '',
+            'specialite' => ''
+        ];
+        $specialites = self::SPECIALITES_VALIDES;
         require __DIR__ . '/../Views/auth/register.php';
     }
 
@@ -20,26 +66,52 @@ final class AuthController
         $errors = [];
         $success = '';
         $old = [
-            'name'      => trim((string)($_POST['name'] ?? '')),
-            'last_name' => trim((string)($_POST['last_name'] ?? '')),
-            'email'     => trim((string)($_POST['email'] ?? '')),
+            'name'       => trim((string)($_POST['name'] ?? '')),
+            'last_name'  => trim((string)($_POST['last_name'] ?? '')),
+            'email'      => trim((string)($_POST['email'] ?? '')),
+            'sexe'       => trim((string)($_POST['sexe'] ?? '')),
+            'specialite' => trim((string)($_POST['specialite'] ?? '')),
         ];
         $password         = (string)($_POST['password'] ?? '');
         $password_confirm = (string)($_POST['password_confirm'] ?? '');
         $csrf             = (string)($_POST['csrf_token'] ?? '');
 
+        // Validation du jeton CSRF
         if (!Csrf::validate($csrf)) {
             $errors[] = 'Session expirée ou jeton CSRF invalide.';
         }
 
+        // Validation du prénom
+        if (empty($old['name'])) {
+            $errors[] = 'Le prénom est obligatoire.';
+        }
+
+        // Validation du nom
+        if (empty($old['last_name'])) {
+            $errors[] = 'Le nom est obligatoire.';
+        }
+
+        // Validation de l'email
         if (!filter_var($old['email'], FILTER_VALIDATE_EMAIL)) {
             $errors[] = 'Adresse email invalide.';
         }
 
-        if ($password !== $password_confirm) {
-            $errors[] = 'Mots de passe différents.';
+        // Validation du sexe (empêcher la valeur vide)
+        if (empty($old['sexe']) || !in_array($old['sexe'], ['M', 'F'], true)) {
+            $errors[] = 'Veuillez sélectionner un sexe valide.';
         }
 
+        // Validation de la spécialité (empêcher la valeur vide)
+        if (empty($old['specialite']) || !in_array($old['specialite'], self::SPECIALITES_VALIDES, true)) {
+            $errors[] = 'Veuillez sélectionner une spécialité médicale valide.';
+        }
+
+        // Validation des mots de passe
+        if ($password !== $password_confirm) {
+            $errors[] = 'Les mots de passe ne correspondent pas.';
+        }
+
+        // Validation de la complexité du mot de passe
         if (
             strlen($password) < 12 ||
             !preg_match('/[A-Z]/', $password) ||
@@ -50,28 +122,52 @@ final class AuthController
             $errors[] = 'Le mot de passe doit contenir au moins 12 caractères, avec majuscules, minuscules, chiffres et un caractère spécial.';
         }
 
+        // Vérification de l'existence de l'email
         if (!$errors && User::emailExists($old['email'])) {
             $errors[] = 'Un compte existe déjà avec cette adresse email.';
         }
 
+        // Création du compte si aucune erreur
         if (!$errors) {
             $hash = password_hash($password, PASSWORD_DEFAULT);
             try {
-                if (User::create($old['name'], $old['last_name'], $old['email'], $hash)) {
-                    // Envoi de mail (ne bloque pas si échec normalement...)
+                if (User::create(
+                    $old['name'],
+                    $old['last_name'],
+                    $old['email'],
+                    $hash,
+                    $old['sexe'],
+                    $old['specialite']
+                )) {
+                    // Envoi du mail de confirmation
                     $mailSent = Mailer::sendRegistrationEmail($old['email'], $old['name']);
                     $success = $mailSent
-                        ? 'Compte créé !!! Un email de confirmation a été envoyé'
-                        : 'Compte créé. (Attention: le mail de bienvenue n’a pas pu être envoyé.)';
-                    $old = ['name' => '', 'email' => ''];
+                        ? 'Compte créé avec succès ! Un email de confirmation a été envoyé.'
+                        : 'Compte créé avec succès. (Attention: le mail de bienvenue n\'a pas pu être envoyé.)';
+
+                    // Réinitialisation des champs après succès
+                    $old = [
+                        'name' => '',
+                        'last_name' => '',
+                        'email' => '',
+                        'sexe' => '',
+                        'specialite' => ''
+                    ];
                 } else {
-                    $errors[] = 'Insertion échouée.';
+                    $errors[] = 'L\'insertion en base de données a échoué.';
                 }
             } catch (\Throwable $e) {
-                $errors[] = 'Erreur base.';
+                error_log(sprintf(
+                    '[REGISTER] Erreur: %s dans %s:%d',
+                    $e->getMessage(),
+                    $e->getFile(),
+                    $e->getLine()
+                ));
+                $errors[] = 'Erreur lors de la création du compte. Veuillez réessayer.';
             }
         }
 
+        $specialites = self::SPECIALITES_VALIDES;
         require __DIR__ . '/../Views/auth/register.php';
     }
 
@@ -88,57 +184,59 @@ final class AuthController
 
     public function login(): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) session_start();
         $errors = [];
         $success = '';
-        // Simple rate-limiting (per session) to mitigate brute-force
-        $maxAttempts = 5;
-        $windowSeconds = 900; // 15 minutes
-        $now = time();
-        $attempts = $_SESSION['login_attempts'] ?? [];
-        // purge old attempts
-        $attempts = array_filter($attempts, function ($ts) use ($now, $windowSeconds) {
-            return ($now - $ts) <= $windowSeconds;
-        });
-        if (count($attempts) >= $maxAttempts) {
-            $errors[] = 'Trop de tentatives de connexion. Veuillez attendre et réessayer plus tard.';
-        }
-        $email = strtolower(trim((string)($_POST['email'] ?? '')));
+        $old = [
+            'email' => trim((string)($_POST['email'] ?? '')),
+        ];
         $password = (string)($_POST['password'] ?? '');
-        $csrf = (string)($_POST['csrf_token'] ?? '');
-        $old = ['email' => $email];
+        $csrf     = (string)($_POST['csrf_token'] ?? '');
 
+        // Validation du jeton CSRF
         if (!Csrf::validate($csrf)) {
-            $errors[] = 'Session expirée ou jeton CSRF invalide. Veuillez réessayer.';
+            $errors[] = 'Session expirée ou jeton CSRF invalide.';
         }
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+
+        // Validation de l'email
+        if (!filter_var($old['email'], FILTER_VALIDATE_EMAIL)) {
             $errors[] = 'Adresse email invalide.';
         }
-        if ($email === '' || $password === '') {
-            $errors[] = 'Champs requis.';
-        }
 
+        // Vérification des identifiants
         if (!$errors) {
-            $user = User::findByEmail($email);
-            if (!$user || !password_verify($password, $user['password'])) {
-                $errors[] = 'Identifiants invalides.';
-                // record failed attempt
-                $attempts[] = $now;
-                $_SESSION['login_attempts'] = $attempts;
-            } else {
-                session_regenerate_id(true);
-                // Normalise le nom (prend name ou first_name)
-                $first = $user['name'] ?? ($user['first_name'] ?? '');
-                $last  = $user['last_name'] ?? '';
-                $_SESSION['user'] = [
-                    'id'    => (int)$user['user_id'],
-                    'email' => $user['email'],
-                    'name'  => trim($first.' '.$last)
-                ];
-                // clear failed attempts on successful login
-                unset($_SESSION['login_attempts']);
-                header('Location: /accueil');
-                exit;
+            try {
+                $user = User::findByEmail($old['email']);
+
+                if (!$user || !password_verify($password, $user['password'])) {
+                    $errors[] = 'Identifiants incorrects.';
+                } else {
+                    // Connexion réussie : création de la session
+                    if (session_status() !== PHP_SESSION_ACTIVE) {
+                        session_start();
+                    }
+
+                    // Régénération de l'ID de session pour sécurité
+                    session_regenerate_id(true);
+
+                    $_SESSION['user'] = [
+                        'id'        => $user['user_id'],
+                        'email'     => $user['email'],
+                        'name'      => $user['name'],
+                        'last_name' => $user['last_name']
+                    ];
+
+                    // Redirection vers le tableau de bord
+                    header('Location: /accueil');
+                    exit;
+                }
+            } catch (\Throwable $e) {
+                error_log(sprintf(
+                    '[LOGIN] Erreur: %s dans %s:%d',
+                    $e->getMessage(),
+                    $e->getFile(),
+                    $e->getLine()
+                ));
+                $errors[] = 'Erreur lors de la connexion. Veuillez réessayer.';
             }
         }
 
@@ -147,12 +245,29 @@ final class AuthController
 
     public function logout(): void
     {
-        $_SESSION = [];
-        if (ini_get('session.use_cookies')) {
-            $p = session_get_cookie_params();
-            setcookie(session_name(), '', time() - 42000, $p['path'], $p['domain'], $p['secure'], $p['httponly']);
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
         }
+
+        // Destruction complète de la session
+        $_SESSION = [];
+
+        if (ini_get('session.use_cookies')) {
+            $params = session_get_cookie_params();
+            setcookie(
+                session_name(),
+                '',
+                time() - 42000,
+                $params['path'],
+                $params['domain'],
+                $params['secure'],
+                $params['httponly']
+            );
+        }
+
         session_destroy();
+
+        // Redirection vers la page de connexion
         header('Location: /login');
         exit;
     }

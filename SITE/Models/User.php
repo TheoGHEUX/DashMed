@@ -15,16 +15,14 @@ final class User
     }
 
     // Création prénom + nom  + hash du mot de passe
-    public static function create(string $name, string $lastName, string $email, string $hash): bool
+    public static function create(string $name, string $lastName, string $email, string $hash, string $sexe, string $specialite): bool
     {
         $pdo = Database::getConnection();
-        // Map vers le nouveau schéma MEDECIN
-        // prenom=name, nom=lastName, mdp=hash, compte_actif=1 par défaut, date_creation/derniere_maj = NOW()
         $st = $pdo->prepare(
-            'INSERT INTO MEDECIN (prenom, nom, email, mdp, compte_actif, date_creation, date_derniere_maj)
-             VALUES (?, ?, ?, ?, 1, NOW(), NOW())'
+            'INSERT INTO MEDECIN (prenom, nom, email, mdp, sexe, specialite, compte_actif, date_creation, date_derniere_maj)
+         VALUES (?, ?, ?, ?, ?, ?, 1, NOW(), NOW())'
         );
-        return $st->execute([$name, $lastName, strtolower(trim($email)), $hash]);
+        return $st->execute([$name, $lastName, strtolower(trim($email)), $hash, $sexe, $specialite]);
     }
 
     // Récupération pour la connexion
