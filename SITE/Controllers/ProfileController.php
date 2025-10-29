@@ -10,10 +10,11 @@ final class ProfileController
             header('Location: /login');
             exit;
         }
-        $user = $_SESSION['user']; // id, email, name
-        $parts = preg_split('/\s+/', trim($user['name'] ?? ''), 2);
-        $first = $parts[0] ?? '';
-        $last  = $parts[1] ?? '';
+
+        $user = $_SESSION['user'];
+        $first = $user['prenom'] ?? '';
+        $last  = $user['nom'] ?? '';
+
         require __DIR__ . '/../Views/profile.php';
     }
 }

@@ -21,7 +21,8 @@ final class Database
                 if ($lines !== false) {
                     foreach ($lines as $line) {
                         $line = trim($line);
-                        if ($line === '' || str_starts_with($line, '#') || str_starts_with($line, ';')) continue;
+                        if ($line === '' || strpos($line, '#') === 0   // Vérifie si '#' est à la position 0
+                            || strpos($line, ';') === 0 )  // Vérifie si ';' est à la position 0) continue;
                         if (strpos($line, '=') === false) continue;
                         [$k, $v] = explode('=', $line, 2);
                         $k = trim($k);

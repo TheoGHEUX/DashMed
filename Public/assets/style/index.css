@@ -128,6 +128,41 @@
     font-size: 14px;
 }
 
+/* Force la couleur grise pour les select comme les input placeholders */
+.field select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    background-color: white;
+    font-family: inherit;
+    color: #999; /* ✅ Même couleur grise que les placeholders */
+    cursor: pointer;
+}
+
+/* Quand une vraie option est sélectionnée, texte en noir */
+.field select.selected,
+.field select:valid {
+    color: #333; /* ✅ Texte normal quand une valeur est choisie */
+}
+
+.field select:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* Options dans le menu déroulant en noir */
+.field select option {
+    color: #333;
+}
+
+/* Première option (placeholder) en gris */
+.field select option[value=""] {
+    color: #999;
+}
+
 @media (max-width: 900px) {
     .hero__inner {
         grid-template-columns: 1fr;

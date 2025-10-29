@@ -30,10 +30,10 @@ final class ChangePasswordController
         $errors = [];
         $success = '';
 
-        $csrf         = (string)($_POST['csrf_token'] ?? '');
-        $oldPassword  = (string)($_POST['old_password'] ?? '');
-        $newPassword  = (string)($_POST['password'] ?? '');
-        $confirm      = (string)($_POST['password_confirm'] ?? '');
+        $csrf = (string)($_POST['csrf_token'] ?? '');
+        $oldPassword = (string)($_POST['old_password'] ?? '');
+        $newPassword = (string)($_POST['password'] ?? '');
+        $confirm = (string)($_POST['password_confirm'] ?? '');
 
         if (!Csrf::validate($csrf)) {
             $errors[] = 'Session expirée ou jeton CSRF invalide.';
@@ -55,16 +55,14 @@ final class ChangePasswordController
 
         if (!$errors) {
             $userId = (int)($_SESSION['user']['id'] ?? 0);
-            $user   = User::findById($userId);
+            $user = User::findById($userId);
 
-            if (!$user || empty($user['password']) || !password_verify($oldPassword, $user['password'])) {
+            if (!$medecin || empty($medecin['mdp']) || !password_verify($oldPassword, $medecin['mdp'])) {
                 $errors[] = 'Ancien mot de passe incorrect.';
             } else {
                 $hash = password_hash($newPassword, PASSWORD_DEFAULT);
                 if (User::updatePassword($userId, $hash)) {
                     $success = 'Votre mot de passe a été mis à jour.';
-                    // on peut vouloir déconnecter l’utilisateur sur changement de mdp pour sécurité
-                    // header('Location: /logout'); exit;
                 } else {
                     $errors[] = 'Impossible de mettre à jour le mot de passe pour le moment.';
                 }
@@ -73,4 +71,5 @@ final class ChangePasswordController
 
         \View::render('auth/change-password', compact('errors', 'success'));
     }
+
 }
