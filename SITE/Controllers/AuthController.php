@@ -139,11 +139,18 @@ final class AuthController
                     $old['sexe'],
                     $old['specialite']
                 )) {
-                    // Envoi du mail de confirmation
-                    $mailSent = Mailer::sendRegistrationEmail($old['email'], $old['name']);
-                    $success = $mailSent
-                        ? 'Compte créé avec succès ! Un email de confirmation a été envoyé.'
-                        : 'Compte créé avec succès. (Attention: le mail de bienvenue n\'a pas pu être envoyé.)';
+                    // Génération du token de vérification d'email
+                    $verificationToken = User::generateEmailVerificationToken($old['email']);
+                    
+                    if ($verificationToken) {
+                        // Envoi de l'email de vérification
+                        $mailSent = Mailer::sendEmailVerification($old['email'], $old['name'], $verificationToken);
+                        $success = $mailSent
+                            ? 'Compte créé avec succès ! Un email de vérification a été envoyé à votre adresse. Veuillez vérifier votre boîte de réception pour activer votre compte.'
+                            : 'Compte créé avec succès. (Attention: l\'email de vérification n\'a pas pu être envoyé. Vous pouvez demander un nouveau lien.)';
+                    } else {
+                        $success = 'Compte créé mais erreur lors de la génération du lien de vérification. Contactez le support.';
+                    }
 
                     // Réinitialisation des champs après succès
                     $old = [
@@ -209,6 +216,10 @@ final class AuthController
 
                 if (!$user || !password_verify($password, $user['password'])) {
                     $errors[] = 'Identifiants incorrects.';
+                } elseif (!$user['email_verified']) {
+                    // Blocage si l'email n'est pas vérifié
+                    $errors[] = 'Votre adresse email n\'a pas encore été vérifiée. Veuillez consulter votre boîte de réception et cliquer sur le lien de vérification.';
+                    $errors[] = '<a href="/resend-verification" style="color: #2c5282; text-decoration: underline;">Renvoyer l\'email de vérification</a>';
                 } else {
                     // Connexion réussie : création de la session
                     if (session_status() !== PHP_SESSION_ACTIVE) {
@@ -223,8 +234,8 @@ final class AuthController
                         'email'     => $user['email'],
                         'name'      => $user['name'],
                         'last_name' => $user['last_name'],
-                        'sexe'      => $user['sexe'],           // ← AJOUT
-                        'specialite'=> $user['specialite']      // ← AJOUT
+                        'sexe'      => $user['sexe'],
+                        'specialite'=> $user['specialite']
                     ];
 
                     // Redirection vers le tableau de bord

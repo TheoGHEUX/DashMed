@@ -17,8 +17,8 @@
  * @author FABRE Alexis, GHEUX Théo, JACOB Alexandre, TAHA CHAOUI Amir, UYSUN Ali
  */
 
-use Core\Csrf;
-$csrf_token = Csrf::token();
+$csrf_token = \Core\Csrf::token();
+
 
 $pageTitle = "Connexion";
 $pageDescription = "Connectez-vous à DashMed !";
@@ -30,6 +30,7 @@ $pageScripts = [];
 <?php include __DIR__ . '/../partials/head.php'; ?>
 <body>
 <?php include __DIR__ . '/../partials/headerPublic.php'; ?>
+
 <main class="main">
     <section class="hero">
         <h1>Bienvenue dans DashMed</h1>

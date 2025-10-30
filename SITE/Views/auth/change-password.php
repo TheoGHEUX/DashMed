@@ -8,13 +8,13 @@
  * - $success (string)
  */
 
-use Core\Csrf;
-$csrf_token = Csrf::token();
+$csrf_token = \Core\Csrf::token();
+
 
 $pageTitle = "Changer mon mot de passe";
 $pageDescription = "Modifiez votre mot de passe en toute sécurité";
-$pageStyles = ["/assets/style/authentication.css"]; // on réutilise le style d'auth
-$pageScripts = ["/assets/script/header_responsive.js"];
+$pageStyles = ["/assets/style/authentication.css"];
+$pageScripts = [];
 ?>
 <!doctype html>
 <html lang="fr">

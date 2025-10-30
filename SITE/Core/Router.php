@@ -38,6 +38,8 @@ final class Router
             '/forgotten-password' => [ForgottenPasswordController::class, 'submit', 'showForm'],
             '/mot-de-passe-oublie' => [ForgottenPasswordController::class, 'submit', 'showForm'],
             '/reset-password' => [ResetPasswordController::class, 'submit', 'showForm'],
+            '/verify-email' => [\Controllers\VerifyEmailController::class, 'verify'],
+            '/resend-verification' => [\Controllers\VerifyEmailController::class, 'resend', 'resend'],
         ],
         'protected' => [
             '/accueil' => [AccueilController::class, 'index'],

@@ -26,6 +26,50 @@ final class Mailer
 
         return self::send($to, $subject, $body, $headers, $from);
     }
+
+    /**
+     * Envoie un email de vérification avec le lien contenant le token
+     */
+    public static function sendEmailVerification(string $to, string $name, string $verificationToken): bool
+    {
+        $from = 'dashmed-site@alwaysdata.net';
+        $subject = 'Vérifiez votre adresse email - DashMed';
+
+        $headers = [
+            'From: DashMed <' . $from . '>',
+            'Reply-To: ' . $from,
+            'MIME-Version: 1.0',
+            'Content-Type: text/html; charset=UTF-8',
+        ];
+
+        // Construction de l'URL de vérification
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? 'dashmed-site.alwaysdata.net';
+        $verificationUrl = $protocol . '://' . $host . '/verify-email?token=' . urlencode($verificationToken);
+
+        $safeName = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
+        $safeUrl = htmlspecialchars($verificationUrl, ENT_QUOTES, 'UTF-8');
+
+        $body = '<!doctype html><html><body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">'
+            . '<div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">'
+            . '<h2 style="color: #2c5282;">Bienvenue sur DashMed !</h2>'
+            . '<p>Bonjour ' . $safeName . ',</p>'
+            . '<p>Merci de vous être inscrit sur DashMed. Pour activer votre compte et commencer à utiliser notre plateforme, veuillez vérifier votre adresse email en cliquant sur le bouton ci-dessous :</p>'
+            . '<div style="text-align: center; margin: 30px 0;">'
+            . '<a href="' . $safeUrl . '" style="display: inline-block; padding: 12px 30px; background-color: #2c5282; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">Vérifier mon adresse email</a>'
+            . '</div>'
+            . '<p>Ou copiez ce lien dans votre navigateur :</p>'
+            . '<p style="word-break: break-all; color: #666; font-size: 12px;">' . $safeUrl . '</p>'
+            . '<p style="color: #e53e3e; margin-top: 20px;"><strong>⚠️ Ce lien expire dans 24 heures.</strong></p>'
+            . '<p style="color: #666; font-size: 12px; margin-top: 30px;">Si vous n\'êtes pas à l\'origine de cette inscription, vous pouvez ignorer cet email en toute sécurité.</p>'
+            . '<hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">'
+            . '<p style="color: #999; font-size: 11px; text-align: center;">L\'équipe DashMed</p>'
+            . '</div>'
+            . '</body></html>';
+
+        return self::send($to, $subject, $body, $headers, $from);
+    }
+
     //envoie mail pour reset mdp
     public static function sendPasswordResetEmail(string $to, string $displayName, string $resetUrl): bool
     {

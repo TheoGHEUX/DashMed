@@ -24,7 +24,7 @@
 
 $csrf_token = \Core\Csrf::token();
 
-$pageTitle = "DashMed - Réinitialisation";
+$pageTitle = "Réinitialisation";
 $pageDescription = "Page pour réinitialiser le mot de passe oublié et définir un nouveau";
 $pageStyles = ["/assets/style/forgotten_password.css", "/assets/style/authentication.css"];
 $pageScripts = [];

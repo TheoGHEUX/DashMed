@@ -8,9 +8,8 @@
  * @author FABRE Alexis, GHEUX Théo, JACOB Alexandre, TAHA CHAOUI Amir, UYSUN Ali
  */
 
-use Core\Csrf;
+$csrf_token = \Core\Csrf::token();
 
-$csrf_token = Csrf::token();
 $pageTitle = "Inscription";
 $pageDescription = "Créez votre compte DashMed !";
 $pageStyles = ["/assets/style/authentication.css"];

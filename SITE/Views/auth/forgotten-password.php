@@ -21,7 +21,7 @@ $csrf_token = \Core\Csrf::token();
 $pageTitle = "Mot de passe oublié";
 $pageDescription = "Page de mot de passe oublié, envoie un lien par mail pour le changer";
 $pageStyles = ["/assets/style/forgotten_password.css"];
-$pageScripts = ["/assets/script/header_responsive.js"];
+$pageScripts = [];
 ?>
 <!doctype html>
 <html lang="fr">
