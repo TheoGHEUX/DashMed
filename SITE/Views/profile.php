@@ -15,9 +15,8 @@ if (empty($_SESSION['user'])) {
 }
 
 $user = $_SESSION['user'];
-$parts = preg_split('/\s+/', trim($user['name'] ?? ''), 2);
-$first = $parts[0] ?? '';
-$last  = $parts[1] ?? '';
+$first = $user['name'] ?? '';
+$last  = $user['last_name'] ?? '';
 
 $pageTitle = "Profil";
 $pageDescription = "Consultez votre profil DashMed une fois connecté";
