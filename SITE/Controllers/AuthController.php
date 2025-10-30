@@ -170,7 +170,9 @@ final class AuthController
                     $e->getFile(),
                     $e->getLine()
                 ));
-                $errors[] = 'Erreur lors de la création du compte. Veuillez réessayer.';
+                // DEBUG: Affichage temporaire de l'erreur complète
+                $errors[] = 'Erreur lors de la création du compte: ' . $e->getMessage();
+                $errors[] = 'Fichier: ' . $e->getFile() . ' ligne ' . $e->getLine();
             }
         }
 
