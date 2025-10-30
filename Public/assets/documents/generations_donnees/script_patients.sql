@@ -1,9 +1,4 @@
-DELETE
-FROM PATIENT;
-DELETE
-FROM MESURES;
-DELETE
-FROM VALEURS_MESURES;
+DELETE FROM PATIENT;
 
 INSERT INTO PATIENT (pt_id, prenom, nom, email, sexe, groupe_sanguin, date_naissance, telephone, ville, code_postal,
                      adresse)
