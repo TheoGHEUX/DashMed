@@ -171,8 +171,7 @@ final class AuthController
                     $e->getLine()
                 ));
                 // DEBUG: Affichage temporaire de l'erreur complète
-                $errors[] = 'Erreur lors de la création du compte: ' . $e->getMessage();
-                $errors[] = 'Fichier: ' . $e->getFile() . ' ligne ' . $e->getLine();
+                $errors[] = 'Erreur lors de la création du compte';
             }
         }
 
@@ -221,7 +220,6 @@ final class AuthController
                 } elseif (!$user['email_verified']) {
                     // Blocage si l'email n'est pas vérifié
                     $errors[] = 'Votre adresse email n\'a pas encore été vérifiée. Veuillez consulter votre boîte de réception et cliquer sur le lien de vérification.';
-                    $errors[] = '<a href="/resend-verification" style="color: #2c5282; text-decoration: underline;">Renvoyer l\'email de vérification</a>';
                 } else {
                     // Connexion réussie : création de la session
                     if (session_status() !== PHP_SESSION_ACTIVE) {
