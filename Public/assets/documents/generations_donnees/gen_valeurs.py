@@ -19,19 +19,19 @@ intervals = {
     "Glycémie": timedelta(minutes=15)
 }
 
-# --- Plages de valeurs réalistes ---
+# Plages de valeurs (pour patients sans problème particulier)
 plages = {
-    "Température corporelle": (36.4, 37.8),
+    "Température corporelle": (36.4, 37.8), # °C
     "Tension artérielle": (110, 140),   # mmHg
     "Fréquence cardiaque": (55, 100),   # bpm
     "Poids": (45, 100),                 # kg
     "Glycémie": (4.5, 7.2)              # mmol/L
 }
 
-# mesures : A COMPLETER AVEC LES VALEURS SOUHAITEES AU MOMENT D'UTILISATION DU PROGRAMME
+# tuples de MESURES :
 mesures = [...] # A renseigner
 
-# --- Génération des valeurs ---
+# Génération des valeurs
 sql_lines = []
 id_val = ... # A renseigner
 
@@ -65,7 +65,7 @@ for id_mesure, pt_id, type_mesure, unite in mesures:
         id_val += 1
         current_time += interval
 
-# --- Export SQL complet ---
+# Export SQL vers un autre fichier
 sql_script = (
     "INSERT INTO VALEURS_MESURES (id_val, valeur, date_mesure, heure_mesure, id_mesure)\nVALUES\n"
     + ",\n".join(sql_lines)
@@ -75,4 +75,4 @@ sql_script = (
 with open("valeurs_mesures.sql", "w", encoding="utf-8") as f:
     f.write(sql_script)
 
-print(f"✅ Script SQL généré avec {id_val-1} valeurs dans 'valeurs_mesures.sql'")
+print(f"✅ Script SQL généré avec succès !")
