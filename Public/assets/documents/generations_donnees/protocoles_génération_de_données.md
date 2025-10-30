@@ -12,7 +12,9 @@ INSERT INTO PATIENT (pt_id, prenom, nom, email, sexe, groupe_sanguin, date_naiss
 
 -	Génération de nouveaux patients en suivant les modèles précedents :
   
-Prompt : « Génére des INSERT INTO en sql pour 44 nouveaux patients en suivant le même paterne suivant tout en ajoutant une adresse plutôt que NULL. »
+Prompt : 
+
+"Génère des INSERT INTO en sql pour 44 nouveaux patients en suivant le même paterne suivant tout en ajoutant une adresse plutôt que NULL."
 
 ### Protocole pour générer des mesures
 
@@ -25,6 +27,16 @@ VALUES
 (3,1,"Fréquence cardiaque","bpm");
 
 -	Génération de nouvelles mesures :
+
+Prompt : 
+
+"Voici 49 autres patients (***afficher les patients***). Génère 2 à 4 mesures réalistes dans la table MESURES pour chaque patient en suivant ces règles :
+
+        - Le type de mesure doit être dans cette liste : (température corporelle, tension artérielle, fréquence cardiaque, poids, glycémie) 
+
+        - pour id_mesure, continue l'incrémentation
+
+Voici un exemple pour le patient 1 : (***montrer le modèle correspondant***)
 
 ### Protocole pour générer des valeurs
 
