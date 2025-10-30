@@ -40,12 +40,7 @@ Voici un exemple pour le patient 1 : (***montrer le modèle correspondant***)
 
 ### Protocole pour générer des valeurs
 
--	Création à la main de valeurs qui serviront de modèles pour en générer d’autres :
+-	Création d'un programme python dans gen_donnees.py pour générer les valeurs des mesures directement dans un nouveau fichier.
 
-INSERT INTO VALEURS_MESURES (id_val, valeur, date_mesure, heure_mesure, id_mesure) VALUES
-(1,37.2,'2025-12-02','14:53:00',1),
-(2,37.3,'2025-12-02','14:54:00',1),
-(3,37.1,'2025-12-02','14:55:00',1);
-
--	Génération d'une cinquentaine de valeurs pour chaque mesure :
+-   Génération de 50 valeurs pour chaque mesure en utilisant le programme python en modifiant dans celui-ci la liste des tuples pour lesquels on veut créer des valeurs et de l'id_val de départ (mode d'emploi détaillé en haut du fichier gen_donnees.py)
 
