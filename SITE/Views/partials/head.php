@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="/assets/style/body_main_container.css">
     <link rel="stylesheet" href="/assets/style/header.css">
     <link rel="stylesheet" href="/assets/style/footer.css">
+    <link rel="stylesheet" href="/assets/style/dark-mode.css">
     <?php
     // Styles spécifiques à la page
     if (!empty($pageStyles)) {
@@ -29,6 +30,8 @@
             echo '<script src="' . htmlspecialchars($src, ENT_QUOTES) . '" defer></script>' . PHP_EOL;
         }
     }
+    // Script du mode sombre (chargé en premier pour éviter le flash)
+    echo '<script src="/assets/script/dark-mode.js"></script>' . PHP_EOL;
     // Script global du header (doit toujours être chargé pour le menu burger)
     echo '<script src="/assets/script/header_responsive.js" defer></script>' . PHP_EOL;
     ?>

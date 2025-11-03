@@ -68,7 +68,7 @@ $activites = [
         <!-- Phrase d'accroche et Dashboard -->
         <section class="dashboard-banner">
             <div class="banner-content">
-                <h1>Bienvenue sur DashMed</h1>
+                <h1 class="welcome-title">Bienvenue sur DashMed</h1>
                 <p>Votre plateforme médicale pour une gestion hospitalière efficace et sécurisée</p>
                 <a href="/dashboard" class="dashboard-card">
                     <div class="card-icon">📊</div>

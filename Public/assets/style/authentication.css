@@ -8,12 +8,15 @@
     margin: 8px 0 8px;
     font-size: 22px;
     font-weight: 600;
+    color: var(--text-primary, #000);
+    transition: color 0.3s ease;
 }
 
 .subtitle {
     margin: 0 0 18px;
-    color: #404349;
+    color: var(--text-secondary, #404349);
     font-size: 13px;
+    transition: color 0.3s ease;
 }
 
 .form {
@@ -34,19 +37,20 @@
     height: 48px;
     padding: 12px 16px;
     border-radius: 12px;
-    border: 1px solid var(--line);
-    background: #fff;
+    border: 1px solid var(--input-border, var(--line));
+    background: var(--input-bg, #fff);
+    color: var(--text-primary, #000);
     font-size: 14px;
     outline: none;
-    transition: border-color 0.15s, box-shadow 0.15s;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.3s ease, color 0.3s ease;
 }
 
 .field input::placeholder {
-    color: #a8b0ba;
+    color: var(--text-tertiary, #a8b0ba);
 }
 
 .field input:focus {
-    border-color: var(--brand);
+    border-color: var(--input-focus, var(--brand));
     box-shadow: 0 0 0 4px var(--focus);
 }
 
@@ -119,21 +123,27 @@
     height: 48px;
     padding: 12px 16px;
     border-radius: 12px;
-    border: 1px solid var(--line);
-    background: #fff;
+    border: 1px solid var(--input-border, var(--line));
+    background: var(--input-bg, #fff);
     font-size: 14px;
     outline: none;
-    color: #a8b0ba ;  /* ✅ Force le gris */
+    color: var(--text-tertiary, #a8b0ba);
     cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.3s ease, color 0.3s ease;
 }
 
 /* Pour rendre les options du menu deroulant noires  */
 .field select:has(option:checked:not([value=""])),
 .field select:not(:invalid) {
-    color: #000;
+    color: var(--text-primary, #000);
+}
+
+.field select option {
+    background: var(--bg-card, #fff);
+    color: var(--text-primary, #000);
 }
 
 .field select:focus {
-    border-color: var(--brand);
+    border-color: var(--input-focus, var(--brand));
     box-shadow: 0 0 0 4px var(--focus);
 }

@@ -10,74 +10,102 @@
 .dashboard-banner {
     text-align: center;
     margin-bottom: 60px;
+    padding: 40px 20px;
+    background: var(--bg-card, white);
+    border-radius: 20px;
+    box-shadow: var(--shadow-lg, 0 4px 20px rgba(0, 0, 0, 0.08));
+    transition: background 0.3s ease;
 }
 
-.banner-content h1 {
-    font-size: 2.5rem;
+.banner-content h1,
+.welcome-title {
+    font-size: 2.8rem;
     font-weight: 700;
-    color: #1a202c;
+    color: #0fb0c0 !important;
     margin-bottom: 16px;
     line-height: 1.2;
+    letter-spacing: -0.5px;
 }
 
 .banner-content p {
-    font-size: 1.1rem;
-    color: #64748b;
+    font-size: 1.2rem;
+    color: var(--text-secondary, #64748b);
     margin-bottom: 40px;
-    max-width: 600px;
+    max-width: 650px;
     margin-left: auto;
     margin-right: auto;
+    transition: color 0.3s ease;
+    line-height: 1.6;
 }
 
 .dashboard-card {
     display: inline-flex;
     align-items: center;
     gap: 20px;
-    background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+    background: linear-gradient(135deg, #0fb0c0 0%, #0c96a3 100%);
     color: white;
     text-decoration: none;
-    padding: 24px 32px;
+    padding: 28px 40px;
     border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(96, 165, 250, 0.3);
+    box-shadow: 0 10px 30px rgba(15, 176, 192, 0.3);
     transition: all 0.3s ease;
-    min-width: 320px;
+    min-width: 360px;
+}
+
+[data-theme="dark"] .dashboard-card {
+    background: linear-gradient(135deg, #0fb0c0 0%, #0c96a3 100%);
+    box-shadow: 0 10px 30px rgba(15, 176, 192, 0.4);
 }
 
 .dashboard-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 40px rgba(96, 165, 250, 0.4);
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(15, 176, 192, 0.5);
     color: white;
     text-decoration: none;
 }
 
+[data-theme="dark"] .dashboard-card:hover {
+    box-shadow: 0 20px 40px rgba(15, 176, 192, 0.6);
+}
+
 .card-icon {
-    font-size: 2rem;
-    opacity: 0.9;
+    font-size: 2.5rem;
+    opacity: 0.95;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 .card-text h3 {
     margin: 0;
-    font-size: 1.3rem;
-    font-weight: 600;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.3px;
 }
 
 .card-text span {
-    font-size: 0.9rem;
-    opacity: 0.8;
+    font-size: 1rem;
+    opacity: 0.9;
+    margin-top: 4px;
+    display: block;
 }
 
 .card-arrow {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     font-weight: bold;
     margin-left: auto;
+    transition: transform 0.3s ease;
+}
+
+.dashboard-card:hover .card-arrow {
+    transform: translateX(5px);
 }
 
 /* === Section Planning === */
 .planning-section {
-    background: white;
+    background: var(--bg-card, white);
     border-radius: 20px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--shadow-lg, 0 4px 20px rgba(0, 0, 0, 0.08));
     overflow: hidden;
+    transition: background 0.3s ease;
 }
 
 .planning-header {
@@ -85,15 +113,17 @@
     justify-content: space-between;
     align-items: center;
     padding: 30px 40px 20px;
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-    border-bottom: 1px solid #e2e8f0;
+    background: var(--bg-tertiary, linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%));
+    border-bottom: 1px solid var(--border-color, #e2e8f0);
+    transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .planning-header h2 {
     margin: 0;
     font-size: 1.5rem;
     font-weight: 600;
-    color: #1a202c;
+    color: var(--text-primary, #1a202c);
+    transition: color 0.3s ease;
 }
 
 .btn-modifier {
@@ -127,14 +157,14 @@
     gap: 20px;
     padding: 16px 20px;
     border-radius: 12px;
-    border: 2px solid #f1f5f9;
+    border: 2px solid var(--border-light, #f1f5f9);
     transition: all 0.2s ease;
-    background: white;
+    background: var(--bg-card, white);
 }
 
 .creneau:hover {
-    border-color: #e2e8f0;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border-color: var(--border-color, #e2e8f0);
+    box-shadow: var(--shadow-sm, 0 4px 12px rgba(0, 0, 0, 0.05));
 }
 
 .creneau.urgent {
@@ -158,14 +188,16 @@
 .heure {
     font-weight: 700;
     font-size: 1.1rem;
-    color: #374151;
+    color: var(--text-primary, #374151);
     font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    transition: color 0.3s ease;
 }
 
 .patient {
     font-weight: 600;
-    color: #1f2937;
+    color: var(--text-primary, #1f2937);
     font-size: 1rem;
+    transition: color 0.3s ease;
 }
 
 .creneau.libre .patient {
@@ -179,9 +211,10 @@
 
 .type {
     font-size: 0.85rem;
-    color: #6b7280;
+    color: var(--text-secondary, #6b7280);
     text-align: right;
     font-weight: 500;
+    transition: color 0.3s ease;
 }
 
 .creneau.urgent .type {

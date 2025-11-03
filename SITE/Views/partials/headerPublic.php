@@ -18,6 +18,12 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
             <!-- Login affich\u00e9 en mobile dans le menu -->
             <a href="/login" class="nav-login">Connexion</a>
         </nav>
+        <!-- Dark mode toggle -->
+        <button class="dark-mode-toggle" id="darkModeToggle" aria-label="Activer le mode sombre" title="Mode sombre">
+            <span class="icon-sun">☀️</span>
+            <span class="icon-moon">🌙</span>
+        </button>
+
         <!-- Bouton de connexion visible sur desktop (masqu\u00e9 sur mobile via CSS) -->
         <a href="/login" class="login-btn">Connexion</a>
 

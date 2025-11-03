@@ -1,9 +1,10 @@
 
 .footer {
-    background: #f4f6f8;
-    border-top: 1px solid var(--line);
-    color: #6f7580;
+    background: var(--bg-card, #f4f6f8);
+    border-top: 1px solid var(--border-color, var(--line));
+    color: var(--text-secondary, #6f7580);
     font-size: 12px;
     text-align: center;
     padding: 12px 0;
+    transition: background 0.3s ease, color 0.3s ease;
 }

@@ -18,6 +18,12 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
             <a href="/logout" class="nav-login">Deconnexion</a>
         </nav>
 
+        <!-- Dark mode toggle -->
+        <button class="dark-mode-toggle" id="darkModeToggle" aria-label="Activer le mode sombre" title="Mode sombre">
+            <span class="icon-sun">☀️</span>
+            <span class="icon-moon">🌙</span>
+        </button>
+
        <a href="/logout" class="login-btn">Deconnexion</a>
 
 

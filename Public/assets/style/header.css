@@ -1,30 +1,13 @@
 .topbar {
-    background: #fff;
-    border-bottom: 1px solid var(--line);
+    background: var(--header-bg, rgba(255, 255, 255, 0.95));
+    border-bottom: 1px solid var(--border-color, #e2e8f0);
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     z-index: 1000;
-}
-
-.topbar .container {
-    height: 64px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 0 20px;
-}
-
-.topbar {
-    background: #fff;
-    border-bottom: 1px solid var(--line);
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 1000;
+    backdrop-filter: blur(10px);
+    transition: background 0.3s ease;
 }
 
 .topbar .container {
@@ -45,6 +28,8 @@
 
 .brand-name {
     font-weight: 600;
+    color: var(--header-text, #0f172a);
+    transition: color 0.3s ease;
 }
 
 .logo {
@@ -59,26 +44,28 @@
 }
 
 .mainnav a {
-    color: #222;
+    color: var(--header-text, #222);
     text-decoration: none;
     font-size: 14px;
+    transition: color 0.3s ease;
 }
 
 .mainnav a:hover, .login-btn:hover {
-    color: #717171;
+    color: var(--accent-primary, #0b6e4f);
 }
 
 .mainnav a.current {
-    color: #12C9D4;
+    color: var(--accent-primary, #0b6e4f);
     font-weight: bold;
     text-decoration: none;
 }
 
 .login-btn {
-    color: #222;
+    color: var(--header-text, #222);
     text-decoration: none;
     font-size: 14px;
-    font-weight: 400; /* ne pas afficher en gras */
+    font-weight: 400;
+    transition: color 0.3s ease;
 }
 
 .nav-login {
