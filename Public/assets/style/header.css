@@ -35,7 +35,26 @@
 .logo {
     display: block;
     width: 30px;
+    background: transparent;
+    border: none;
+    outline: none;
 }
+
+/* Mode sombre - Option 1: Inverser les couleurs (logo devient blanc) */
+[data-theme="dark"] .logo {
+    filter: brightness(0) invert(1);
+}
+
+/* Mode sombre - Option 2: Si votre logo a déjà de bonnes couleurs pour le mode sombre, utilisez ceci à la place : */
+/* [data-theme="dark"] .logo {
+    mix-blend-mode: screen;
+} */
+
+/* Mode sombre - Option 3: Si le PNG a un fond blanc à enlever : */
+/* [data-theme="dark"] .logo {
+    filter: drop-shadow(0 0 0 transparent);
+    mix-blend-mode: multiply;
+} */
 
 .mainnav {
     display: flex;
