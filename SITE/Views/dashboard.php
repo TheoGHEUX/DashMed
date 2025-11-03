@@ -35,11 +35,11 @@ $pageScripts = [
                 </div>
             </div>
             <div class="resize-handle" style="display: none;"></div>
-            <h2 class="card-title">Tendance de la tension</h2>
+            <h2 class="card-title">Tendance de la tension (mmHg)</h2>
             <canvas id="chart-blood-pressure" width="600" height="200" aria-label="Graphique tension"></canvas>
             <div class="card-footer">
                 <div class="large-value" id="value-bp">-</div>
-                <div class="small-note" id="note-bp">Moyenne dernière semaine</div>
+                <div class="small-note" id="note-bp">mmHg, dernière mesure</div>
             </div>
         </article>
 
@@ -65,7 +65,7 @@ $pageScripts = [
                 </div>
             </div>
             <div class="resize-handle" style="display: none;"></div>
-            <h2 class="card-title">Respiration</h2>
+            <h2 class="card-title">Fréquence respiratoire</h2>
             <canvas id="chart-respiration" width="600" height="200" aria-label="Graphique respiration"></canvas>
             <div class="card-footer">
                 <div class="large-value" id="value-resp">-</div>
@@ -80,7 +80,7 @@ $pageScripts = [
                 </div>
             </div>
             <div class="resize-handle" style="display: none;"></div>
-            <h2 class="card-title">Température</h2>
+            <h2 class="card-title">Température corporelle</h2>
             <canvas id="chart-temperature" width="600" height="200" aria-label="Graphique température"></canvas>
             <div class="card-footer">
                 <div class="large-value" id="value-temp">-</div>
@@ -103,18 +103,33 @@ $pageScripts = [
             </div>
         </article>
 
-        <article class="card chart-card" data-chart-id="activity">
+        <article class="card chart-card" data-chart-id="weight">
             <div class="card-controls">
                 <div class="card-edit-controls" style="display: none;">
                     <button class="btn-remove" aria-label="Supprimer" title="Supprimer">×</button>
                 </div>
             </div>
             <div class="resize-handle" style="display: none;"></div>
-            <h2 class="card-title">Activité (pas)</h2>
-            <canvas id="chart-activity" width="600" height="200" aria-label="Graphique activité"></canvas>
+            <h2 class="card-title">Poids</h2>
+            <canvas id="chart-weight" width="600" height="200" aria-label="Graphique poids"></canvas>
             <div class="card-footer">
-                <div class="large-value" id="value-activity">-</div>
-                <div class="small-note" id="note-activity">Aujourd'hui</div>
+                <div class="large-value" id="value-weight">-</div>
+                <div class="small-note" id="note-weight">kg, dernière mesure</div>
+            </div>
+        </article>
+
+        <article class="card chart-card" data-chart-id="oxygen-saturation">
+            <div class="card-controls">
+                <div class="card-edit-controls" style="display: none;">
+                    <button class="btn-remove" aria-label="Supprimer" title="Supprimer">×</button>
+                </div>
+            </div>
+            <div class="resize-handle" style="display: none;"></div>
+            <h2 class="card-title">Saturation en oxygène</h2>
+            <canvas id="chart-oxygen-saturation" width="600" height="200" aria-label="Graphique saturation oxygène"></canvas>
+            <div class="card-footer">
+                <div class="large-value" id="value-oxygen">-</div>
+                <div class="small-note" id="note-oxygen">%, dernière mesure</div>
             </div>
         </article>
     </section>

@@ -1,25 +1,40 @@
 // Lightweight placeholder charts for the dashboard (multiple clinical types)
+// Pour réinitialiser la configuration et afficher tous les graphiques :
+// Ouvrez la console (F12) et tapez : localStorage.removeItem('dashboardChartConfig'); location.reload();
+// Ou ajoutez ?reset=1 à l'URL du dashboard
+
 document.addEventListener('DOMContentLoaded', () => {
 	const DPR = window.devicePixelRatio || 1;
+	
+	// Reset config if requested via URL parameter
+	const urlParams = new URLSearchParams(window.location.search);
+	if (urlParams.get('reset') === '1') {
+		localStorage.removeItem('dashboardChartConfig');
+		console.log('Configuration réinitialisée');
+		// Remove the reset parameter from URL
+		window.history.replaceState({}, '', window.location.pathname);
+	}
 	
 	// Chart configuration management
 	const CHART_DEFINITIONS = {
 		'blood-pressure': {
-			title: 'Tendance de la tension',
+			title: 'Tendance de la tension (mmHg)',
 			type: 'dual',
-			dataA: [0.7,0.72,0.74,0.73,0.76,0.75,0.74,0.77,0.79,0.78],
-			dataB: [0.5,0.51,0.52,0.5,0.53,0.52,0.51,0.52,0.54,0.53],
+			// Systolique (120-130 mmHg) et Diastolique (70-80 mmHg) - valeurs normalisées entre 0 et 1
+			dataA: [0.68,0.70,0.72,0.71,0.73,0.72,0.71,0.74,0.75,0.73], // Systolique
+			dataB: [0.48,0.50,0.52,0.51,0.53,0.52,0.50,0.52,0.54,0.52], // Diastolique
 			colorA: '#ef4444',
 			colorB: '#0b6e4f',
 			valueId: 'value-bp',
 			noteId: 'note-bp',
 			value: '122/78',
-			note: 'Moyenne dernière semaine'
+			note: 'mmHg, dernière mesure'
 		},
 		'heart-rate': {
 			title: 'Fréquence cardiaque',
 			type: 'area',
-			data: [0.5,0.55,0.53,0.6,0.62,0.58,0.6,0.63,0.59,0.57],
+			// 60-80 BPM (repos) - variations normales
+			data: [0.48,0.52,0.50,0.55,0.58,0.54,0.56,0.60,0.55,0.53],
 			color: '#be185d',
 			valueId: 'value-hr',
 			noteId: 'note-hr',
@@ -27,9 +42,10 @@ document.addEventListener('DOMContentLoaded', () => {
 			note: 'BPM, dernière mesure'
 		},
 		'respiration': {
-			title: 'Respiration',
+			title: 'Fréquence respiratoire',
 			type: 'area',
-			data: [0.4,0.42,0.45,0.43,0.44,0.46,0.45,0.44,0.43,0.42],
+			// 12-20 resp/min (normal adulte) - stable avec légères variations
+			data: [0.40,0.42,0.44,0.43,0.45,0.46,0.44,0.43,0.42,0.44],
 			color: '#0ea5e9',
 			valueId: 'value-resp',
 			noteId: 'note-resp',
@@ -37,11 +53,12 @@ document.addEventListener('DOMContentLoaded', () => {
 			note: 'Resp/min'
 		},
 		'temperature': {
-			title: 'Température',
+			title: 'Température corporelle',
 			type: 'area-threshold',
-			data: [0.45,0.46,0.47,0.48,0.5,0.52,0.51,0.5,0.49,0.48],
+			// 36.1-37.2°C (température normale) - très stable
+			data: [0.46,0.47,0.48,0.49,0.50,0.51,0.50,0.49,0.48,0.49],
 			color: '#f97316',
-			threshold: 0.6,
+			threshold: 0.65, // Seuil de fièvre (38°C+)
 			valueId: 'value-temp',
 			noteId: 'note-temp',
 			value: '36.7',
@@ -50,22 +67,35 @@ document.addEventListener('DOMContentLoaded', () => {
 		'glucose-trend': {
 			title: 'Glycémie (tendance)',
 			type: 'area',
-			data: [0.6,0.58,0.59,0.6,0.62,0.61,0.6,0.59,0.58,0.6],
+			// 4.0-7.0 mmol/L (glycémie à jeun normale) - variations post-repas
+			data: [0.52,0.50,0.54,0.58,0.62,0.60,0.56,0.54,0.52,0.55],
 			color: '#7c3aed',
 			valueId: 'value-glucose-trend',
 			noteId: 'note-glucose',
 			value: '5.9',
 			note: 'mmol/L'
 		},
-		'activity': {
-			title: 'Activité (pas)',
-			type: 'bar',
-			data: [0.3,0.4,0.45,0.5,0.48,0.55,0.6,0.58,0.62,0.65],
-			color: '#059669',
-			valueId: 'value-activity',
-			noteId: 'note-activity',
-			value: '7 432',
-			note: "Aujourd'hui"
+		'weight': {
+			title: 'Poids',
+			type: 'area',
+			// Poids stable avec variations minimes (70-75 kg) - évolution sur plusieurs semaines
+			data: [0.52,0.53,0.54,0.53,0.54,0.55,0.54,0.55,0.56,0.55],
+			color: '#10b981',
+			valueId: 'value-weight',
+			noteId: 'note-weight',
+			value: '72.5',
+			note: 'kg, dernière mesure'
+		},
+		'oxygen-saturation': {
+			title: 'Saturation en oxygène',
+			type: 'area',
+			// 95-100% (saturation normale) - très stable et élevée
+			data: [0.96,0.97,0.98,0.97,0.98,0.99,0.98,0.97,0.98,0.98],
+			color: '#06b6d4',
+			valueId: 'value-oxygen',
+			noteId: 'note-oxygen',
+			value: '98',
+			note: '%, dernière mesure'
 		}
 	};
 	
@@ -304,17 +334,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	// Load and save config from localStorage
 	function loadChartConfig() {
+		// Liste complète de tous les graphiques disponibles
+		const allCharts = ['blood-pressure', 'heart-rate', 'respiration', 'temperature', 'glucose-trend', 'weight', 'oxygen-saturation'];
+		
 		const saved = localStorage.getItem('dashboardChartConfig');
 		if (saved) {
 			try {
-				return JSON.parse(saved);
+				const config = JSON.parse(saved);
+				
+				// Vérifier que tous les graphiques définis existent dans la config
+				// Ajouter les graphiques manquants
+				allCharts.forEach(chartId => {
+					if (!config.visible.includes(chartId)) {
+						config.visible.push(chartId);
+					}
+				});
+				
+				// Supprimer les graphiques qui n'existent plus dans CHART_DEFINITIONS
+				config.visible = config.visible.filter(chartId => allCharts.includes(chartId));
+				
+				return config;
 			} catch (e) {
 				console.error('Failed to parse chart config', e);
 			}
 		}
-		// Default config
+		// Default config - tous les graphiques visibles
 		return {
-			visible: ['blood-pressure', 'heart-rate', 'respiration', 'temperature', 'glucose-trend', 'activity'],
+			visible: allCharts,
 			sizes: {}
 		};
 	}
@@ -328,16 +374,27 @@ document.addEventListener('DOMContentLoaded', () => {
 		const grid = document.getElementById('dashboardGrid');
 		if (!grid) return;
 		
-		// Hide non-visible charts
+		// Parcourir tous les graphiques HTML
 		document.querySelectorAll('.chart-card').forEach(card => {
 			const chartId = card.getAttribute('data-chart-id');
-			if (!chartConfig.visible.includes(chartId)) {
-				card.style.display = 'none';
-			} else {
+			
+			// Vérifier si le graphique existe dans CHART_DEFINITIONS
+			if (!CHART_DEFINITIONS[chartId]) {
+				console.warn(`Graphique ${chartId} non défini dans CHART_DEFINITIONS`);
+				return;
+			}
+			
+			// Vérifier si le graphique est dans la liste visible
+			if (chartConfig.visible.includes(chartId)) {
+				// Afficher le graphique
 				card.style.display = 'block';
+				
 				// Apply column span (default 6 out of 12)
 				const colSpan = chartConfig.sizes[chartId] || 6;
 				card.setAttribute('data-col-span', colSpan);
+			} else {
+				// Masquer le graphique
+				card.style.display = 'none';
 			}
 		});
 	}
@@ -536,7 +593,17 @@ document.addEventListener('DOMContentLoaded', () => {
 	// Initialize chart animations
 	function initializeChart(chartId) {
 		const def = CHART_DEFINITIONS[chartId];
+		if (!def) {
+			console.error(`Graphique ${chartId} non trouvé dans CHART_DEFINITIONS`);
+			return;
+		}
+		
 		const canvasId = 'chart-' + chartId;
+		const canvas = document.getElementById(canvasId);
+		if (!canvas) {
+			console.warn(`Canvas ${canvasId} non trouvé dans le DOM`);
+			return;
+		}
 		
 		if (def.type === 'area') {
 			animateArea(canvasId, def.data, def.color);
@@ -624,9 +691,12 @@ document.addEventListener('DOMContentLoaded', () => {
 	// initial resize
 	resizeAllCanvases();
 
-	// start animations for all visible charts
-	chartConfig.visible.forEach(chartId => {
-		initializeChart(chartId);
+	// start animations for all charts present in the DOM
+	document.querySelectorAll('.chart-card').forEach(card => {
+		const chartId = card.getAttribute('data-chart-id');
+		if (chartId && CHART_DEFINITIONS[chartId]) {
+			initializeChart(chartId);
+		}
 	});
 
 	// resize handler (debounced) to keep canvases crisp when viewport changes
