@@ -1,6 +1,76 @@
 // Lightweight placeholder charts for the dashboard (multiple clinical types)
 document.addEventListener('DOMContentLoaded', () => {
 	const DPR = window.devicePixelRatio || 1;
+	
+	// Chart configuration management
+	const CHART_DEFINITIONS = {
+		'blood-pressure': {
+			title: 'Tendance de la tension',
+			type: 'dual',
+			dataA: [0.7,0.72,0.74,0.73,0.76,0.75,0.74,0.77,0.79,0.78],
+			dataB: [0.5,0.51,0.52,0.5,0.53,0.52,0.51,0.52,0.54,0.53],
+			colorA: '#ef4444',
+			colorB: '#0b6e4f',
+			valueId: 'value-bp',
+			noteId: 'note-bp',
+			value: '122/78',
+			note: 'Moyenne dernière semaine'
+		},
+		'heart-rate': {
+			title: 'Fréquence cardiaque',
+			type: 'area',
+			data: [0.5,0.55,0.53,0.6,0.62,0.58,0.6,0.63,0.59,0.57],
+			color: '#be185d',
+			valueId: 'value-hr',
+			noteId: 'note-hr',
+			value: '72',
+			note: 'BPM, dernière mesure'
+		},
+		'respiration': {
+			title: 'Respiration',
+			type: 'area',
+			data: [0.4,0.42,0.45,0.43,0.44,0.46,0.45,0.44,0.43,0.42],
+			color: '#0ea5e9',
+			valueId: 'value-resp',
+			noteId: 'note-resp',
+			value: '16',
+			note: 'Resp/min'
+		},
+		'temperature': {
+			title: 'Température',
+			type: 'area-threshold',
+			data: [0.45,0.46,0.47,0.48,0.5,0.52,0.51,0.5,0.49,0.48],
+			color: '#f97316',
+			threshold: 0.6,
+			valueId: 'value-temp',
+			noteId: 'note-temp',
+			value: '36.7',
+			note: '°C, dernière mesure'
+		},
+		'glucose-trend': {
+			title: 'Glycémie (tendance)',
+			type: 'area',
+			data: [0.6,0.58,0.59,0.6,0.62,0.61,0.6,0.59,0.58,0.6],
+			color: '#7c3aed',
+			valueId: 'value-glucose-trend',
+			noteId: 'note-glucose',
+			value: '5.9',
+			note: 'mmol/L'
+		},
+		'activity': {
+			title: 'Activité (pas)',
+			type: 'bar',
+			data: [0.3,0.4,0.45,0.5,0.48,0.55,0.6,0.58,0.62,0.65],
+			color: '#059669',
+			valueId: 'value-activity',
+			noteId: 'note-activity',
+			value: '7 432',
+			note: "Aujourd'hui"
+		}
+	};
+	
+	let editMode = false;
+	let chartConfig = loadChartConfig();
 
 	function setupCanvas(canvas) {
 		const rect = canvas.getBoundingClientRect();
@@ -232,26 +302,300 @@ document.addEventListener('DOMContentLoaded', () => {
 		ctx.fill();
 	}
 
+	// Load and save config from localStorage
+	function loadChartConfig() {
+		const saved = localStorage.getItem('dashboardChartConfig');
+		if (saved) {
+			try {
+				return JSON.parse(saved);
+			} catch (e) {
+				console.error('Failed to parse chart config', e);
+			}
+		}
+		// Default config
+		return {
+			visible: ['blood-pressure', 'heart-rate', 'respiration', 'temperature', 'glucose-trend', 'activity'],
+			sizes: {}
+		};
+	}
+	
+	function saveChartConfig() {
+		localStorage.setItem('dashboardChartConfig', JSON.stringify(chartConfig));
+	}
+	
+	// Apply saved configuration
+	function applyChartConfig() {
+		const grid = document.getElementById('dashboardGrid');
+		if (!grid) return;
+		
+		// Hide non-visible charts
+		document.querySelectorAll('.chart-card').forEach(card => {
+			const chartId = card.getAttribute('data-chart-id');
+			if (!chartConfig.visible.includes(chartId)) {
+				card.style.display = 'none';
+			} else {
+				card.style.display = 'block';
+				// Apply column span (default 6 out of 12)
+				const colSpan = chartConfig.sizes[chartId] || 6;
+				card.setAttribute('data-col-span', colSpan);
+			}
+		});
+	}
+	
+	// Toggle edit mode
+	const toggleEditBtn = document.getElementById('toggleEditMode');
+	const addChartPanel = document.getElementById('addChartPanel');
+	
+	if (toggleEditBtn) {
+		toggleEditBtn.addEventListener('click', () => {
+			editMode = !editMode;
+			toggleEditBtn.classList.toggle('active', editMode);
+			
+			if (editMode) {
+				toggleEditBtn.innerHTML = '<span class="icon-edit">✓</span><span class="text-edit">Terminer</span>';
+			} else {
+				toggleEditBtn.innerHTML = '<span class="icon-edit">✎</span><span class="text-edit">Modifier</span>';
+			}
+			
+			// Show/hide edit controls
+			document.querySelectorAll('.card-edit-controls').forEach(controls => {
+				controls.style.display = editMode ? 'flex' : 'none';
+			});
+			
+			// Show/hide resize handles and add edit-mode class
+			document.querySelectorAll('.chart-card').forEach(card => {
+				const handle = card.querySelector('.resize-handle');
+				if (handle) {
+					handle.style.display = editMode ? 'block' : 'none';
+				}
+				if (editMode) {
+					card.classList.add('edit-mode');
+				} else {
+					card.classList.remove('edit-mode');
+				}
+			});
+			
+			// Show/hide add panel
+			if (addChartPanel) {
+				addChartPanel.style.display = editMode ? 'block' : 'none';
+				if (editMode) {
+					updateAvailableCharts();
+				}
+			}
+		});
+	}
+	
+	// Update available charts panel
+	function updateAvailableCharts() {
+		const container = document.getElementById('availableCharts');
+		if (!container) return;
+		
+		container.innerHTML = '';
+		
+		Object.keys(CHART_DEFINITIONS).forEach(chartId => {
+			const isVisible = chartConfig.visible.includes(chartId);
+			const option = document.createElement('div');
+			option.className = 'chart-option' + (isVisible ? ' disabled' : '');
+			option.textContent = CHART_DEFINITIONS[chartId].title;
+			
+			if (!isVisible) {
+				option.addEventListener('click', () => {
+					addChart(chartId);
+				});
+			}
+			
+			container.appendChild(option);
+		});
+	}
+	
+	// Add chart
+	function addChart(chartId) {
+		if (chartConfig.visible.includes(chartId)) return;
+		
+		chartConfig.visible.push(chartId);
+		saveChartConfig();
+		
+		// Show the card
+		const card = document.querySelector(`[data-chart-id="${chartId}"]`);
+		if (card) {
+			card.style.display = 'block';
+			applyChartConfig();
+			initializeChart(chartId);
+		}
+		
+		updateAvailableCharts();
+	}
+	
+	// Remove chart
+	function removeChart(chartId) {
+		const index = chartConfig.visible.indexOf(chartId);
+		if (index > -1) {
+			chartConfig.visible.splice(index, 1);
+			saveChartConfig();
+			applyChartConfig();
+			updateAvailableCharts();
+		}
+	}
+	
+	// Resize chart
+	function resizeChart(chartId, colSpan) {
+		// Clamp between 3 and 12 columns
+		colSpan = Math.max(3, Math.min(12, colSpan));
+		chartConfig.sizes[chartId] = colSpan;
+		
+		const card = document.querySelector(`[data-chart-id="${chartId}"]`);
+		if (card) {
+			card.setAttribute('data-col-span', colSpan);
+		}
+		
+		saveChartConfig();
+		setTimeout(() => resizeAllCanvases(), 50);
+	}
+	
+	// Setup resize handles with smooth dragging
+	function setupResizeHandles() {
+		document.querySelectorAll('.chart-card').forEach(card => {
+			const handle = card.querySelector('.resize-handle');
+			if (!handle) return;
+			
+			const chartId = card.getAttribute('data-chart-id');
+			let isResizing = false;
+			let startX = 0;
+			let startColSpan = 6;
+			
+			handle.addEventListener('mousedown', (e) => {
+				if (!editMode) return;
+				
+				isResizing = true;
+				startX = e.clientX;
+				startColSpan = parseInt(card.getAttribute('data-col-span')) || 6;
+				
+				// Disable transitions during resize
+				card.classList.add('resizing');
+				
+				e.preventDefault();
+				e.stopPropagation();
+				
+				// Change cursor for whole document
+				document.body.style.cursor = 'ew-resize';
+			});
+			
+			const handleMouseMove = (e) => {
+				if (!isResizing) return;
+				
+				// Calculate how much we've moved
+				const grid = document.getElementById('dashboardGrid');
+				const gridRect = grid.getBoundingClientRect();
+				const gridWidth = gridRect.width;
+				
+				// One column width in pixels (including gap)
+				const colWidth = (gridWidth + 18) / 12;
+				
+				const deltaX = e.clientX - startX;
+				const colChange = Math.round(deltaX / colWidth);
+				
+				// Calculate new column span
+				let newColSpan = startColSpan + colChange;
+				newColSpan = Math.max(3, Math.min(12, newColSpan));
+				
+				// Apply immediately for smooth feedback
+				card.setAttribute('data-col-span', newColSpan);
+				
+				// Show size indicator
+				showResizeIndicator(newColSpan);
+				
+				e.preventDefault();
+			};
+			
+			const handleMouseUp = () => {
+				if (!isResizing) return;
+				
+				isResizing = false;
+				document.body.style.cursor = '';
+				
+				// Re-enable transitions
+				card.classList.remove('resizing');
+				
+				// Hide size indicator
+				hideResizeIndicator();
+				
+				// Save the final size
+				const finalColSpan = parseInt(card.getAttribute('data-col-span')) || 6;
+				chartConfig.sizes[chartId] = finalColSpan;
+				saveChartConfig();
+				
+				// Update canvas sizes
+				setTimeout(() => resizeAllCanvases(), 100);
+			};
+			
+			document.addEventListener('mousemove', handleMouseMove);
+			document.addEventListener('mouseup', handleMouseUp);
+		});
+	}
+	
+	// Initialize chart animations
+	function initializeChart(chartId) {
+		const def = CHART_DEFINITIONS[chartId];
+		const canvasId = 'chart-' + chartId;
+		
+		if (def.type === 'area') {
+			animateArea(canvasId, def.data, def.color);
+		} else if (def.type === 'area-threshold') {
+			animateAreaWithThreshold(canvasId, def.data, def.color, def.threshold);
+		} else if (def.type === 'bar') {
+			animateBarChart(canvasId, def.data, def.color);
+		} else if (def.type === 'dual') {
+			animateDualLineChart(canvasId, def.dataA, def.dataB, def.colorA, def.colorB);
+		}
+	}
+	
+	// Resize indicator functions
+	let resizeIndicator = null;
+	
+	function showResizeIndicator(colSpan) {
+		if (!resizeIndicator) {
+			resizeIndicator = document.createElement('div');
+			resizeIndicator.className = 'resize-indicator';
+			document.body.appendChild(resizeIndicator);
+		}
+		
+		const percentage = Math.round((colSpan / 12) * 100);
+		resizeIndicator.textContent = `${percentage}% (${colSpan}/12)`;
+		resizeIndicator.style.display = 'block';
+	}
+	
+	function hideResizeIndicator() {
+		if (resizeIndicator) {
+			resizeIndicator.style.display = 'none';
+		}
+	}
+	
+	// Setup event listeners for remove buttons
+	document.querySelectorAll('.chart-card').forEach(card => {
+		const chartId = card.getAttribute('data-chart-id');
+		
+		// Remove button
+		const removeBtn = card.querySelector('.btn-remove');
+		if (removeBtn) {
+			removeBtn.addEventListener('click', () => {
+				if (confirm('Voulez-vous vraiment supprimer ce graphique ?')) {
+					removeChart(chartId);
+				}
+			});
+		}
+	});
+	
+	// Setup resize handles
+	setupResizeHandles();
+	
 	// Populate sample numeric values under each chart
-	const sampleValues = {
-		'value-bp': '122/78',
-		'value-hr': '72',
-		'value-resp': '16',
-		'value-temp': '36.7',
-		'value-glucose-trend': '5.9',
-		'value-activity': '7 432'
-	};
-	Object.keys(sampleValues).forEach(id => { const el = document.getElementById(id); if (el) el.textContent = sampleValues[id]; });
-
-	// datasets (normalized 0..1) and type mapping
-	const charts = {
-		'chart-blood-pressure': {type: 'dual', dataA: [0.7,0.72,0.74,0.73,0.76,0.75,0.74,0.77,0.79,0.78], dataB: [0.5,0.51,0.52,0.5,0.53,0.52,0.51,0.52,0.54,0.53], colorA: '#ef4444', colorB: '#0b6e4f'},
-		'chart-heart-rate': {type: 'area', data: [0.5,0.55,0.53,0.6,0.62,0.58,0.6,0.63,0.59,0.57], color: '#be185d'},
-		'chart-respiration': {type: 'area', data: [0.4,0.42,0.45,0.43,0.44,0.46,0.45,0.44,0.43,0.42], color: '#0ea5e9'},
-		'chart-temperature': {type: 'area-threshold', data: [0.45,0.46,0.47,0.48,0.5,0.52,0.51,0.5,0.49,0.48], color: '#f97316', threshold: 0.6},
-		'chart-glucose-trend': {type: 'area', data: [0.6,0.58,0.59,0.6,0.62,0.61,0.6,0.59,0.58,0.6], color: '#7c3aed'},
-		'chart-activity': {type: 'bar', data: [0.3,0.4,0.45,0.5,0.48,0.55,0.6,0.58,0.62,0.65], color: '#059669'}
-	};
+	Object.keys(CHART_DEFINITIONS).forEach(chartId => {
+		const def = CHART_DEFINITIONS[chartId];
+		const valueEl = document.getElementById(def.valueId);
+		const noteEl = document.getElementById(def.noteId);
+		if (valueEl) valueEl.textContent = def.value;
+		if (noteEl) noteEl.textContent = def.note;
+	});
 
 	// Ensure canvases are sized correctly on load and when window resizes
 	function resizeAllCanvases() {
@@ -274,35 +618,20 @@ document.addEventListener('DOMContentLoaded', () => {
 		};
 	}
 
+	// Apply saved configuration
+	applyChartConfig();
+	
 	// initial resize
 	resizeAllCanvases();
 
-	// start animations for each chart type
-	Object.keys(charts).forEach(id => {
-		const cfg = charts[id];
-		if (cfg.type === 'area') animateArea(id, cfg.data, cfg.color);
-		else if (cfg.type === 'area-threshold') animateAreaWithThreshold(id, cfg.data, cfg.color, cfg.threshold);
-		else if (cfg.type === 'spark') animateSparkline(id, cfg.data, cfg.color);
-		else if (cfg.type === 'bar') animateBarChart(id, cfg.data, cfg.color);
-		else if (cfg.type === 'donut') animateDonut(id, cfg.value, cfg.color);
-		else if (cfg.type === 'gauge') animateGauge(id, cfg.value, cfg.color);
-		else if (cfg.type === 'dual') animateDualLineChart(id, cfg.dataA, cfg.dataB, cfg.colorA, cfg.colorB);
+	// start animations for all visible charts
+	chartConfig.visible.forEach(chartId => {
+		initializeChart(chartId);
 	});
 
 	// resize handler (debounced) to keep canvases crisp when viewport changes
 	window.addEventListener('resize', debounce(() => {
 		resizeAllCanvases();
 	}, 150));
-
-	// Expand/restore handlers for each card
-	document.querySelectorAll('.card-expand').forEach(btn => {
-		btn.addEventListener('click', (e) => {
-			const card = e.currentTarget.closest('.card');
-			if (!card) return;
-			card.classList.toggle('expanded');
-			// update canvases sizes after layout change
-			setTimeout(() => resizeAllCanvases(), 80);
-		});
-	});
 });
 
