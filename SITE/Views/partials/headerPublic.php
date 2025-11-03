@@ -20,8 +20,8 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         </nav>
         <!-- Dark mode toggle -->
         <button class="dark-mode-toggle" id="darkModeToggle" aria-label="Activer le mode sombre" title="Mode sombre">
-            <span class="icon-sun">☀️</span>
-            <span class="icon-moon">🌙</span>
+            <span class="icon-sun"></span>
+            <span class="icon-moon"></span>
         </button>
 
         <!-- Bouton de connexion visible sur desktop (masqu\u00e9 sur mobile via CSS) -->
