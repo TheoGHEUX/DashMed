@@ -41,16 +41,55 @@
     padding: 24px 16px 60px;
 }
 
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
 .page-title {
     font-size: 1.6rem;
-    margin: 0 0 18px 0;
+    margin: 0;
     color: #0f172a;
     font-weight: 600;
 }
 
+.btn-edit-mode {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: #0b6e4f;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-edit-mode:hover {
+    background: #0a5d42;
+    transform: translateY(-1px);
+}
+
+.btn-edit-mode.active {
+    background: #ef4444;
+}
+
+.btn-edit-mode.active:hover {
+    background: #dc2626;
+}
+
+.icon-edit {
+    font-size: 1.1rem;
+}
+
 .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(12, 1fr);
     gap: 18px;
     align-items: start;
 }
@@ -63,37 +102,148 @@
     box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
 }
 
-.card { position: relative; }
-.card-expand {
+.card { 
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    grid-column: span 6;
+    min-height: 280px;
+}
+
+.card.resizing {
+    transition: none;
+}
+
+.card.edit-mode {
+    border: 2px dashed #0b6e4f;
+}
+
+.card.edit-mode:hover {
+    border-color: #0a5d42;
+}
+
+.card[data-col-span="3"] {
+    grid-column: span 3;
+}
+
+.card[data-col-span="4"] {
+    grid-column: span 4;
+}
+
+.card[data-col-span="5"] {
+    grid-column: span 5;
+}
+
+.card[data-col-span="6"] {
+    grid-column: span 6;
+}
+
+.card[data-col-span="7"] {
+    grid-column: span 7;
+}
+
+.card[data-col-span="8"] {
+    grid-column: span 8;
+}
+
+.card[data-col-span="9"] {
+    grid-column: span 9;
+}
+
+.card[data-col-span="10"] {
+    grid-column: span 10;
+}
+
+.card[data-col-span="11"] {
+    grid-column: span 11;
+}
+
+.card[data-col-span="12"] {
+    grid-column: span 12;
+}
+
+.resize-handle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 30px;
+    height: 30px;
+    cursor: ew-resize;
+    background: #0b6e4f;
+    border-top-left-radius: 8px;
+    border-bottom-right-radius: 12px;
+    opacity: 0.7;
+    transition: all 0.2s ease;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.resize-handle::before {
+    content: '⇄';
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.resize-handle:hover {
+    opacity: 1;
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(11, 110, 79, 0.3);
+}
+
+.resize-indicator {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(11, 110, 79, 0.95);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    z-index: 9999;
+    pointer-events: none;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.card-controls {
     position: absolute;
     top: 8px;
     right: 8px;
-    width: 34px;
-    height: 34px;
-    border: none;
-    background: rgba(15,23,42,0.04);
-    color: #0f172a;
-    border-radius: 6px;
+    display: flex;
+    gap: 6px;
+    z-index: 10;
+}
+
+.card-edit-controls {
+    display: flex;
+    gap: 4px;
+    background: rgba(255,255,255,0.95);
+    padding: 4px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.btn-remove {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #fecaca;
+    background: white;
+    color: #ef4444;
+    border-radius: 5px;
     cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
+    font-size: 1.3rem;
+    font-weight: 400;
+    line-height: 1;
+    transition: all 0.2s ease;
 }
 
-.card.expanded {
-    position: fixed;
-    z-index: 1200;
-    top: 6vh;
-    left: 6vw;
-    width: 88vw;
-    height: 80vh;
-    overflow: auto;
-    padding: 18px;
-    border-radius: 10px;
+.btn-remove:hover {
+    background: #ef4444;
+    color: white;
 }
-
-.card.expanded canvas { height: 60vh !important; }
 
 .card-title {
     font-size: 1rem;
@@ -105,6 +255,7 @@
 .chart-card canvas {
     width: 100%;
     height: auto;
+    min-height: 200px;
     display: block;
     border-radius: 8px;
     background: linear-gradient(180deg, #fbfdff 0%, #f7fbff 100%);
@@ -170,6 +321,56 @@
     font-size: 0.95rem;
 }
 
+/* Add chart panel */
+.add-chart-panel {
+    margin-top: 20px;
+    padding: 20px;
+    background: white;
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+}
+
+.add-chart-panel h3 {
+    margin: 0 0 16px 0;
+    color: #0f172a;
+    font-size: 1.1rem;
+}
+
+.available-charts {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.chart-option {
+    padding: 14px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.chart-option:hover {
+    background: #0b6e4f;
+    color: white;
+    border-color: #0b6e4f;
+    transform: translateY(-2px);
+}
+
+.chart-option.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f1f5f9;
+}
+
+.chart-option.disabled:hover {
+    background: #f1f5f9;
+    color: inherit;
+    transform: none;
+}
+
 @media (max-width: 1100px) {
     .dashboard-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -180,9 +381,38 @@
     .dashboard-grid {
         grid-template-columns: 1fr;
     }
+    
+    .card,
+    .card[data-col-span] {
+        grid-column: span 1 !important;
+    }
 
     .chart-card canvas {
         height: 160px !important;
+    }
+    
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .btn-edit-mode {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .available-charts {
+        grid-template-columns: 1fr;
+    }
+    
+    .card-controls {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .resize-handle {
+        display: none !important;
     }
 }
 
