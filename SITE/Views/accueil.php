@@ -80,52 +80,6 @@ $activites = [
                 </a>
             </div>
         </section>
-
-        <!-- Grille principale -->
-        <section class="planning-section">
-            <?php
-            // Traduction des jours et mois en français
-            $jours = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
-            $mois = ['', 'janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
-            $jour_semaine = $jours[date('w')];
-            $jour_mois = date('j');
-            $mois_nom = $mois[date('n')];
-            $annee = date('Y');
-            ?>
-            <div class="planning-header">
-                <h2>Mon planning - <?= $jour_semaine . ' ' . $jour_mois . ' ' . $mois_nom . ' ' . $annee ?></h2>
-                <button class="btn-modifier" onclick="alert('Fonction de modification disponible bientôt')">
-                    Modifier
-                </button>
-            </div>
-            <div class="planning-grid">
-                <div class="creneau">
-                    <span class="heure">09:00</span>
-                    <span class="patient">Sebastien Floret</span>
-                    <span class="type">Consultation</span>
-                </div>
-                <div class="creneau">
-                    <span class="heure">10:30</span>
-                    <span class="patient">Jessica Bovagnet </span>
-                    <span class="type">Suivi</span>
-                </div>
-                <div class="creneau urgent">
-                    <span class="heure">14:00</span>
-                    <span class="patient">Hugho Luron</span>
-                    <span class="type">Urgence</span>
-                </div>
-                <div class="creneau libre">
-                    <span class="heure">15:30</span>
-                    <span class="patient">Disponible</span>
-                    <span class="type">—</span>
-                </div>
-                <div class="creneau libre">
-                    <span class="heure">16:00</span>
-                    <span class="patient">Disponible</span>
-                    <span class="type">—</span>
-                </div>
-            </div>
-        </section>
     </div>
 </main>
 
