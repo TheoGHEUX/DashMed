@@ -1,0 +1,252 @@
+/* ===========================
+   DARK MODE STYLES
+   =========================== */
+
+/* Light mode variables (default) */
+:root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --bg-tertiary: #f1f5f9;
+    --bg-card: #ffffff;
+    
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-tertiary: #64748b;
+    
+    --border-color: #e2e8f0;
+    --border-light: #e6eef8;
+    
+    --accent-primary: #0b6e4f;
+    --accent-hover: #0a5d42;
+    --accent-light: rgba(11, 110, 79, 0.1);
+    
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+    --shadow-lg: 0 6px 18px rgba(15, 23, 42, 0.04);
+    
+    --input-bg: #ffffff;
+    --input-border: #cbd5e1;
+    --input-focus: #0b6e4f;
+    
+    --header-bg: rgba(255, 255, 255, 0.95);
+    --header-text: #0f172a;
+    
+    --footer-bg: rgba(255, 255, 255, 0.95);
+    --footer-text: #0f172a;
+}
+
+/* Dark mode variables */
+[data-theme="dark"] {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-tertiary: #334155;
+    --bg-card: #1e293b;
+    
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-tertiary: #94a3b8;
+    
+    --border-color: #334155;
+    --border-light: #475569;
+    
+    --accent-primary: #10b981;
+    --accent-hover: #059669;
+    --accent-light: rgba(16, 185, 129, 0.15);
+    
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 6px 18px rgba(0, 0, 0, 0.5);
+    
+    --input-bg: #1e293b;
+    --input-border: #475569;
+    --input-focus: #10b981;
+    
+    --header-bg: rgba(15, 23, 42, 0.95);
+    --header-text: #f1f5f9;
+    
+    --footer-bg: rgba(15, 23, 42, 0.95);
+    --footer-text: #f1f5f9;
+}
+
+/* Apply variables to common elements */
+body {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Dark mode toggle button */
+.dark-mode-toggle {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    margin-right: 12px;
+}
+
+.dark-mode-toggle:hover {
+    background: var(--accent-light);
+    border-color: var(--accent-primary);
+    transform: scale(1.05);
+}
+
+.dark-mode-toggle .icon-sun,
+.dark-mode-toggle .icon-moon {
+    font-size: 20px;
+    transition: all 0.3s ease;
+    position: absolute;
+    filter: grayscale(1);
+}
+
+.dark-mode-toggle .icon-sun::before {
+    content: "☀";
+    color: var(--text-primary);
+}
+
+.dark-mode-toggle .icon-moon::before {
+    content: "🌙";
+    color: var(--text-primary);
+}
+
+.dark-mode-toggle .icon-sun {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+}
+
+.dark-mode-toggle .icon-moon {
+    opacity: 0;
+    transform: rotate(180deg) scale(0);
+}
+
+[data-theme="dark"] .dark-mode-toggle .icon-sun {
+    opacity: 0;
+    transform: rotate(-180deg) scale(0);
+}
+
+[data-theme="dark"] .dark-mode-toggle .icon-moon {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+}
+
+/* Header dark mode */
+.topbar {
+    background: var(--header-bg);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.brand-name,
+.mainnav a {
+    color: var(--header-text) !important;
+}
+
+.mainnav a:hover {
+    color: var(--accent-primary) !important;
+}
+
+/* Cards */
+.card {
+    background: var(--bg-card);
+    border-color: var(--border-light);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Inputs */
+input,
+textarea,
+select {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text-primary);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--input-focus);
+    background-color: var(--input-bg);
+}
+
+/* Buttons */
+.btn-edit-mode {
+    background: var(--accent-primary);
+    color: white;
+}
+
+.btn-edit-mode:hover {
+    background: var(--accent-hover);
+}
+
+/* Footer */
+footer,
+.footer {
+    background: var(--footer-bg);
+    color: var(--footer-text);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--border-color);
+}
+
+footer a,
+.footer a {
+    color: var(--footer-text);
+}
+
+/* Dashboard specific */
+.page-title {
+    color: var(--text-primary);
+}
+
+.card-title {
+    color: var(--text-primary);
+}
+
+.large-value {
+    color: var(--text-primary);
+}
+
+.small-note {
+    color: var(--text-secondary);
+}
+
+/* Chart options */
+.chart-option {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.chart-option:hover {
+    background: var(--accent-primary);
+    color: white;
+    border-color: var(--accent-primary);
+}
+
+/* Add chart panel */
+.add-chart-panel {
+    background: var(--bg-card);
+    border-color: var(--border-color);
+}
+
+.add-chart-panel h3 {
+    color: var(--text-primary);
+}
+
+/* Canvas backgrounds (for charts to be visible in dark mode) */
+[data-theme="dark"] canvas {
+    background: transparent;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .dark-mode-toggle {
+        order: -1;
+        margin-right: 8px;
+    }
+}
