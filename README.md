@@ -56,3 +56,7 @@ Pour toute question ou demande : dashmed-site@alwaysdata.net
 ---
 
 Projet développé dans le cadre de notre formation. Made with ♥ by Team DashMed.
+
+# Fichiers concernant la base de données :
+
+Pour des raisons de sécurité, afin d'assurer la confidentialité des données, tous les fichiers concernant la base de données (scripts, protocoles de générations de données etc...) sont stockés ailleurs et accessibles par tous les membres du projet.
