@@ -414,11 +414,6 @@ document.addEventListener('DOMContentLoaded', () => {
 				toggleEditBtn.innerHTML = '<span class="icon-edit">✎</span><span class="text-edit">Modifier</span>';
 			}
 			
-			// Show/hide edit controls
-			document.querySelectorAll('.card-edit-controls').forEach(controls => {
-				controls.style.display = editMode ? 'flex' : 'none';
-			});
-			
 			// Show/hide resize handles and add edit-mode class
 			document.querySelectorAll('.chart-card').forEach(card => {
 				const handle = card.querySelector('.resize-handle');
@@ -427,8 +422,10 @@ document.addEventListener('DOMContentLoaded', () => {
 				}
 				if (editMode) {
 					card.classList.add('edit-mode');
+					setupChartDrag(card);
 				} else {
 					card.classList.remove('edit-mode');
+					card.draggable = false;
 				}
 			});
 			
@@ -440,6 +437,174 @@ document.addEventListener('DOMContentLoaded', () => {
 				}
 			}
 		});
+	}
+	
+	// Auto-scroll variables
+	let autoScrollInterval = null;
+	
+	// Setup drag functionality for chart cards
+	function setupChartDrag(card) {
+		card.draggable = true;
+		card.style.cursor = 'grab';
+		
+		card.addEventListener('dragstart', (e) => {
+			const chartId = card.getAttribute('data-chart-id');
+			e.dataTransfer.effectAllowed = 'move';
+			e.dataTransfer.setData('text/plain', chartId);
+			e.dataTransfer.setData('source', 'chart-card');
+			card.classList.add('dragging');
+			startAutoScroll();
+		});
+		
+		card.addEventListener('dragend', (e) => {
+			card.classList.remove('dragging');
+			stopAutoScroll();
+		});
+		
+		// Setup drop zones on cards for reordering
+		card.addEventListener('dragover', (e) => {
+			if (!editMode) return;
+			const dragging = document.querySelector('.dragging');
+			if (!dragging || dragging === card) return;
+			
+			e.preventDefault();
+			e.dataTransfer.dropEffect = 'move';
+			
+			// Determine if we should insert before or after based on mouse position
+			const rect = card.getBoundingClientRect();
+			const midY = rect.top + rect.height / 2;
+			const midX = rect.left + rect.width / 2;
+			
+			// For grid layout, check both X and Y position
+			if (e.clientY < midY) {
+				card.classList.add('drop-before');
+				card.classList.remove('drop-after');
+			} else {
+				card.classList.add('drop-after');
+				card.classList.remove('drop-before');
+			}
+		});
+		
+		card.addEventListener('dragleave', (e) => {
+			// Only remove if we're actually leaving the card
+			if (!card.contains(e.relatedTarget)) {
+				card.classList.remove('drop-before', 'drop-after');
+			}
+		});
+		
+		card.addEventListener('drop', (e) => {
+			e.preventDefault();
+			card.classList.remove('drop-before', 'drop-after');
+			
+			const source = e.dataTransfer.getData('source');
+			if (source !== 'chart-card') return;
+			
+			const draggedId = e.dataTransfer.getData('text/plain');
+			const targetId = card.getAttribute('data-chart-id');
+			
+			if (draggedId === targetId) return;
+			
+			// Reorder in the visible array
+			const draggedIndex = chartConfig.visible.indexOf(draggedId);
+			const targetIndex = chartConfig.visible.indexOf(targetId);
+			
+			if (draggedIndex === -1 || targetIndex === -1) return;
+			
+			// Remove from old position
+			chartConfig.visible.splice(draggedIndex, 1);
+			
+			// Insert at new position
+			const newTargetIndex = chartConfig.visible.indexOf(targetId);
+			const rect = card.getBoundingClientRect();
+			const midY = rect.top + rect.height / 2;
+			
+			if (e.clientY < midY) {
+				// Insert before
+				chartConfig.visible.splice(newTargetIndex, 0, draggedId);
+			} else {
+				// Insert after
+				chartConfig.visible.splice(newTargetIndex + 1, 0, draggedId);
+			}
+			
+			saveChartConfig();
+			reorderChartsInDOM();
+		});
+	}
+	
+	// Reorder charts in the DOM based on the visible array order
+	function reorderChartsInDOM() {
+		const dashboardGrid = document.getElementById('dashboardGrid');
+		if (!dashboardGrid) return;
+		
+		// Get all chart cards
+		const cards = Array.from(document.querySelectorAll('.chart-card'));
+		
+		// Sort cards based on their position in chartConfig.visible
+		cards.sort((a, b) => {
+			const aId = a.getAttribute('data-chart-id');
+			const bId = b.getAttribute('data-chart-id');
+			const aIndex = chartConfig.visible.indexOf(aId);
+			const bIndex = chartConfig.visible.indexOf(bId);
+			
+			// Hidden charts go to the end
+			if (aIndex === -1) return 1;
+			if (bIndex === -1) return -1;
+			
+			return aIndex - bIndex;
+		});
+		
+		// Reappend cards in the new order
+		cards.forEach(card => {
+			dashboardGrid.appendChild(card);
+		});
+	}
+	
+	// Auto-scroll functionality when dragging near edges
+	let lastMouseY = 0;
+	
+	function startAutoScroll() {
+		// Track mouse position during drag
+		document.addEventListener('dragover', handleDragScroll);
+	}
+	
+	function stopAutoScroll() {
+		document.removeEventListener('dragover', handleDragScroll);
+		if (autoScrollInterval) {
+			clearInterval(autoScrollInterval);
+			autoScrollInterval = null;
+		}
+	}
+	
+	function handleDragScroll(e) {
+		lastMouseY = e.clientY;
+		const scrollThreshold = 100; // pixels from edge to trigger scroll
+		const scrollSpeed = 15; // pixels per interval
+		const viewportHeight = window.innerHeight;
+		
+		// Clear existing interval
+		if (autoScrollInterval) {
+			clearInterval(autoScrollInterval);
+			autoScrollInterval = null;
+		}
+		
+		// Scroll up if near top
+		if (e.clientY < scrollThreshold) {
+			autoScrollInterval = setInterval(() => {
+				window.scrollBy({
+					top: -scrollSpeed,
+					behavior: 'auto'
+				});
+			}, 16); // ~60fps
+		}
+		// Scroll down if near bottom
+		else if (e.clientY > viewportHeight - scrollThreshold) {
+			autoScrollInterval = setInterval(() => {
+				window.scrollBy({
+					top: scrollSpeed,
+					behavior: 'auto'
+				});
+			}, 16); // ~60fps
+		}
 	}
 	
 	// Update available charts panel
@@ -454,8 +619,27 @@ document.addEventListener('DOMContentLoaded', () => {
 			const option = document.createElement('div');
 			option.className = 'chart-option' + (isVisible ? ' disabled' : '');
 			option.textContent = CHART_DEFINITIONS[chartId].title;
+			option.setAttribute('data-chart-id', chartId);
 			
 			if (!isVisible) {
+				// Drag & Drop functionality
+				option.draggable = true;
+				option.style.cursor = 'grab';
+				
+				option.addEventListener('dragstart', (e) => {
+					e.dataTransfer.effectAllowed = 'move';
+					e.dataTransfer.setData('text/plain', chartId);
+					e.dataTransfer.setData('source', 'chart-option');
+					option.style.opacity = '0.5';
+					option.style.cursor = 'grabbing';
+				});
+				
+				option.addEventListener('dragend', (e) => {
+					option.style.opacity = '1';
+					option.style.cursor = 'grab';
+				});
+				
+				// Keep click functionality as fallback
 				option.addEventListener('click', () => {
 					addChart(chartId);
 				});
@@ -477,7 +661,13 @@ document.addEventListener('DOMContentLoaded', () => {
 		if (card) {
 			card.style.display = 'block';
 			applyChartConfig();
+			reorderChartsInDOM();
 			initializeChart(chartId);
+			
+			// Setup drag for the newly added chart if in edit mode
+			if (editMode) {
+				setupChartDrag(card);
+			}
 		}
 		
 		updateAvailableCharts();
@@ -637,23 +827,70 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 	}
 	
-	// Setup event listeners for remove buttons
-	document.querySelectorAll('.chart-card').forEach(card => {
-		const chartId = card.getAttribute('data-chart-id');
-		
-		// Remove button
-		const removeBtn = card.querySelector('.btn-remove');
-		if (removeBtn) {
-			removeBtn.addEventListener('click', () => {
-				if (confirm('Voulez-vous vraiment supprimer ce graphique ?')) {
-					removeChart(chartId);
-				}
-			});
-		}
-	});
-	
 	// Setup resize handles
 	setupResizeHandles();
+	
+	// Setup drag & drop zone for the dashboard grid
+	const dashboardGrid = document.getElementById('dashboardGrid');
+	if (dashboardGrid) {
+		dashboardGrid.addEventListener('dragover', (e) => {
+			if (!editMode) return;
+			e.preventDefault();
+			e.dataTransfer.dropEffect = 'move';
+			dashboardGrid.classList.add('drag-over');
+		});
+		
+		dashboardGrid.addEventListener('dragleave', (e) => {
+			if (e.target === dashboardGrid) {
+				dashboardGrid.classList.remove('drag-over');
+			}
+		});
+		
+		dashboardGrid.addEventListener('drop', (e) => {
+			e.preventDefault();
+			dashboardGrid.classList.remove('drag-over');
+			
+			const chartId = e.dataTransfer.getData('text/plain');
+			const source = e.dataTransfer.getData('source');
+			
+			// Only add if it's from chart-option panel (not from moving within grid)
+			if (source === 'chart-option' && chartId && !chartConfig.visible.includes(chartId)) {
+				addChart(chartId);
+			}
+		});
+	}
+	
+	// Setup drop zone for deleting charts
+	if (addChartPanel) {
+		addChartPanel.addEventListener('dragover', (e) => {
+			if (!editMode) return;
+			const source = e.dataTransfer.types.includes('source');
+			if (source) {
+				e.preventDefault();
+				e.dataTransfer.dropEffect = 'move';
+				addChartPanel.classList.add('delete-zone-active');
+			}
+		});
+		
+		addChartPanel.addEventListener('dragleave', (e) => {
+			if (e.target === addChartPanel || !addChartPanel.contains(e.relatedTarget)) {
+				addChartPanel.classList.remove('delete-zone-active');
+			}
+		});
+		
+		addChartPanel.addEventListener('drop', (e) => {
+			e.preventDefault();
+			addChartPanel.classList.remove('delete-zone-active');
+			
+			const chartId = e.dataTransfer.getData('text/plain');
+			const source = e.dataTransfer.getData('source');
+			
+			// Only delete if it's from a chart card
+			if (source === 'chart-card' && chartId && chartConfig.visible.includes(chartId)) {
+				removeChart(chartId);
+			}
+		});
+	}
 	
 	// Populate sample numeric values under each chart
 	Object.keys(CHART_DEFINITIONS).forEach(chartId => {
@@ -687,6 +924,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	// Apply saved configuration
 	applyChartConfig();
+	
+	// Reorder charts in DOM based on saved order
+	reorderChartsInDOM();
 	
 	// initial resize
 	resizeAllCanvases();

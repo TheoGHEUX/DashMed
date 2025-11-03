@@ -90,7 +90,7 @@
 .dashboard-grid {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
-    gap: 18px;
+    gap: 28px;
     align-items: start;
 }
 
@@ -106,7 +106,7 @@
     position: relative;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     grid-column: span 6;
-    min-height: 280px;
+    min-height: 300px;
 }
 
 .card.resizing {
@@ -115,10 +115,34 @@
 
 .card.edit-mode {
     border: 2px dashed #0b6e4f;
+    cursor: grab;
+    user-select: none;
 }
 
 .card.edit-mode:hover {
     border-color: #0a5d42;
+    box-shadow: 0 4px 12px rgba(11, 110, 79, 0.2);
+}
+
+.card.edit-mode:active {
+    cursor: grabbing;
+}
+
+.card.dragging {
+    opacity: 0.4;
+    cursor: grabbing !important;
+}
+
+.card.drop-before {
+    border-top: 4px solid #0b6e4f;
+    border-top-style: solid;
+    margin-top: 4px;
+}
+
+.card.drop-after {
+    border-bottom: 4px solid #0b6e4f;
+    border-bottom-style: solid;
+    margin-bottom: 4px;
 }
 
 .card[data-col-span="3"] {
@@ -328,12 +352,31 @@
     background: white;
     border: 2px dashed #cbd5e1;
     border-radius: 12px;
+    transition: all 0.3s ease;
 }
 
 .add-chart-panel h3 {
     margin: 0 0 16px 0;
     color: #0f172a;
     font-size: 1.1rem;
+    transition: all 0.3s ease;
+}
+
+/* Delete zone when dragging a chart */
+.add-chart-panel.delete-zone-active {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.05));
+    border: 3px dashed #ef4444;
+    border-color: #ef4444;
+    transform: scale(1.02);
+}
+
+.add-chart-panel.delete-zone-active h3::before {
+    content: '🗑️ ';
+    font-size: 1.2rem;
+}
+
+.add-chart-panel.delete-zone-active h3 {
+    color: #dc2626;
 }
 
 .available-charts {
@@ -347,9 +390,14 @@
     background: #f8fafc;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
-    cursor: pointer;
+    cursor: grab;
     transition: all 0.2s ease;
     text-align: center;
+    user-select: none;
+}
+
+.chart-option:active {
+    cursor: grabbing;
 }
 
 .chart-option:hover {
@@ -369,6 +417,14 @@
     background: #f1f5f9;
     color: inherit;
     transform: none;
+}
+
+/* Drag & drop zone styling */
+.dashboard-grid.drag-over {
+    outline: 3px dashed #0b6e4f;
+    outline-offset: 8px;
+    background: rgba(11, 110, 79, 0.05);
+    border-radius: 12px;
 }
 
 @media (max-width: 1100px) {
