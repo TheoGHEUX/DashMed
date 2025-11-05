@@ -1,8 +1,22 @@
 <?php
 namespace Core;
 
+/**
+ * Classe utilitaire pour l'envoi d'e-mails (templates simples HTML).
+ *
+ * En environnement de développement où mail() peut échouer, un fallback écrit
+ * le message dans `SITE/storage/mails` afin de conserver une trace.
+ */
 final class Mailer
 {
+    /**
+     * Envoie un email de bienvenue après inscription.
+     *
+     * @param string $to Destinataire
+     * @param string $name Nom affiché du destinataire
+     * @param string|null $from Adresse expéditeur optionnelle
+     * @return bool Vrai si l'envoi (ou le fallback) a réussi
+     */
     public static function sendRegistrationEmail(string $to, string $name, ?string $from = null): bool
     {
         $from = $from ?: 'dashmed-site@alwaysdata.net';
@@ -28,7 +42,12 @@ final class Mailer
     }
 
     /**
-     * Envoie un email de vérification avec le lien contenant le token
+     * Envoie l'email de vérification contenant le lien avec le token.
+     *
+     * @param string $to Destinataire
+     * @param string $name Nom affiché
+     * @param string $verificationToken Token de vérification
+     * @return bool
      */
     public static function sendEmailVerification(string $to, string $name, string $verificationToken): bool
     {
@@ -70,10 +89,17 @@ final class Mailer
         return self::send($to, $subject, $body, $headers, $from);
     }
 
-    //envoie mail pour reset mdp
+    /**
+     * Envoie un email de réinitialisation de mot de passe.
+     *
+     * @param string $to Destinataire
+     * @param string $displayName Nom affiché
+     * @param string $resetUrl URL de réinitialisation
+     * @return bool
+     */
     public static function sendPasswordResetEmail(string $to, string $displayName, string $resetUrl): bool
     {
-        $from = 'dashmed-site@alwaysdata.net'; // adapte à ton domaine
+        $from = 'dashmed-site@alwaysdata.net';
         $subject = 'Réinitialisation de votre mot de passe';
         $headers = [
             'From: DashMed <' . $from . '>',
@@ -96,40 +122,50 @@ final class Mailer
     }
 
     /**
-     * Envoi centralisé: tente mail() avec les bons paramètres suivant l'OS.
-     * Si indisponible (cas courant sous XAMPP/Windows) ou en échec, écrit un fichier .eml dans SITE/storage/mails
-     * et retourne true pour débloquer les parcours en dev.
+     * Envoi centralisé : tente mail() puis fallback vers un fichier .eml si nécessaire.
+     *
+     * @param string $to
+     * @param string $subject
+     * @param string $htmlBody
+     * @param array $headers
+     * @param string $from
+     * @return bool
      */
     private static function send(string $to, string $subject, string $htmlBody, array $headers, string $from): bool
     {
         $headersStr = implode("\r\n", $headers);
 
-        // Sous Windows, le 5e paramètre (-f) n'est pas supporté
         $isWindows = (PHP_OS_FAMILY === 'Windows');
 
         $ok = false;
         if ($isWindows) {
-            // Essayer sans paramètre supplémentaire
             $ok = @mail($to, $subject, $htmlBody, $headersStr);
         } else {
-            // Sur Unix/Linux, on peut préciser l'enveloppe expéditeur
             $ok = @mail($to, $subject, $htmlBody, $headersStr, '-f ' . $from);
         }
 
         if (!$ok) {
-            // Fallback dev: écrire dans un fichier .eml
             $fileOk = self::writeMailToFile($to, $from, $subject, $headers, $htmlBody);
             error_log(sprintf('[MAIL][FALLBACK->FILE] to=%s from=%s subject="%s" saved=%s', $to, $from, $subject, $fileOk ? 'OK' : 'FAIL'));
-            return $fileOk; // on considère succès en dev si écrit
+            return $fileOk;
         }
 
         error_log(sprintf('[MAIL] to=%s from=%s subject="%s" result=OK', $to, $from, $subject));
         return true;
     }
 
+    /**
+     * Écrit un email au format minimal .eml dans SITE/storage/mails (fallback dev).
+     *
+     * @param string $to
+     * @param string $from
+     * @param string $subject
+     * @param array $headers
+     * @param string $htmlBody
+     * @return bool
+     */
     private static function writeMailToFile(string $to, string $from, string $subject, array $headers, string $htmlBody): bool
     {
-        // Répertoire: SITE/storage/mails
         $baseDir = \Constant::rootDirectory() . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'mails';
         if (!is_dir($baseDir)) {
             @mkdir($baseDir, 0777, true);
@@ -139,13 +175,11 @@ final class Mailer
         $uniq = bin2hex(random_bytes(4));
         $file = $baseDir . DIRECTORY_SEPARATOR . $timestamp . '-' . $uniq . '.eml';
 
-        // Construire un contenu EML minimal
         $lines = [];
         $lines[] = 'To: ' . $to;
         $lines[] = 'From: ' . $from;
         $lines[] = 'Subject: ' . $subject;
         foreach ($headers as $h) {
-            // Eviter doublons simples pour From/Subject si déjà ajoutés
             if (stripos($h, 'from:') === 0 || stripos($h, 'subject:') === 0 || stripos($h, 'to:') === 0) {
                 continue;
             }

@@ -4,13 +4,12 @@ namespace Controllers;
 use Models\Patient;
 
 /**
- * Contrôleur pour le vrai dashboard avec graphiques et statistiques
- * 
-*/
+ * Contrôleur pour le tableau de bord contenant graphiques et statistiques patients.
+ */
 final class DashboardController {
     /**
-     * Affiche la page du tableau de bord avec graphiques et infos patients
-     * 
+     * Affiche la page du tableau de bord avec graphiques et informations patients.
+     *
      * @return void
      */
     public function index(): void {
@@ -19,8 +18,8 @@ final class DashboardController {
             exit;
         }
 
-        // Pour l'instant, on utilise le patient 1 (Alexandre Jacob)
-        // Plus tard, on récupérera les patients liés au médecin connecté
+        // Pour l'instant, on utilise le patient 1 (exemple)
+        // À terme, récupérer les patients liés au médecin connecté
         $patientId = 1;
         
         // Récupérer les informations du patient

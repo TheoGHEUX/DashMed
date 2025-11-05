@@ -4,8 +4,16 @@ namespace Controllers;
 use Core\Csrf;
 use Models\User;
 
+/**
+ * Contrôleur pour le changement d'adresse email d'un utilisateur connecté.
+ */
 final class ChangeMailController
 {
+    /**
+     * Affiche le formulaire de changement d'email pour l'utilisateur connecté.
+     *
+     * @return void
+     */
     public function showForm(): void
     {
         if (session_status() !== PHP_SESSION_ACTIVE) session_start();
@@ -19,6 +27,13 @@ final class ChangeMailController
         \View::render('auth/change-mail', compact('errors', 'success'));
     }
 
+    /**
+     * Traite la demande de changement d'email : vérifie le mot de passe, la
+     * validité du nouvel email et met à jour si tout est correct. Envoie
+     * ensuite des notifications aux anciennes et nouvelles adresses.
+     *
+     * @return void
+     */
     public function submit(): void
     {
         if (session_status() !== PHP_SESSION_ACTIVE) session_start();
@@ -88,7 +103,12 @@ final class ChangeMailController
     }
 
     /**
-     * Envoie des emails de notification à l'ancienne et à la nouvelle adresse
+     * Envoie des emails de notification à l'ancienne et à la nouvelle adresse.
+     *
+     * @param string $oldEmail Ancienne adresse email
+     * @param string $newEmail Nouvelle adresse email
+     * @param string $userName Nom affiché de l'utilisateur
+     * @return void
      */
     private function sendEmailNotifications(string $oldEmail, string $newEmail, string $userName): void
     {

@@ -1,4 +1,9 @@
-
+/*
+ * dashboard.css
+ * Description : Styles pour le tableau de bord (grilles, cartes, graphiques,
+ * réorganisation par glisser-déposer). Variables utiles : --bg-card,
+ * --accent-primary, --border-color, --shadow-lg
+ */
 
 /* === Page Dashboard "À venir" === */
 .dashboard-coming-soon {

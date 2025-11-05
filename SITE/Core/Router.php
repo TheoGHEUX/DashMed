@@ -14,7 +14,13 @@ use Controllers\ChangePasswordController;
 use Controllers\ChangeMailController;
 use Core\Database;
 
-
+/**
+ * Router minimal de l'application.
+ *
+ * Résout les routes définies dans la constante ROUTES et appelle les méthodes
+ * des contrôleurs correspondants. Gère également quelques endpoints de
+ * diagnostic (`/health`, `/health/db`).
+ */
 final class Router
 {
     private string $path;
@@ -54,6 +60,10 @@ final class Router
         ],
     ];
 
+    /**
+     * @param string $uri URI demandée
+     * @param string $method Méthode HTTP (GET, POST...)
+     */
     public function __construct(string $uri, string $method)
     {
         $this->path = parse_url($uri, PHP_URL_PATH) ?: '/';
@@ -64,16 +74,23 @@ final class Router
         $this->method = strtoupper($method);
     }
 
+    /**
+     * Résout la route et exécute le contrôleur associé.
+     *
+     * Peut aussi répondre aux endpoints de diagnostic `/health` et `/health/db`.
+     *
+     * @return void
+     */
     public function dispatch(): void
     {
-        // Health check
+        // Endpoint simple pour vérifier que l'application répond
         if ($this->path === '/health') {
             header('Content-Type: text/plain; charset=utf-8');
             echo 'OK';
             exit;
         }
 
-        // DB health (diagnostic sécurisé)
+        // Diagnostic DB restreint
         if ($this->path === '/health/db') {
             // Lecture minimale de .env pour APP_DEBUG/HEALTH_KEY
             $root = dirname(__DIR__, 2);
@@ -135,7 +152,7 @@ final class Router
             exit;
         }
 
-        // Redirection automatique si connecté sur la page d'accueil publique
+        // Redirection automatique si l'utilisateur est connecté et visite la page publique d'accueil
         if (($this->path === '/' || $this->path === '/index.php') && $this->isAuthenticated()) {
             $this->redirect('/accueil');
         }
@@ -157,13 +174,19 @@ final class Router
         $this->handle404();
     }
 
+    /**
+     * Tente d'exécuter une route définie dans $routes.
+     *
+     * @param array $routes Table des routes
+     * @param bool $requiresAuth Si true, redirige vers la page de login si non authentifié
+     * @return bool Vrai si la route a été trouvée et exécutée
+     */
     private function tryRoute(array $routes, bool $requiresAuth = false): bool
     {
         if (!isset($routes[$this->path])) {
             return false;
         }
 
-        // Vérification de l'authentification si nécessaire
         if ($requiresAuth && !$this->isAuthenticated()) {
             $this->redirect('/login');
         }
@@ -173,13 +196,13 @@ final class Router
 
         $controller = new $controllerClass();
         
-        // Si c'est une route avec méthode unique (ex: logout, show)
+        // Route avec une seule méthode (ex: logout, show)
         if ($getMethod === null) {
             $controller->$postMethod();
             exit;
         }
 
-        // Route avec GET et POST différents
+        // Route distinguant POST et GET
         if ($this->method === 'POST') {
             $controller->$postMethod();
         } else {
@@ -188,21 +211,36 @@ final class Router
         exit;
     }
 
+    /**
+     * Indique si un utilisateur est authentifié (présence en session).
+     *
+     * @return bool
+     */
     private function isAuthenticated(): bool
     {
         return !empty($_SESSION['user']);
     }
 
+    /**
+     * Redirection HTTP et sortie immédiate.
+     *
+     * @param string $path Chemin vers lequel rediriger
+     * @return void
+     */
     private function redirect(string $path): void
     {
         header("Location: $path");
         exit;
     }
 
+    /**
+     * Affiche la page 404 (si disponible) puis termine l'exécution.
+     *
+     * @return void
+     */
     private function handle404(): void
     {
         http_response_code(404);
-        // TODO: Créer une vue 404 appropriée
         if (file_exists(__DIR__ . '/../Views/errors/404.php')) {
             \View::render('errors/404');
         } else {

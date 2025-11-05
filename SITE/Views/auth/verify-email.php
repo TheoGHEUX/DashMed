@@ -1,4 +1,13 @@
 <?php
+/**
+ * Page de vérification d'email (public).
+ * Affiche le résultat de la vérification (succès ou erreur) et propose des actions complémentaires.
+ *
+ * Variables disponibles :
+ * @var array|null  $errors  Liste des erreurs (optionnel)
+ * @var string|null $success Message de succès (optionnel)
+ */
+
 $pageTitle = 'Vérification d\'email';
 $pageDescription = 'Vérification de votre adresse email';
 $pageStyles = ["/assets/style/authentication.css"];

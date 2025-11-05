@@ -4,16 +4,28 @@ namespace Core;
 use PDO;
 use PDOException;
 
+/**
+ * Wrapper minimal pour obtenir une connexion PDO partagée.
+ *
+ * Lit facultativement un fichier `.env` à la racine pour récupérer les paramètres
+ * DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS. Si absent, des valeurs par défaut non-sensibles sont utilisées.
+ */
 final class Database
 {
     private static ?PDO $pdo = null;
 
+    /**
+     * Retourne une instance PDO singleton configurée pour MySQL.
+     *
+     * @return PDO Connexion PDO
+     * @throws PDOException En cas d'échec de connexion
+     */
     public static function getConnection(): PDO
     {
         if (self::$pdo === null) {
 
-            // Lecture d'un fichier .env à la racine du dépôt (optionnel)
-            $root = dirname(__DIR__, 2); // remonte de SITE/Core -> projet
+            // Lecture optionnelle d'un fichier .env à la racine du projet
+            $root = dirname(__DIR__, 2);
             $envFile = $root . DIRECTORY_SEPARATOR . '.env';
             $env = [];
             if (is_file($envFile) && is_readable($envFile)) {
@@ -24,8 +36,7 @@ final class Database
                         if ($line === '' || str_starts_with($line, '#') || str_starts_with($line, ';')) continue;
                         if (strpos($line, '=') === false) continue;
                         [$k, $v] = explode('=', $line, 2);
-                        $k = trim($k);
-                        $v = trim($v);
+                        $k = trim($k); $v = trim($v);
                         if ($v !== '' && (($v[0] === '"' && substr($v, -1) === '"') || ($v[0] === "'" && substr($v, -1) === "'"))) {
                             $v = substr($v, 1, -1);
                         }
@@ -34,7 +45,7 @@ final class Database
                 }
             }
 
-            // Si .env fourni, priorité aux valeurs DB_*; sinon, défauts locaux inoffensifs (aucune crédential sensible en dur)
+            // Priorité aux variables DB_* du .env si présentes
             $host = $env['DB_HOST'] ?? '127.0.0.1';
             $port = $env['DB_PORT'] ?? '3306';
             $db   = $env['DB_NAME'] ?? 'dashmed-site_db';

@@ -1,3 +1,10 @@
+/*
+ * authentication.css
+ * Description : Styles pour les pages d'authentification (connexion, inscription,
+ * mot de passe oublié, réinitialisation). Garder les styles accessibles (focus).
+ * Variables CSS attendues : --brand, --focus, --input-border, --line,
+ * --bg-card, --text-primary, --text-secondary, --text-tertiary, --muted
+ */
 .hero {
     margin: 30px auto 24px;
     text-align: center;

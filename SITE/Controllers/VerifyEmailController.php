@@ -3,10 +3,15 @@ namespace Controllers;
 
 use Models\User;
 
+/**
+ * Contrôleur pour la vérification d'email et le renvoi de lien de vérification.
+ */
 final class VerifyEmailController
 {
     /**
-     * Affiche la page de vérification d'email
+     * Vérifie le token passé en query string et active le compte si valide.
+     *
+     * @return void
      */
     public function verify(): void
     {
@@ -46,7 +51,9 @@ final class VerifyEmailController
     }
 
     /**
-     * Renvoie un email de vérification
+     * Traite la requête de renvoi d'email de vérification.
+     *
+     * @return void
      */
     public function resend(): void
     {

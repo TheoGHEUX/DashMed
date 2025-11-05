@@ -1,8 +1,16 @@
 <?php
 namespace Controllers;
 
+/**
+ * Contrôleur du profil utilisateur.
+ */
 final class ProfileController
 {
+    /**
+     * Affiche la page de profil de l'utilisateur connecté.
+     *
+     * @return void
+     */
     public function show(): void
     {
         if (session_status() !== PHP_SESSION_ACTIVE) session_start();

@@ -1,11 +1,19 @@
 <?php
 namespace Controllers;
 
+/**
+ * Contrôleur de la page publique d'accueil.
+ */
 final class HomeController
 {
+    /**
+     * Affiche la page d'accueil publique.
+     *
+     * @return void
+     */
     public function index(): void
     {
-        // Page d'accueil (ex-index.html) rendue via View::render('home') -> fichier Views/home.php
+        // Rend la vue home (Views/home.php)
         \View::render('home');
     }
 }

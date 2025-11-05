@@ -1,20 +1,13 @@
 <?php
 /**
- * Fichier : login.php
- * Page de connexion utilisateur de l'application DashMed.
+ * Page de connexion (public).
+ * Formulaire sécurisé par token CSRF. Affiche les messages d'erreur/succès et conserve les valeurs saisies.
  *
- * Permet à l'utilisateur de se connecter en saisissant son email et son mot de passe.
- * Le formulaire est sécurisé via un token CSRF. Affiche également les messages d'erreur ou de succès.
- *
- * Variables :
- * - $csrf_token (string)  Token CSRF pour sécuriser le formulaire
- * - $errors     (array)   Liste des erreurs de saisie
- * - $success    (string)  Message de succès
- * - $old        (array)   Valeurs précédemment saisies (ex: email)
- *
- * @package DashMed
- * @version 1.0
- * @author FABRE Alexis, GHEUX Théo, JACOB Alexandre, TAHA CHAOUI Amir, UYSUN Ali
+ * Variables disponibles :
+ * @var string       $csrf_token Token CSRF pour sécuriser le formulaire
+ * @var array|null    $errors     Liste des erreurs à afficher (optionnel)
+ * @var string|null   $success    Message de succès (optionnel)
+ * @var array|null    $old        Valeurs précédemment saisies (optionnel)
  */
 
 $csrf_token = \Core\Csrf::token();

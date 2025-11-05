@@ -1,11 +1,13 @@
 <?php
 /**
- * Fichier : inscription.php
- * Page d'inscription utilisateur de l'application DashMed.
+ * Page d'inscription (public).
+ * Formulaire d'enregistrement sécurisé par token CSRF. Valide les champs et affiche erreurs/succès.
  *
- * @package DashMed
- * @version 2.0
- * @author FABRE Alexis, GHEUX Théo, JACOB Alexandre, TAHA CHAOUI Amir, UYSUN Ali
+ * Variables disponibles :
+ * @var string     $csrf_token Token CSRF pour sécuriser le formulaire
+ * @var array|null  $errors     Liste des erreurs à afficher (optionnel)
+ * @var string|null $success    Message de succès (optionnel)
+ * @var array|null  $old        Valeurs précédemment saisies (optionnel)
  */
 
 $csrf_token = \Core\Csrf::token();

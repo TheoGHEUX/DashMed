@@ -4,10 +4,16 @@ namespace Models;
 use Core\Database;
 use PDO;
 
+/**
+ * Modèle Patient : accès aux données patients et mesures.
+ */
 final class Patient
 {
     /**
-     * Récupère un patient par son ID
+     * Récupère un patient par son ID.
+     *
+     * @param int $id
+     * @return array|null
      */
     public static function findById(int $id): ?array
     {
@@ -35,7 +41,10 @@ final class Patient
     }
 
     /**
-     * Récupère toutes les mesures d'un patient
+     * Récupère toutes les mesures d'un patient.
+     *
+     * @param int $patientId
+     * @return array Liste des mesures
      */
     public static function getMesures(int $patientId): array
     {
@@ -54,7 +63,11 @@ final class Patient
     }
 
     /**
-     * Récupère les valeurs d'une mesure spécifique avec limite optionnelle
+     * Récupère les valeurs d'une mesure spécifique avec limite optionnelle.
+     *
+     * @param int $mesureId
+     * @param int|null $limit
+     * @return array
      */
     public static function getValeursMesure(int $mesureId, ?int $limit = null): array
     {
@@ -81,7 +94,10 @@ final class Patient
     }
 
     /**
-     * Récupère les dernières valeurs pour chaque type de mesure d'un patient
+     * Récupère les dernières valeurs pour chaque type de mesure d'un patient.
+     *
+     * @param int $patientId
+     * @return array
      */
     public static function getDernieresValeurs(int $patientId): array
     {
@@ -111,7 +127,12 @@ final class Patient
     }
 
     /**
-     * Récupère les données pour un graphique spécifique (dernières N valeurs)
+     * Récupère les données pour un graphique spécifique (dernières N valeurs).
+     *
+     * @param int $patientId
+     * @param string $typeMesure
+     * @param int $limit
+     * @return array|null
      */
     public static function getChartData(int $patientId, string $typeMesure, int $limit = 50): ?array
     {
@@ -156,7 +177,12 @@ final class Patient
     }
 
     /**
-     * Normalise une valeur entre 0 et 1 selon un min/max
+     * Normalise une valeur entre 0 et 1 selon un min/max.
+     *
+     * @param float $value
+     * @param float $min
+     * @param float $max
+     * @return float
      */
     public static function normalizeValue(float $value, float $min, float $max): float
     {
@@ -167,7 +193,12 @@ final class Patient
     }
 
     /**
-     * Prépare les données normalisées pour les graphiques JavaScript
+     * Prépare les données normalisées pour les graphiques JavaScript.
+     *
+     * @param array $valeurs
+     * @param float $min
+     * @param float $max
+     * @return array
      */
     public static function prepareChartValues(array $valeurs, float $min, float $max): array
     {

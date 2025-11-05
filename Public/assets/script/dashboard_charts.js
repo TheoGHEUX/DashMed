@@ -2,6 +2,16 @@
 // Pour réinitialiser la configuration et afficher tous les graphiques :
 // Ouvrez la console (F12) et tapez : localStorage.removeItem('dashboardChartConfig'); location.reload();
 // Ou ajoutez ?reset=1 à l'URL du dashboard
+/**
+ * Scripts des graphiques du tableau de bord
+ *
+ * Fournit des rendus canvas simples (area, bar, sparkline, donut, gauge) pour visualiser
+ * les mesures cliniques. Utilise les données injectées par PHP via `window.patientChartData`.
+ *
+ * Astuces : pour réinitialiser la configuration depuis la console :
+ *   localStorage.removeItem('dashboardChartConfig'); location.reload();
+ * Ou ajoutez `?reset=1` à l'URL du dashboard.
+ */
 
 document.addEventListener('DOMContentLoaded', () => {
 	const DPR = window.devicePixelRatio || 1;
@@ -29,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	const patientData = window.patientChartData || {};
 	console.log('Données patient chargées:', patientData);
 	
-	// Chart configuration management
+	// Gestion de la configuration des graphiques
 	const CHART_DEFINITIONS = {
 		'blood-pressure': {
 			title: 'Tendance de la tension (mmHg)',
@@ -497,7 +507,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 	}
 
-	// Area with threshold line (for temperature) - Version médicale avec axes
+	// Area avec ligne de seuil (pour température) - Version médicale avec axes
 	function animateAreaWithThreshold(canvasId, data, color, threshold, minVal, maxVal, unit) {
 		const canvas = document.getElementById(canvasId);
 		if (!canvas) return;
@@ -648,7 +658,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 	}
 
-	// Sparkline (thin line, less padding) - Version statique
+	// Sparkline (ligne fine, faible padding) - Version statique
 	function animateSparkline(canvasId, data, color) {
 		const canvas = document.getElementById(canvasId); if (!canvas) return;
 		function draw() {
@@ -683,7 +693,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		draw();
 	}
 
-	// Dual-line chart (for systolic/diastolic blood pressure) - Version statique
+	// Dual-line chart (pour systolique/diastolique) - Version statique
 	function animateDualLineChart(canvasId, seriesA, seriesB, colorA, colorB) {
 		const canvas = document.getElementById(canvasId); if (!canvas) return;
 		function draw() {
@@ -721,7 +731,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		draw();
 	}
 
-	// Donut chart (progress-like) - Version statique
+	// Donut chart (type progress) - Version statique
 	function animateDonut(canvasId, value, color) {
 		const canvas = document.getElementById(canvasId); if (!canvas) return;
 		function draw() {
@@ -737,7 +747,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		draw();
 	}
 
-	// Gauge (semi-circle) - Version statique
+	// Gauge (demi-cercle) - Version statique
 	function animateGauge(canvasId, value, color) {
 		const canvas = document.getElementById(canvasId); if (!canvas) return;
 		function draw() {
@@ -753,7 +763,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		draw();
 	}
 
-	// helper: rounded rect
+	// aide : rectangle arrondi (helper)
 	function roundRect(ctx, x, y, w, h, r) {
 		const radius = r || 0;
 		ctx.beginPath();
@@ -766,7 +776,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		ctx.fill();
 	}
 
-	// Load and save config from localStorage
+	// Charger et sauvegarder la configuration depuis localStorage
 	function loadChartConfig() {
 		// Liste complète de tous les graphiques disponibles
 		const allCharts = ['blood-pressure', 'heart-rate', 'respiration', 'temperature', 'glucose-trend', 'weight', 'oxygen-saturation'];
@@ -898,7 +908,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 	}
 	
-	// Auto-scroll variables
+	// Variables pour l'auto-scroll lors du drag
 	let autoScrollInterval = null;
 	
 	// Setup drag functionality for chart cards

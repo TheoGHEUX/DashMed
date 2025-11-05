@@ -5,8 +5,17 @@ use Core\Csrf;
 use Core\Database;
 use PDO;
 
+/**
+ * Contrôleur de la réinitialisation de mot de passe : affichage du formulaire
+ * et traitement du reset sécurisé via token.
+ */
 final class ResetPasswordController
 {
+    /**
+     * Affiche le formulaire de réinitialisation si le token est valide.
+     *
+     * @return void
+     */
     public function showForm(): void
     {
         $errors = [];
@@ -20,9 +29,15 @@ final class ResetPasswordController
             $errors[] = 'Lien de réinitialisation invalide ou expiré.';
         }
 
-    \View::render('auth/reset-password', compact('errors', 'success', 'email', 'token'));
+        \View::render('auth/reset-password', compact('errors', 'success', 'email', 'token'));
     }
 
+    /**
+     * Traite la soumission du formulaire de réinitialisation : validations
+     * et mise à jour du mot de passe si le token est valide.
+     *
+     * @return void
+     */
     public function submit(): void
     {
         $errors = [];
@@ -55,7 +70,7 @@ final class ResetPasswordController
             try {
                 $pdo->beginTransaction();
 
-                // 1) Retrouver l'email à partir du token, verrouiller la ligne du reset (évite les courses)
+                // 1) Retrouver l'email à partir du token et verrouiller la ligne (évite les courses)
                 $sel = $pdo->prepare('
                     SELECT email
                     FROM password_resets
@@ -128,6 +143,13 @@ final class ResetPasswordController
         ]);
     }
 
+    /**
+     * Vérifie si le token est valide pour l'email donné.
+     *
+     * @param string $email
+     * @param string $token
+     * @return bool
+     */
     private function isValidToken(string $email, string $token): bool
     {
         if ($email === '' || $token === '') return false;

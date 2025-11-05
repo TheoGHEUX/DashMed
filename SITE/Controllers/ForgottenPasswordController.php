@@ -7,8 +7,18 @@ use Core\Mailer;
 use Models\User;
 use PDO;
 
+/**
+ * Contrôleur pour la fonctionnalité "mot de passe oublié" : affichage du formulaire
+ * et traitement de la demande de réinitialisation (envoi du lien par email).
+ */
 final class ForgottenPasswordController
 {
+    /**
+     * Affiche le formulaire de demande de réinitialisation et transmet
+     * les messages d'erreur/succès conservés en session.
+     *
+     * @return void
+     */
     public function showForm(): void
     {
         $errors = $_SESSION['errors'] ?? null;
@@ -24,21 +34,27 @@ final class ForgottenPasswordController
         ]);
     }
 
+    /**
+     * Traite la soumission du formulaire : validation, génération de token,
+     * enregistrement en base et envoi (ne révèle jamais si l'email existe).
+     *
+     * @return void
+     */
     public function submit(): void
     {
         $errors = [];
         $success = '';
-        // Simple rate-limiting per session to avoid abuse of password reset endpoint
+        // Limitation simple par session pour éviter les abus
         if (session_status() !== PHP_SESSION_ACTIVE) session_start();
         $maxAttempts = 5;
-        $windowSeconds = 3600; // 1 hour
+        $windowSeconds = 3600; // 1 heure
         $now = time();
         $fpAttempts = $_SESSION['forgot_password_attempts'] ?? [];
         $fpAttempts = array_filter($fpAttempts, function ($ts) use ($now, $windowSeconds) {
             return ($now - $ts) <= $windowSeconds;
         });
         if (count($fpAttempts) >= $maxAttempts) {
-            // Keep UI neutral, set success message and redirect
+            // Réponse neutre côté UI
             $success = "Si un compte existe à cette adresse mail, un lien de réinitialisation a été envoyé.\nVeuillez attendre avant de refaire une demande.";
             $_SESSION['success'] = $success;
             header('Location: /forgotten-password');
@@ -64,7 +80,7 @@ final class ForgottenPasswordController
                 if ($user) {
                     $pdo = Database::getConnection();
 
-                    // Nettoyage des anciens tokens pour le mail associer au mdp réunitialiser
+                    // Supprime les anciens tokens pour cet email ou expirés
                     $del = $pdo->prepare('DELETE FROM password_resets WHERE email = ? OR expires_at < NOW()');
                     $del->execute([$old['email']]);
 
@@ -78,7 +94,7 @@ final class ForgottenPasswordController
                     );
                     $ins->execute([$old['email'], $tokenHash, $expiresAt]);
 
-                    // Construit l'URL reset
+                    // Construit l'URL de réinitialisation
                     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
                     $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
                     $resetUrl = $scheme . '://' . $host . '/reset-password?token=' . urlencode($token) . '&email=' . urlencode($old['email']);
@@ -87,11 +103,11 @@ final class ForgottenPasswordController
                     $displayName = trim(($user['name'] ?? '') . ' ' . ($user['last_name'] ?? ''));
                     Mailer::sendPasswordResetEmail($old['email'], $displayName ?: 'Utilisateur', $resetUrl);
                 } else {
-                    // En prod on reste neutre côté UI, mais on log pour faciliter le debug
+                    // En production, on reste neutre côté UI, mais on log pour faciliter le debug
                     error_log(sprintf('[FORGOT] Aucun utilisateur trouvé pour %s (message neutre renvoyé)', $old['email']));
                 }
 
-                // Réponse neutre (utilise une vraie nouvelle ligne avec "\n")
+                // Réponse neutre
                 $success = "Si un compte existe à cette adresse mail, un lien de réinitialisation a été envoyé.\nN'oubliez pas de vérifier votre courrier indésirable.";
                 $old = ['email' => ''];
             } catch (\Throwable $e) {
@@ -104,10 +120,10 @@ final class ForgottenPasswordController
             $_SESSION['old'] = $old;
         }
 
-    // record this forgot-password request timestamp
-    $fpAttempts[] = $now;
-    $_SESSION['forgot_password_attempts'] = $fpAttempts;
-    $_SESSION['success'] = $success;
+        // Enregistrer l'horodatage de la demande pour la limitation
+        $fpAttempts[] = $now;
+        $_SESSION['forgot_password_attempts'] = $fpAttempts;
+        $_SESSION['success'] = $success;
         header('Location: /forgotten-password');
         exit;
     }

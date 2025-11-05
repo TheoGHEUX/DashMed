@@ -1,3 +1,9 @@
+/*
+ * accueil.css
+ * Description : Styles de la page d'accueil et du tableau de bord sommaire.
+ * Variables utiles : --bg-card, --shadow-lg, --text-primary, --text-secondary
+ */
+
 /* === Page d'accueil moderne === */
 .accueil-container {
     max-width: 1200px;

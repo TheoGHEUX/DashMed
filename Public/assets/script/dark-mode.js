@@ -1,6 +1,11 @@
 /**
- * Dark Mode Toggle Script
- * Manages dark mode state with localStorage persistence
+ * Script de gestion du mode sombre
+ *
+ * - Garde le choix (light/dark) dans localStorage.
+ * - Applique l'attribut `data-theme` sur l'élément root.
+ * - Émet un événement custom `themechange` pour les autres scripts.
+ *
+ * @module dark-mode
  */
 
 (function() {
@@ -9,21 +14,21 @@
     const STORAGE_KEY = 'dashmed-theme';
     const THEME_ATTR = 'data-theme';
     
-    // Get saved theme or default to light
+    // Récupère le thème sauvegardé ou 'light' par défaut
     function getSavedTheme() {
         return localStorage.getItem(STORAGE_KEY) || 'light';
     }
     
-    // Save theme to localStorage
+    // Sauvegarde le thème dans localStorage
     function saveTheme(theme) {
         localStorage.setItem(STORAGE_KEY, theme);
     }
     
-    // Apply theme to document
+    // Applique le thème au document
     function applyTheme(theme) {
         document.documentElement.setAttribute(THEME_ATTR, theme);
         
-        // Update button aria-label
+            // Met à jour l'aria-label et le title du bouton
         const toggle = document.getElementById('darkModeToggle');
         if (toggle) {
             const label = theme === 'dark' ? 'Activer le mode clair' : 'Activer le mode sombre';
@@ -32,7 +37,7 @@
         }
     }
     
-    // Toggle between light and dark
+    // Basculer entre light et dark
     function toggleTheme() {
         const currentTheme = document.documentElement.getAttribute(THEME_ATTR) || 'light';
         const newTheme = currentTheme === 'light' ? 'dark' : 'light';
@@ -40,19 +45,19 @@
         applyTheme(newTheme);
         saveTheme(newTheme);
         
-        // Trigger custom event for other scripts to react
+        // Déclenche un événement custom pour que d'autres scripts puissent réagir
         window.dispatchEvent(new CustomEvent('themechange', { 
             detail: { theme: newTheme } 
         }));
     }
     
-    // Initialize theme on page load
+    // Initialisation du thème au chargement de la page
     function initTheme() {
         const savedTheme = getSavedTheme();
         applyTheme(savedTheme);
     }
     
-    // Setup toggle button
+    // Configuration du bouton de bascule
     function setupToggle() {
         const toggle = document.getElementById('darkModeToggle');
         if (toggle) {
@@ -60,7 +65,7 @@
         }
     }
     
-    // Run immediately to prevent flash
+    // Exécution immédiate pour éviter un flash visuel lors du chargement
     initTheme();
     
     // Setup toggle when DOM is ready

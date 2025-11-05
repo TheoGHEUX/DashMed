@@ -1,25 +1,14 @@
 <?php
 /**
- * Fichier : reset-password.php
- * Page de réinitialisation du mot de passe utilisateur pour l'application DashMed.
+ * Page de réinitialisation du mot de passe (public).
+ * Permet à l'utilisateur de définir un nouveau mot de passe via un lien sécurisé.
  *
- * Permet à l'utilisateur de définir un nouveau mot de passe après avoir reçu le lien de réinitialisation.
- * Le formulaire est sécurisé via un token CSRF. Utilise la structure dynamique avec head, header et footer inclus.
- *
- * Variables dynamiques :
- * - $csrf_token (string)  Token CSRF pour sécuriser le formulaire
- * - $email      (string)  Email de l'utilisateur pour lequel le mot de passe est réinitialisé
- * - $token      (string)  Token unique de réinitialisation reçu par email
- * - $errors     (array)   Liste des erreurs de saisie
- * - $success    (string)  Message de succès après modification
- * - $pageTitle       (string)  Titre de la page
- * - $pageDescription (string)  Description pour les métadonnées
- * - $pageStyles      (array)   Styles CSS spécifiques
- * - $pageScripts     (array)   Scripts JS spécifiques
- *
- * @package DashMed
- * @version 1.0
- * @author FABRE Alexis, GHEUX Théo, JACOB Alexandre, TAHA CHAOUI Amir, UYSUN Ali
+ * Variables disponibles :
+ * @var string       $csrf_token Token CSRF pour sécuriser le formulaire
+ * @var string|null  $email      Email lié à la demande (optionnel)
+ * @var string|null  $token      Token unique de réinitialisation (optionnel)
+ * @var array|null   $errors     Liste des erreurs à afficher (optionnel)
+ * @var string|null  $success    Message de succès (optionnel)
  */
 
 $csrf_token = \Core\Csrf::token();

@@ -1,3 +1,8 @@
+/*
+ * footer.css
+ * Description : Styles du pied de page global (couleurs, typographie, espacement).
+ * Variables utiles : --bg-card, --border-color, --text-secondary
+ */
 
 .footer {
     background: var(--bg-card, #f4f6f8);

@@ -5,6 +5,9 @@ use Models\User;
 use Core\Csrf;
 use Core\Mailer;
 
+/**
+ * Contrôleur d'authentification : inscription, connexion, déconnexion.
+ */
 final class AuthController
 {
     // Liste complète des spécialités médicales valides
@@ -46,6 +49,11 @@ final class AuthController
         'Urologie'
     ];
 
+    /**
+     * Affiche le formulaire d'inscription.
+     *
+     * @return void
+     */
     public function showRegister(): void
     {
         $errors = [];
@@ -61,6 +69,12 @@ final class AuthController
         require __DIR__ . '/../Views/auth/register.php';
     }
 
+    /**
+     * Traite la soumission du formulaire d'inscription.
+     * Valide les champs, crée l'utilisateur et envoie un email de vérification.
+     *
+     * @return void
+     */
     public function register(): void
     {
         $errors = [];
@@ -179,6 +193,11 @@ final class AuthController
         require __DIR__ . '/../Views/auth/register.php';
     }
 
+    /**
+     * Affiche le formulaire de connexion.
+     *
+     * @return void
+     */
     public function showLogin(): void
     {
         $errors = [];
@@ -190,6 +209,11 @@ final class AuthController
         require __DIR__ . '/../Views/auth/login.php';
     }
 
+    /**
+     * Traite la connexion : vérifie les identifiants et démarre la session.
+     *
+     * @return void
+     */
     public function login(): void
     {
         $errors = [];
@@ -256,6 +280,11 @@ final class AuthController
         require __DIR__ . '/../Views/auth/login.php';
     }
 
+    /**
+     * Déconnecte l'utilisateur en détruisant la session et le cookie de session.
+     *
+     * @return void
+     */
     public function logout(): void
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {

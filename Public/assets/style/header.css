@@ -1,3 +1,10 @@
+/*
+ * header.css
+ * Description : Styles de l'en-tête / barre supérieure, navigation principale
+ * et menu responsive. Variables CSS attendues : --header-bg, --header-text,
+ * --border-color, --accent-primary, --bg-primary
+ */
+
 .topbar {
     background: var(--header-bg, rgba(255, 255, 255, 0.95));
     border-bottom: 1px solid var(--border-color, #e2e8f0);
@@ -187,7 +194,7 @@
     }
 }
 
-/* Accessibility: focus styles for keyboard users */
+/* Accessibilité : styles de focus pour les utilisateurs au clavier */
 .mainnav a:focus,
 .burger-menu:focus,
 .login-btn:focus {

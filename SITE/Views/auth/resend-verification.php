@@ -1,4 +1,14 @@
 <?php
+/**
+ * Page pour renvoyer l'email de vérification (public).
+ * Le formulaire demande l'adresse email et renvoie un nouvel email de vérification si le compte existe.
+ *
+ * Variables disponibles :
+ * @var string|null $csrf_token Token CSRF pour sécuriser le formulaire (généré ici)
+ * @var array|null  $errors     Liste des erreurs (optionnel)
+ * @var string|null $success    Message de succès (optionnel)
+ */
+
 $csrf_token = \Core\Csrf::generate();
 
 $pageTitle = 'Renvoyer l\'email de vérification';

@@ -1,19 +1,16 @@
 <?php
 /**
- * Fichier : home.php
- * Page d'accueil de l'application DashMed.
- *
- * Présente le service et ses avantages, invite à l'inscription ou à la connexion.
- * Utilise la structure dynamique avec head, header et footer inclus.
+ * Page publique d'accueil de l'application DashMed.
+ * Présente le service, invite à l'inscription ou à la connexion.
+ * Utilise les partials `head`, `header` et `footer` pour le rendu.
  *
  * Variables dynamiques attendues :
- * - $pageTitle       : string   - Titre de la page
- * - $pageDescription : string   - Description pour les métadonnées
- * - $pageStyles      : array    - Styles CSS spécifiques
- * - $pageScripts     : array    - Scripts JS spécifiques
+ * @var string $pageTitle       Titre de la page (optionnel)
+ * @var string $pageDescription Description pour la balise meta (optionnel)
+ * @var array  $pageStyles      URLs des feuilles de style spécifiques (optionnel)
+ * @var array  $pageScripts     URLs des scripts JS spécifiques (optionnel)
  *
  * @package DashMed
- * @version 1.0
  * @author FABRE Alexis, GHEUX Théo, JACOB Alexandre, TAHA CHAOUI Amir, UYSUN Ali
  */
 ?>
