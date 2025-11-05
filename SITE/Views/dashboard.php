@@ -105,10 +105,18 @@ $pageScripts = [
         <div class="available-charts" id="availableCharts"></div>
     </div>
 
+    <?php if (!empty($patient)): ?>
     <section class="dashboard-legend">
-        <p>Les valeurs affichées sont des placeholders.</p>
+        <p>Données du patient : <strong><?= htmlspecialchars($patient['prenom'] . ' ' . $patient['nom']) ?></strong> 
+        (<?= htmlspecialchars($patient['email']) ?>)</p>
     </section>
+    <?php endif; ?>
 </main>
+
+<!-- Injection des données réelles dans JavaScript -->
+<script>
+    window.patientChartData = <?= json_encode($chartData ?? []) ?>;
+</script>
 
 <?php include __DIR__ . '/partials/footer.php'; ?>
 </body>
