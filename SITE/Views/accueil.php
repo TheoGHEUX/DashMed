@@ -43,19 +43,6 @@ $pageStyles = [
 $pageScripts = [
         "/assets/script/header_responsive.js"
 ];
-
-/**
- * Activités récentes affichées sur l'accueil.
- *
- * @var array $activites Chaque élément est un tableau associatif avec les clés :
- *                       - 'label' : string, description de l'activité
- *                       - 'date'  : string, date de l'activité au format JJ/MM/AAAA
- */
-$activites = [
-        ["label" => "Rdv avec Dr. Smith", "date" => "03/12/2025"],
-        ["label" => "Résultats prise de sang", "date" => "02/12/2025"],
-        ["label" => "Prescription médicaments", "date" => "01/12/2025"]
-];
 ?>
 <!doctype html>
 <html lang="fr">
