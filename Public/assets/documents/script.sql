@@ -151,6 +151,7 @@ CREATE TABLE SEUIL_ALERTE
     id_mesure BIGINT,
     seuil_min REAL NOT NULL,
     seuil_max REAL NOT NULL,
+    statut VARCHAR(50) NOT NULL CHECK (statut IN ('RAS', 'préoccupant', 'urgent', 'critique')),
     CONSTRAINT pk_seuil PRIMARY KEY (seuil_id),
     CONSTRAINT fk_seuil FOREIGN KEY (id_mesure) REFERENCES MESURES (id_mesure) ON DELETE CASCADE
 );
@@ -160,7 +161,6 @@ CREATE TABLE ALERTE
 (
     alerte_id   INT,
     date_alerte DATETIME    NOT NULL,
-    statut      VARCHAR(50) NOT NULL CHECK (statut IN ('RAS', 'préoccupant', 'critique', 'fatal')),
     seuil_id    INT,
     CONSTRAINT pk_alerte PRIMARY KEY (alerte_id),
     CONSTRAINT fk_alerte FOREIGN KEY (seuil_id) REFERENCES SEUIL_ALERTE (seuil_id) ON DELETE CASCADE
