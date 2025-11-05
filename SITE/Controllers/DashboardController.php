@@ -82,11 +82,11 @@ final class DashboardController {
             ];
         }
         
-        // Poids (60-110 kg)
+        // Poids (35-110 kg)
         $poidsData = Patient::getChartData($patientId, 'Poids', 50);
         if ($poidsData) {
             $chartData['weight'] = [
-                'values' => Patient::prepareChartValues($poidsData['valeurs'], 60, 110),
+                'values' => Patient::prepareChartValues($poidsData['valeurs'], 35, 110),
                 'lastValue' => end($poidsData['valeurs'])['valeur'],
                 'unit' => $poidsData['unite']
             ];

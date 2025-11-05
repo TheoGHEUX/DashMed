@@ -249,4 +249,43 @@ footer a,
         order: -1;
         margin-right: 8px;
     }
+    
+    /* Améliorer la visibilité des titres sur mobile en mode sombre */
+    [data-theme="dark"] .page-title {
+        color: #ffffff;
+        font-weight: 700;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    }
+    
+    [data-theme="dark"] .card-title {
+        color: #f1f5f9;
+        font-weight: 600;
+    }
+    
+    [data-theme="dark"] .large-value {
+        color: #ffffff;
+        font-weight: 700;
+    }
+    
+    [data-theme="dark"] .small-note {
+        color: #cbd5e1;
+    }
+}
+
+/* Tablette */
+@media (max-width: 1100px) {
+    [data-theme="dark"] .page-title {
+        color: #ffffff;
+        font-weight: 700;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    }
+    
+    [data-theme="dark"] .card-title {
+        color: #f1f5f9;
+        font-weight: 600;
+    }
+    
+    [data-theme="dark"] .large-value {
+        color: #ffffff;
+    }
 }
