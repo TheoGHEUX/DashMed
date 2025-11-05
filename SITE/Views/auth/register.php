@@ -82,7 +82,6 @@ $pageScripts = [];
                     <option value="Médecine du sport" <?= ($old['specialite'] ?? '') === 'Médecine du sport' ? 'selected' : '' ?>>Médecine du sport</option>
                     <option value="Médecine du travail" <?= ($old['specialite'] ?? '') === 'Médecine du travail' ? 'selected' : '' ?>>Médecine du travail</option>
                     <option value="Médecine générale" <?= ($old['specialite'] ?? '') === 'Médecine générale' ? 'selected' : '' ?>>Médecine générale</option>
-                    <option value="Médecine légale" <?= ($old['specialite'] ?? '') === 'Médecine légale' ? 'selected' : '' ?>>Médecine légale</option>
                     <option value="Médecine physique et de réadaptation" <?= ($old['specialite'] ?? '') === 'Médecine physique et de réadaptation' ? 'selected' : '' ?>>Médecine physique et de réadaptation</option>
                     <option value="Néphrologie" <?= ($old['specialite'] ?? '') === 'Néphrologie' ? 'selected' : '' ?>>Néphrologie</option>
                     <option value="Neurologie" <?= ($old['specialite'] ?? '') === 'Neurologie' ? 'selected' : '' ?>>Neurologie</option>
