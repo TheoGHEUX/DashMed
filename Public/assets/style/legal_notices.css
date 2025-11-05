@@ -1,3 +1,18 @@
+/* Force dark text on light background panels - override all other styles */
+.legal-grid .panel h3,
+.legal-grid .panel p,
+.legal-grid .panel ul li,
+.legal-grid .panel strong {
+    color: #000000 !important;
+}
+
+[data-theme="dark"] .legal-grid .panel h3,
+[data-theme="dark"] .legal-grid .panel p,
+[data-theme="dark"] .legal-grid .panel ul li,
+[data-theme="dark"] .legal-grid .panel strong {
+    color: #000000 !important;
+}
+
 .content {
     padding: 28px 0 18px;
 }
@@ -5,12 +20,15 @@
 h1 {
     margin: 8px 0 8px;
     font-size: 26px;
+    color: var(--text-primary, #000);
+    transition: color 0.3s ease;
 }
 
 .muted {
-    color: #6f7580;
+    color: var(--text-secondary, #6f7580);
     font-size: 12px;
     margin: 0 0 18px;
+    transition: color 0.3s ease;
 }
 
 /* Grid layout: two columns on desktop for the first row, full width for the .full panel. */
@@ -22,10 +40,17 @@ h1 {
 }
 
 .panel {
-    background: #e9f3ff; /* light blue */
+    background: #e9f3ff;
     padding: 18px;
-    box-shadow: none;
-    border-radius: 12px; /* more rounded corners */
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+    border-radius: 12px;
+    border: 1px solid transparent;
+    transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+[data-theme="dark"] .panel {
+    background: #e9f3ff !important;
+    border: 1px solid #334155;
 }
 
 .panel h3 {
@@ -34,12 +59,23 @@ h1 {
     font-weight: 700;
     letter-spacing: 0.6px;
     text-transform: none;
+    color: #000000 !important;
+    transition: none;
+}
+
+.legal-grid .panel h3 {
+    color: #000000 !important;
+}
+
+[data-theme="dark"] .legal-grid .panel h3 {
+    color: #000000 !important;
 }
 
 .panel p {
     margin: 0 0 10px;
-    color: #1f1f1f;
+    color: #1f1f1f !important;
     font-size: 13px;
+    transition: none;
 }
 
 .panel ul {
@@ -52,8 +88,9 @@ h1 {
     position: relative;
     padding-left: 0;
     margin: 6px 0;
-    color: #111;
+    color: #111 !important;
     font-size: 13px;
+    transition: none;
 }
 
 /* Full width panel spans both columns */
@@ -63,20 +100,22 @@ h1 {
 
 /* More link (call to action) - ensure visited/active aren't purple and add focus outline */
 .more {
-    color: #386b8f;
+    color: var(--accent-primary, #386b8f);
     text-decoration: none;
     font-weight: 600;
+    transition: color 0.3s ease;
 }
 .more:hover {
     text-decoration: underline;
+    color: var(--accent-hover, #2a5570);
 }
 .more:visited,
 .more:active,
 .more:focus {
-    color: #386b8f; /* keep same grey-blue */
+    color: var(--accent-primary, #386b8f);
 }
 .more:focus {
-    outline: 3px solid rgba(56,107,143,0.18);
+    outline: 3px solid var(--accent-light, rgba(56,107,143,0.18));
     outline-offset: 3px;
 }
 

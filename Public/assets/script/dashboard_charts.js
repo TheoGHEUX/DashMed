@@ -414,12 +414,37 @@ document.addEventListener('DOMContentLoaded', () => {
 				toggleEditBtn.innerHTML = '<span class="icon-edit">✎</span><span class="text-edit">Modifier</span>';
 			}
 			
-			// Show/hide resize handles and add edit-mode class
+			// Show/hide resize handles, delete buttons and add edit-mode class
 			document.querySelectorAll('.chart-card').forEach(card => {
 				const handle = card.querySelector('.resize-handle');
 				if (handle) {
 					handle.style.display = editMode ? 'block' : 'none';
 				}
+				
+				// Add/remove delete button
+				let deleteBtn = card.querySelector('.btn-remove');
+				if (editMode) {
+					if (!deleteBtn) {
+						deleteBtn = document.createElement('button');
+						deleteBtn.className = 'btn-remove';
+						deleteBtn.innerHTML = '×';
+						deleteBtn.title = 'Supprimer ce graphique';
+						
+						const chartId = card.getAttribute('data-chart-id');
+						deleteBtn.addEventListener('click', (e) => {
+							e.stopPropagation();
+							removeChart(chartId);
+						});
+						
+						card.appendChild(deleteBtn);
+					}
+					deleteBtn.style.display = 'block';
+				} else {
+					if (deleteBtn) {
+						deleteBtn.style.display = 'none';
+					}
+				}
+				
 				if (editMode) {
 					card.classList.add('edit-mode');
 					setupChartDrag(card);
@@ -667,6 +692,23 @@ document.addEventListener('DOMContentLoaded', () => {
 			// Setup drag for the newly added chart if in edit mode
 			if (editMode) {
 				setupChartDrag(card);
+				
+				// Add delete button if not already present
+				let deleteBtn = card.querySelector('.btn-remove');
+				if (!deleteBtn) {
+					deleteBtn = document.createElement('button');
+					deleteBtn.className = 'btn-remove';
+					deleteBtn.innerHTML = '×';
+					deleteBtn.title = 'Supprimer ce graphique';
+					
+					deleteBtn.addEventListener('click', (e) => {
+						e.stopPropagation();
+						removeChart(chartId);
+					});
+					
+					card.appendChild(deleteBtn);
+				}
+				deleteBtn.style.display = 'block';
 			}
 		}
 		
