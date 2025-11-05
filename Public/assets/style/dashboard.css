@@ -634,6 +634,20 @@
     .dashboard-grid {
         grid-template-columns: repeat(2, 1fr);
     }
+    
+    /* Améliorer la lisibilité sur tablette */
+    .page-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+    
+    .card-title {
+        font-weight: 600;
+    }
+    
+    .large-value {
+        font-weight: 700;
+    }
 }
 
 @media (max-width: 700px) {
@@ -656,6 +670,10 @@
         gap: 12px;
     }
     
+    .page-title {
+        font-size: 1.4rem;
+    }
+    
     .btn-edit-mode {
         width: 100%;
         justify-content: center;
@@ -672,6 +690,21 @@
     
     .resize-handle {
         display: none !important;
+    }
+    
+    /* Améliorer le contraste des titres de cartes sur mobile */
+    .card-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+    }
+    
+    .large-value {
+        font-size: 1.6rem;
+        font-weight: 700;
+    }
+    
+    .small-note {
+        font-size: 0.8rem;
     }
 }
 
