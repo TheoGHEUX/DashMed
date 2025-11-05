@@ -1,58 +1,183 @@
 <?php
 /**
- * Fichier : legal-notices.php
- * Page des mentions légales de l'application DashMed.
+ * Vue : Page d'accueil publique (Home)
+ *
+ * Cette page constitue la vitrine de l'application DashMed. C'est le premier point
+ * de contact pour les visiteurs non authentifiés. Elle présente les fonctionnalités
+ * principales du service et incite à l'inscription ou à la connexion.
+ *
+ * Fonctionnalités :
+ * - Section hero avec présentation du service et image illustrative
+ * - Call-to-action (CTA) pour inscription et connexion
+ * - Section features présentant 3 avantages clés du service
+ * - Design responsive et moderne
+ * - Accessibilité optimisée (balises alt, structure sémantique)
+ *
+ * Sections de la page :
+ * 1. Hero :
+ *    - Titre principal accrocheur
+ *    - Image du tableau de bord en démonstration
+ *    - Description du service (lead)
+ *    - Deux boutons CTA (inscription primaire, connexion secondaire)
+ *
+ * 2. Features (Avantages) :
+ *    - Suivi clair : Graphiques et indicateurs lisibles
+ *    - Sécurité : Chiffrement et conformité des données
+ *    - Personnalisable : Adaptation aux besoins utilisateurs
+ *
+ * Structure visuelle :
+ * - Header public (avec menu de navigation)
+ * - Section hero avec image en arrière-plan
+ * - Section features avec 3 cartes illustrées
+ * - Footer commun
+ *
+ * Public cible :
+ * - Visiteurs non connectés
+ * - Nouveaux utilisateurs potentiels
+ * - Professionnels de santé recherchant une solution de suivi
+ *
+ * Parcours utilisateur :
+ * - Arrivée sur la page → Découverte du service → CTA inscription/connexion
+ * - Scroll pour en savoir plus → Features → Footer avec liens complémentaires
+ *
+ * @package    DashMed
+ * @subpackage Views
+ * @category   Frontend
+ * @version    1.1.0
+ * @since      1.0.0
+ * @author     FABRE Alexis
+ * @author     GHEUX Théo
+ * @author     JACOB Alexandre
+ * @author     TAHA CHAOUI Amir
+ * @author     UYSUN Ali
+ *
+ * @see        \SITE\Controllers\HomeController.php Contrôleur gérant cette vue
+ * @see        \SITE\Views\auth\register.php Page d'inscription (cible du CTA principal)
+ * @see        \SITE\Views\auth\login.php Page de connexion (cible du CTA secondaire)
+ * @see        \SITE\Views\partials\headerPublic.php Header pour visiteurs non authentifiés
+ *
+ * @requires   PHP >= 7.4
+ *
+ * Dépendances CSS :
+ * @uses /Public/assets/style/index.css Styles de la page d'accueil (hero, features, CTA)
+ *
+ * Dépendances JavaScript :
+ * @uses /Public/assets/script/header_responsive.js Gestion du menu responsive
+ *
+ * Assets images :
+ * @uses /Public/assets/images/dashboard.webp Image de démonstration du tableau de bord
+ * @uses /Public/assets/images/suivi.webp Illustration du suivi médical
+ * @uses /Public/assets/images/securite.webp Illustration de la sécurité
+ * @uses /Public/assets/images/personnalisable.webp Illustration de la personnalisation
+ *
+ * Variables de template :
+ * @var string $pageTitle       Titre de la page (affiché dans <title>), par défaut "Accueil"
+ * @var string $pageDescription Meta description pour le SEO
+ * @var array  $pageStyles      Chemins des feuilles de style à inclure
+ * @var array  $pageScripts     Chemins des scripts JavaScript à inclure
+ *
+ * SEO & Marketing :
+ * - Mots-clés ciblés : tableau de bord santé, suivi médical, données de santé
+ * - Proposition de valeur claire dans le hero
+ * - Preuves sociales via les features (sécurité, conformité)
+ * - CTA bien visibles et orientés conversion
+ *
+ * Accessibilité :
+ * - Textes alternatifs descriptifs sur toutes les images
+ * - Structure sémantique (section, h1, h2)
+ * - Contraste des boutons conforme WCAG 2.1
+ * - Navigation au clavier fonctionnelle
  */
-
-$pageTitle = "Mentions légales";
-$pageDescription = "Toutes les mentions légales de DashMed";
-$pageStyles = ["/assets/style/legal_notices.css"];
-$pageScripts = [];
 ?>
 <!doctype html>
 <html lang="fr">
-<?php include __DIR__ . '/partials/head.php'; ?>
+<?php
+// ============================================================================
+// CONFIGURATION : Variables du template
+// ============================================================================
+
+/**
+ * Titre de la page affiché dans la balise <title> et l'onglet du navigateur.
+ * Peut être surchargé par le contrôleur via la variable transmise.
+ *
+ * @var string $pageTitle Valeur par défaut : "Accueil"
+ */
+$pageTitle = $pageTitle ?? "Accueil";
+
+/**
+ * Description de la page pour les moteurs de recherche (SEO).
+ * Optimisée pour le référencement avec mots-clés pertinents.
+ * Peut être surchargée par le contrôleur.
+ *
+ * @var string $pageDescription
+ */
+$pageDescription = $pageDescription ?? "Page d'accueil de DashMed : votre tableau de bord santé simple et moderne pour la médecine";
+
+/**
+ * Liste des feuilles de style CSS spécifiques à cette page.
+ * Contient les styles pour le hero, les features et les CTA.
+ * Peut être surchargée par le contrôleur.
+ *
+ * @var array<int, string> $pageStyles Chemins relatifs depuis /Public
+ */
+$pageStyles = $pageStyles ?? ["/assets/style/index.css"];
+
+/**
+ * Liste des scripts JavaScript spécifiques à cette page.
+ * Gère principalement le menu responsive du header public.
+ *
+ * @var array<int, string> $pageScripts Chemins relatifs depuis /Public
+ */
+$pageScripts = ["/assets/script/header_responsive.js"];
+
+include __DIR__ . '/partials/head.php';
+?>
 <body>
 <?php include __DIR__ . '/partials/headerPublic.php'; ?>
-
-<main class="content">
-    <div class="container">
-        <h1>Mentions légales</h1>
-        <p class="muted">Dernière mise à jour: 22 octobre 2025</p>
-
-        <section class="legal-grid">
-            <div class="panel short">
-                <h3>Politique de confidentialité</h3>
-                <p>Nous protégeons les données personnelles et de santé selon les normes en vigueur (RGPD, hébergement sécurisé). Les finalités et durées de conservation sont précisées dans notre politique complète.</p>
-                <a class="more" href="#privacy-details">En savoir plus</a>
+<main>
+    <section class="hero">
+        <h1>Votre tableau de bord santé, simple et moderne</h1>
+        <div class="cadre-hero">
+            <img src="/assets/images/dashboard.webp" alt="Tableau de bord médical moderne" class="hero-bg" />
+            <div class="hero-content">
+                <p class="lead">
+                    DashMed centralise vos données de santé pour mieux suivre vos objectifs,
+                    visualiser vos progrès et rester informé.
+                </p>
+                <div class="cta">
+                    <a class="btn btn-primary" href="/register">S'inscrire</a>
+                    <a class="btn btn-ghost" href="/login">Se connecter</a>
+                </div>
             </div>
+        </div>
+    </section>
 
-            <div class="panel">
-                <h3>Conditions d’utilisation</h3>
-                <p>Ces conditions définissent l'usage professionnel de la plateforme MedDash par les établissements de santé. Elles couvrent les obligations de l'établissement utilisatrice, les engagements de MedDash en matière de sécurité et les limites de responsabilité.</p>
-                <ul>
-                    <li><strong>Habilitations</strong> — gestion des accès par l'établissement ; identifiants personnels requis.</li>
-                    <li><strong>Sécurité</strong> — chiffrement, journaux d'audit et hébergement sécurisé conformes aux obligations applicables aux données de santé.</li>
-                    <li><strong>SLA</strong> — disponibilités et procédures d'incident précisées contractuellement ; maintenance planifiée annoncée à l'avance.</li>
-                    <li><strong>Responsabilités</strong> — l'établissement reste responsable du contenu clinique et des décisions médicales ; MedDash assure la plateforme et son intégrité technique.</li>
-                </ul>
-                <a class="more" href="#terms-details">Lire les détails</a>
+    <section class="features">
+        <h1>Pourquoi choisir DashMed ?</h1>
+        <div class="cadre-features">
+            <img src="/assets/images/suivi.webp" alt="image representant un graphique de suivi" />
+            <div class="suivi-content">
+                <h2>Suivi clair</h2>
+                <p>Des indicateurs lisibles et des graphiques pour comprendre vos mesures en un coup d'œil.</p>
             </div>
+        </div>
 
-            <div class="panel full long">
-                <h3>Droits des utilisateurs et gestion des données</h3>
-                <p>Les utilisateurs et les patients bénéficient de droits encadrés par le RGPD et la réglementation relative aux données de santé. Les demandes d'accès, de rectification ou d'effacement sont traitées selon des procédures définies en collaboration avec l'établissement.</p>
-                <ul>
-                    <li><strong>Droit d'accès :</strong> possibilité de demander une copie des données détenues vous concernant.</li>
-                    <li><strong>Droit de rectification :</strong> correction des données inexactes via les procédures internes de l'établissement.</li>
-                    <li><strong>Droit à l'effacement :</strong> supprimable sous réserve des obligations légales de conservation (dossiers médicaux, archives réglementaires).</li>
-                    <li><strong>Logs et traçabilité :</strong> toutes les consultations et actions sont journalisées pour garantir la traçabilité et la sécurité.</li>
-                    <li><strong>Procédure de demande :</strong> les demandes doivent être adressées au DPO ou contact indiqué par l'établissement ; MedDash assiste techniquement le traitement de ces demandes.</li>
-                </ul>
-                <a class="more" href="#rights-details">Procédure complète</a>
+        <div class="cadre-features">
+            <img src="/assets/images/securite.webp" alt="image representant un cadenas sur un serveur" />
+            <div class="securite-content">
+                <h2>Sécurité</h2>
+                <p>Vos données sont chiffrées et hébergées sur des serveurs conformes aux standards.</p>
             </div>
-        </section>
-    </div>
+        </div>
+
+        <div class="cadre-features">
+            <img src="/assets/images/personnalisable.webp" alt="image de personnalisation" />
+            <div class="personnalisable-content">
+                <h2>Personnalisable</h2>
+                <p>Adaptez vos tableaux, vos unités et vos objectifs selon votre pratique.</p>
+            </div>
+        </div>
+    </section>
 </main>
 
 <?php include __DIR__ . '/partials/footer.php'; ?>

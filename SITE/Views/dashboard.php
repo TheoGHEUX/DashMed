@@ -1,14 +1,121 @@
 <?php
 /**
- * Variables pour le template de la page
+ * Vue : Tableau de bord médical (Dashboard)
+ *
+ * Cette page constitue le cœur de l'application DashMed. Elle affiche une grille
+ * interactive de graphiques permettant de visualiser l'évolution des constantes
+ * vitales et indicateurs de santé du patient.
+ *
+ * Fonctionnalités :
+ * - Affichage de 7 graphiques de suivi médical (tension, pouls, respiration, etc.)
+ * - Mode édition permettant de réorganiser/masquer les graphiques
+ * - Panneau de gestion des graphiques (ajout/suppression par glisser-déposer)
+ * - Redimensionnement dynamique des cartes en mode édition
+ * - Affichage des dernières valeurs mesurées pour chaque indicateur
+ * - Graphiques interactifs générés avec Chart.js
+ *
+ * Graphiques disponibles :
+ * - Tension artérielle (mmHg) - Systolique/Diastolique
+ * - Fréquence cardiaque (BPM) - Battements par minute
+ * - Fréquence respiratoire (resp/min) - Cycles respiratoires
+ * - Température corporelle (°C) - Température centrale
+ * - Glycémie (mmol/L) - Taux de glucose sanguin
+ * - Poids (kg) - Évolution pondérale
+ * - Saturation en oxygène (%) - SpO2
+ *
+ * Interactivité :
+ * - Bouton "Modifier" : active/désactive le mode édition
+ * - Mode édition : permet le drag & drop des cartes
+ * - Poignées de redimensionnement visibles en mode édition
+ * - Zone de dépôt pour supprimer des graphiques
+ *
+ * Architecture technique :
+ * - Grille responsive CSS Grid Layout
+ * - Canvas HTML5 pour les graphiques (Chart.js)
+ * - JavaScript vanilla pour les interactions
+ * - ARIA labels pour l'accessibilité
+ *
+ * @package    DashMed
+ * @subpackage Views
+ * @category   Frontend
+ * @version    1.2.0
+ * @since      1.0.0
+ * @author     FABRE Alexis
+ * @author     GHEUX Théo
+ * @author     JACOB Alexandre
+ * @author     TAHA CHAOUI Amir
+ * @author     UYSUN Ali
+ *
+ * @see        \SITE\Views\accueil.php Page d'accueil redirigeant vers ce dashboard
+ * @see        \SITE\Views\partials\headerPrivate.php Header pour utilisateurs authentifiés
+ *
+ * @requires   PHP >= 7.4
+ * @requires   Session active avec $_SESSION['user']
+ * @requires   Chart.js (bibliothèque JavaScript pour les graphiques)
+ *
+ * @global array $_SESSION Données de session pour l'authentification
+ *
+ * Dépendances CSS :
+ * @uses /Public/assets/style/dashboard.css Styles du tableau de bord (grille, cartes, graphiques)
+ *
+ * Dépendances JavaScript :
+ * @uses /Public/assets/script/dashboard_charts.js Gestion des graphiques et interactions
+ *
+ * Structure des données :
+ * - Les données des graphiques sont chargées via AJAX depuis l'API backend
+ * - Format attendu : JSON avec timestamps et valeurs mesurées
+ * - Les placeholders sont affichés en attendant les données réelles
+ *
+ * Variables de template :
+ * @var string $pageTitle       Titre de la page (affiché dans <title>)
+ * @var string $pageDescription Meta description pour le SEO
+ * @var array  $pageStyles      Chemins des feuilles de style à inclure
+ * @var array  $pageScripts     Chemins des scripts JavaScript à inclure
+ *
+ * Accessibilité :
+ * - Utilisation de balises sémantiques (article, section, h1-h2)
+ * - ARIA labels sur les graphiques pour les lecteurs d'écran
+ * - Navigation au clavier supportée
+ * - Contraste des couleurs conforme WCAG 2.1
+ */
+
+// ============================================================================
+// CONFIGURATION : Variables du template
+// ============================================================================
+
+/**
+ * Titre de la page affiché dans la balise <title> et l'onglet du navigateur.
+ *
+ * @var string $pageTitle
  */
 $pageTitle = "Dashboard";
+
+/**
+ * Description de la page pour les moteurs de recherche (SEO).
+ * Décrit le contenu du tableau de bord médical.
+ *
+ * @var string $pageDescription
+ */
 $pageDescription = "Tableau de bord - Suivi médical";
+
+/**
+ * Liste des feuilles de style CSS spécifiques à cette page.
+ * Contient les styles pour la grille de graphiques, les cartes et les interactions.
+ *
+ * @var array<int, string> $pageStyles Chemins relatifs depuis /Public
+ */
 $pageStyles = [
-    '/assets/style/dashboard.css'
+        '/assets/style/dashboard.css'
 ];
+
+/**
+ * Liste des scripts JavaScript spécifiques à cette page.
+ * Gère la création des graphiques Chart.js, le mode édition et le drag & drop.
+ *
+ * @var array<int, string> $pageScripts Chemins relatifs depuis /Public
+ */
 $pageScripts = [
-    '/assets/script/dashboard_charts.js'
+        '/assets/script/dashboard_charts.js'
 ];
 ?>
 <!DOCTYPE html>
@@ -99,24 +206,15 @@ $pageScripts = [
         </article>
     </section>
 
-    <!-- Add chart panel -->
     <div class="add-chart-panel" id="addChartPanel" style="display: none;">
         <h3>Glissez un graphique ici pour le supprimer, ou glissez-le sur la grille pour l'ajouter</h3>
         <div class="available-charts" id="availableCharts"></div>
     </div>
 
-    <?php if (!empty($patient)): ?>
     <section class="dashboard-legend">
-        <p>Données du patient : <strong><?= htmlspecialchars($patient['prenom'] . ' ' . $patient['nom']) ?></strong> 
-        (<?= htmlspecialchars($patient['email']) ?>)</p>
+        <p>Les valeurs affichées sont des placeholders.</p>
     </section>
-    <?php endif; ?>
 </main>
-
-<!-- Injection des données réelles dans JavaScript -->
-<script>
-    window.patientChartData = <?= json_encode($chartData ?? []) ?>;
-</script>
 
 <?php include __DIR__ . '/partials/footer.php'; ?>
 </body>
