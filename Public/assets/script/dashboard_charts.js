@@ -6,6 +6,16 @@
 document.addEventListener('DOMContentLoaded', () => {
 	const DPR = window.devicePixelRatio || 1;
 	
+	// Ajouter la classe initial-load pour les animations de chargement
+	const grid = document.getElementById('dashboardGrid');
+	if (grid) {
+		grid.classList.add('initial-load');
+		// Retirer après que les animations soient terminées
+		setTimeout(() => {
+			grid.classList.remove('initial-load');
+		}, 1000);
+	}
+	
 	// Reset config if requested via URL parameter
 	const urlParams = new URLSearchParams(window.location.search);
 	if (urlParams.get('reset') === '1') {
@@ -902,11 +912,47 @@ document.addEventListener('DOMContentLoaded', () => {
 			e.dataTransfer.setData('text/plain', chartId);
 			e.dataTransfer.setData('source', 'chart-card');
 			card.classList.add('dragging');
+			card.style.cursor = 'grabbing';
+			
+			// Bloquer les redraws pendant le drag
+			isReordering = true;
+			
+			// Désactiver les animations pendant le drag
+			const dashboardGrid = document.getElementById('dashboardGrid');
+			if (dashboardGrid) {
+				dashboardGrid.classList.add('reordering');
+			}
+			
+			// Ajouter une classe pour indiquer le mode drag sur toutes les cartes
+			document.querySelectorAll('.chart-card').forEach(c => {
+				if (c !== card) c.classList.add('drop-target-available');
+			});
+			
 			startAutoScroll();
 		});
 		
 		card.addEventListener('dragend', (e) => {
 			card.classList.remove('dragging');
+			card.style.cursor = 'grab';
+			
+			// Débloquer les redraws après un court délai
+			setTimeout(() => {
+				isReordering = false;
+			}, 150);
+			
+			// Réactiver les animations après un court délai
+			const dashboardGrid = document.getElementById('dashboardGrid');
+			if (dashboardGrid) {
+				setTimeout(() => {
+					dashboardGrid.classList.remove('reordering');
+				}, 100);
+			}
+			
+			// Retirer la classe de mode drag
+			document.querySelectorAll('.chart-card').forEach(c => {
+				c.classList.remove('drop-target-available', 'drop-before', 'drop-after', 'drop-left', 'drop-right');
+			});
+			
 			stopAutoScroll();
 		});
 		
@@ -919,31 +965,49 @@ document.addEventListener('DOMContentLoaded', () => {
 			e.preventDefault();
 			e.dataTransfer.dropEffect = 'move';
 			
-			// Determine if we should insert before or after based on mouse position
+			// Déterminer la direction du drop basé sur la position de la souris
 			const rect = card.getBoundingClientRect();
 			const midY = rect.top + rect.height / 2;
 			const midX = rect.left + rect.width / 2;
 			
-			// For grid layout, check both X and Y position
-			if (e.clientY < midY) {
+			// Nettoyer toutes les classes de drop
+			card.classList.remove('drop-before', 'drop-after', 'drop-left', 'drop-right');
+			
+			// Calculer la distance relative aux bords
+			const distanceTop = e.clientY - rect.top;
+			const distanceBottom = rect.bottom - e.clientY;
+			const distanceLeft = e.clientX - rect.left;
+			const distanceRight = rect.right - e.clientX;
+			
+			// Trouver le bord le plus proche
+			const minDistance = Math.min(distanceTop, distanceBottom, distanceLeft, distanceRight);
+			
+			if (minDistance === distanceTop) {
 				card.classList.add('drop-before');
-				card.classList.remove('drop-after');
-			} else {
+			} else if (minDistance === distanceBottom) {
 				card.classList.add('drop-after');
-				card.classList.remove('drop-before');
+			} else if (minDistance === distanceLeft) {
+				card.classList.add('drop-left');
+			} else {
+				card.classList.add('drop-right');
 			}
 		});
 		
 		card.addEventListener('dragleave', (e) => {
-			// Only remove if we're actually leaving the card
+			// Retirer les indicateurs seulement si on sort vraiment de la carte
 			if (!card.contains(e.relatedTarget)) {
-				card.classList.remove('drop-before', 'drop-after');
+				card.classList.remove('drop-before', 'drop-after', 'drop-left', 'drop-right');
 			}
 		});
 		
 		card.addEventListener('drop', (e) => {
 			e.preventDefault();
-			card.classList.remove('drop-before', 'drop-after');
+			e.stopPropagation();
+			
+			const dropClasses = ['drop-before', 'drop-after', 'drop-left', 'drop-right'];
+			const activeDropClass = dropClasses.find(cls => card.classList.contains(cls));
+			
+			card.classList.remove(...dropClasses);
 			
 			const source = e.dataTransfer.getData('source');
 			if (source !== 'chart-card') return;
@@ -953,34 +1017,75 @@ document.addEventListener('DOMContentLoaded', () => {
 			
 			if (draggedId === targetId) return;
 			
-			// Reorder in the visible array
+			// Reorder dans le tableau visible
 			const draggedIndex = chartConfig.visible.indexOf(draggedId);
 			const targetIndex = chartConfig.visible.indexOf(targetId);
 			
 			if (draggedIndex === -1 || targetIndex === -1) return;
 			
-			// Remove from old position
+			// Retirer de l'ancienne position
 			chartConfig.visible.splice(draggedIndex, 1);
 			
-			// Insert at new position
+			// Calculer la nouvelle position en fonction de la direction du drop
 			const newTargetIndex = chartConfig.visible.indexOf(targetId);
-			const rect = card.getBoundingClientRect();
-			const midY = rect.top + rect.height / 2;
 			
-			if (e.clientY < midY) {
-				// Insert before
+			// Pour tous les cas (gauche, droite, haut, bas), on utilise la même logique
+			// drop-before/drop-left = insérer AVANT la carte cible
+			// drop-after/drop-right = insérer APRÈS la carte cible
+			if (activeDropClass === 'drop-before' || activeDropClass === 'drop-left') {
+				// Insérer avant la carte cible
 				chartConfig.visible.splice(newTargetIndex, 0, draggedId);
+			} else if (activeDropClass === 'drop-after' || activeDropClass === 'drop-right') {
+				// Insérer après la carte cible
+				chartConfig.visible.splice(newTargetIndex + 1, 0, draggedId);
 			} else {
-				// Insert after
+				// Par défaut, insérer après
 				chartConfig.visible.splice(newTargetIndex + 1, 0, draggedId);
 			}
 			
 			saveChartConfig();
-			reorderChartsInDOM();
+			reorderChartsInDOMSmooth();
 		});
 	}
 	
-	// Reorder charts in the DOM based on the visible array order
+	// Réorganiser les cartes de manière fluide SANS recharger la page
+	function reorderChartsInDOMSmooth() {
+		const dashboardGrid = document.getElementById('dashboardGrid');
+		if (!dashboardGrid) return;
+		
+		// Récupérer toutes les cartes visibles
+		const allCards = Array.from(document.querySelectorAll('.chart-card'));
+		
+		// Construire l'ordre souhaité basé sur chartConfig.visible
+		const orderedCards = [];
+		chartConfig.visible.forEach(chartId => {
+			const card = allCards.find(c => c.getAttribute('data-chart-id') === chartId);
+			if (card) orderedCards.push(card);
+		});
+		
+		// Ajouter les cartes cachées à la fin
+		allCards.forEach(card => {
+			const cardId = card.getAttribute('data-chart-id');
+			if (!chartConfig.visible.includes(cardId)) {
+				orderedCards.push(card);
+			}
+		});
+		
+		// Réorganiser en utilisant insertBefore pour éviter les disparitions
+		orderedCards.forEach((card, index) => {
+			const currentIndex = Array.from(dashboardGrid.children).indexOf(card);
+			if (currentIndex !== index) {
+				// Insérer la carte à la bonne position
+				if (index >= dashboardGrid.children.length) {
+					dashboardGrid.appendChild(card);
+				} else {
+					dashboardGrid.insertBefore(card, dashboardGrid.children[index]);
+				}
+			}
+		});
+	}
+	
+	// Reorder charts in the DOM based on the visible array order (ancienne méthode avec reload)
 	function reorderChartsInDOM() {
 		const dashboardGrid = document.getElementById('dashboardGrid');
 		if (!dashboardGrid) return;
@@ -1162,7 +1267,10 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 		
 		saveChartConfig();
-		setTimeout(() => resizeAllCanvases(), 50);
+		setTimeout(() => {
+			resizeAllCanvases();
+			redrawAllCharts();
+		}, 50);
 	}
 	
 	// Setup resize handles with smooth dragging
@@ -1237,8 +1345,11 @@ document.addEventListener('DOMContentLoaded', () => {
 				chartConfig.sizes[chartId] = finalColSpan;
 				saveChartConfig();
 				
-				// Update canvas sizes
-				setTimeout(() => resizeAllCanvases(), 100);
+				// Update canvas sizes AND redraw charts
+				setTimeout(() => {
+					resizeAllCanvases();
+					redrawAllCharts();
+				}, 100);
 			};
 			
 			document.addEventListener('mousemove', handleMouseMove);
@@ -1398,7 +1509,12 @@ document.addEventListener('DOMContentLoaded', () => {
 	resizeAllCanvases();
 
 	// Fonction pour redessiner tous les graphiques
+	let isReordering = false;
+	
 	function redrawAllCharts() {
+		// Ne pas redessiner pendant le drag/drop
+		if (isReordering) return;
+		
 		document.querySelectorAll('.chart-card').forEach(card => {
 			const chartId = card.getAttribute('data-chart-id');
 			if (chartId && CHART_DEFINITIONS[chartId]) {
