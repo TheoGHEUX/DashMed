@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			// Utiliser les vraies données si disponibles
 			data: patientData['weight']?.values || [0.52,0.53,0.54,0.53,0.54,0.55,0.54,0.55,0.56,0.55],
 			color: '#10b981',
-			minVal: 60,
+			minVal: 35,
 			maxVal: 110,
 			unit: 'kg',
 			valueId: 'value-weight',
