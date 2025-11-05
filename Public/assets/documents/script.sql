@@ -1,26 +1,3 @@
-DROP TABLE IF EXISTS PASSWORD_RESETS;
-DROP TABLE IF EXISTS ALERTE;
-DROP TABLE IF EXISTS SEUIL_ALERTE;
-DROP TABLE IF EXISTS GRAPHIQUE;
-DROP TABLE IF EXISTS HISTORIQUE_CONSOLE;
-DROP TABLE IF EXISTS PREFERENCES_MEDECIN;
-DROP TABLE IF EXISTS VALEURS_MESURES;
-DROP TABLE IF EXISTS MESURES;
-DROP TABLE IF EXISTS RENDEZ_VOUS;
-DROP TABLE IF EXISTS SUIVRE;
-DROP TABLE IF EXISTS PATIENT;
-DROP TABLE IF EXISTS MEDECIN;
-DROP
-DATABASE IF EXISTS `dashmed-site_db`;
-
-CREATE
-DATABASE IF NOT EXISTS `dashmed-site_db`
-    DEFAULT CHARACTER SET utf8mb4
-    COLLATE utf8mb4_general_ci;
-
-USE
-`dashmed-site_db`;
-
 -- TABLE MEDECIN
 CREATE TABLE MEDECIN
 (
@@ -51,7 +28,10 @@ CREATE TABLE MEDECIN
                                                                          'Sexologie',
                                                                          'Toxicologie', 'Urologie'
         )),
-    compte_actif      BOOLEAN             NOT NULL,
+    compte_actif BOOLEAN,
+    email_verified  BOOLEAN,
+    email_verification_token VARCHAR(255),
+    email_verification_expires DATETIME,
     date_creation     DATETIME            NOT NULL,
     date_activation   DATETIME,
     date_derniere_maj DATETIME,
