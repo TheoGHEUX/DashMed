@@ -16,10 +16,10 @@
  *
  * Variables attendues :
  * @var array  $_SESSION['user']         Données utilisateur (name, last_name, sexe, specialite, email)
- * @var string $pageTitle               Titre de la page (ex: "Profil")
- * @var string $pageDescription         Meta description (optionnel)
- * @var array<int,string> $pageStyles   Styles spécifiques (ex: ["/assets/style/profile.css"])
- * @var array<int,string> $pageScripts  Scripts spécifiques (optionnel)
+ * @var string $pageTitle               Titre de la page ("Profil")
+ * @var string $pageDescription         Meta description
+ * @var array<int,string> $pageStyles   Styles spécifiques (["/assets/style/profile.css"])
+ * @var array<int,string> $pageScripts  Scripts spécifiques
  */
 
 // ============================================================================

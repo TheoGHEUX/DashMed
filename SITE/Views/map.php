@@ -12,10 +12,10 @@
  * @since      1.0
  *
  * Variables attendues :
- * @var string $pageTitle               Titre de la page (ex: "Plan du site")
- * @var string $pageDescription         Meta description (optionnel)
- * @var array<int,string> $pageStyles   Styles spécifiques (ex: ["/assets/style/map.css"])
- * @var array<int,string> $pageScripts  Scripts spécifiques (ex: ["/assets/script/header_responsive.js"])
+ * @var string $pageTitle               Titre de la page ( "Plan du site")
+ * @var string $pageDescription         Meta description
+ * @var array<int,string> $pageStyles   Styles spécifiques ( ["/assets/style/map.css"])
+ * @var array<int,string> $pageScripts  Scripts spécifiques ( ["/assets/script/header_responsive.js"])
  *
  * @see \SITE\Views\partials\head.php
  * @see \SITE\Views\partials\headerPublic.php
