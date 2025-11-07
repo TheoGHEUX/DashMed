@@ -4,6 +4,18 @@ namespace Controllers;
 use Core\Csrf;
 use Models\User;
 
+/**
+ * Contrôleur : Changement d'adresse email
+ *
+ * Gère l'affichage et le traitement du formulaire de modification d'email
+ * pour un utilisateur connecté.
+ *
+ * Variables passées aux vues :
+ *  - $errors  (array)   Erreurs à afficher
+ *  - $success (string)  Message de succès
+ *
+ * @package Controllers
+ */
 final class ChangeMailController
 {
     public function showForm(): void

@@ -1,15 +1,17 @@
 <?php
 /**
- * Fichier : change-password.php
- * Page de changement de mot de passe (utilisateur connecté) pour DashMed.
+ * Vue : Changement de mot de passe
  *
- * Variables:
- * - $errors  (array)
- * - $success (string)
+ * Formulaire pour que l'utilisateur connecté modifie son mot de passe.
+ *
+ * Variables optionnelles :
+ *  - $errors  (array)   Erreurs de validation à afficher
+ *  - $success (string)  Message de succès
+ *
+ * @package DashMed
  */
 
 $csrf_token = \Core\Csrf::token();
-
 
 $pageTitle = "Changer mon mot de passe";
 $pageDescription = "Modifiez votre mot de passe en toute sécurité";

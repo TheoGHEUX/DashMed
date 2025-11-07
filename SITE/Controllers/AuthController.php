@@ -5,6 +5,24 @@ use Models\User;
 use Core\Csrf;
 use Core\Mailer;
 
+/**
+ * Contrôleur : Authentification & inscription
+ *
+ * Gère l'affichage et le traitement des formulaires d'inscription, de connexion
+ * et la déconnexion. Fournit également la liste des spécialités valides.
+ *
+ * Méthodes principales :
+ *  - showRegister(), register()
+ *  - showLogin(), login()
+ *  - logout()
+ *
+ * Variables passées aux vues :
+ *  - $errors  (array)
+ *  - $success (string)
+ *  - $old     (array) pour remplir les formulaires après erreur
+ *
+ * @package Controllers
+ */
 final class AuthController
 {
     // Liste complète des spécialités médicales valides
@@ -141,7 +159,7 @@ final class AuthController
                 )) {
                     // Génération du token de vérification d'email
                     $verificationToken = User::generateEmailVerificationToken($old['email']);
-                    
+
                     if ($verificationToken) {
                         // Envoi de l'email de vérification
                         $mailSent = Mailer::sendEmailVerification($old['email'], $old['name'], $verificationToken);

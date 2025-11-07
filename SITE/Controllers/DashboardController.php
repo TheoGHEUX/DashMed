@@ -4,13 +4,18 @@ namespace Controllers;
 use Models\Patient;
 
 /**
- * Contrôleur pour le vrai dashboard avec graphiques et statistiques
- * 
-*/
+ * Contrôleur : Tableau de bord
+ *
+ * Prépare les données patients et les séries pour les graphiques du dashboard.
+ * Méthode principale :
+ *  - index() : récupère patient + séries et affiche la vue ../Views/dashboard.php
+ *
+ * @package Controllers
+ */
 final class DashboardController {
     /**
-     * Affiche la page du tableau de bord avec graphiques et infos patients
-     * 
+     * Affiche la page du tableau de bord avec graphiques et infos patients.
+     *
      * @return void
      */
     public function index(): void {
@@ -22,13 +27,13 @@ final class DashboardController {
         // Pour l'instant, on utilise le patient 1 (Alexandre Jacob)
         // Plus tard, on récupérera les patients liés au médecin connecté
         $patientId = 1;
-        
+
         // Récupérer les informations du patient
         $patient = Patient::findById($patientId);
-        
+
         // Récupérer les données pour chaque type de graphique
         $chartData = [];
-        
+
         // Température corporelle (35-40°C)
         $tempData = Patient::getChartData($patientId, 'Température corporelle', 50);
         if ($tempData) {
@@ -38,7 +43,7 @@ final class DashboardController {
                 'unit' => $tempData['unite']
             ];
         }
-        
+
         // Tension artérielle (100-140 mmHg)
         $tensionData = Patient::getChartData($patientId, 'Tension arterielle', 50);
         if (!$tensionData) {
@@ -51,7 +56,7 @@ final class DashboardController {
                 'unit' => $tensionData['unite']
             ];
         }
-        
+
         // Fréquence cardiaque (60-100 bpm)
         $fcData = Patient::getChartData($patientId, 'Fréquence cardiaque', 50);
         if ($fcData) {
@@ -61,7 +66,7 @@ final class DashboardController {
                 'unit' => $fcData['unite']
             ];
         }
-        
+
         // Fréquence respiratoire (12-20 resp/min)
         $respData = Patient::getChartData($patientId, 'Fréquence respiratoire', 50);
         if ($respData) {
@@ -71,7 +76,7 @@ final class DashboardController {
                 'unit' => $respData['unite']
             ];
         }
-        
+
         // Glycémie (4.0-7.5 mmol/L)
         $glycemieData = Patient::getChartData($patientId, 'Glycémie', 50);
         if ($glycemieData) {
@@ -81,7 +86,7 @@ final class DashboardController {
                 'unit' => $glycemieData['unite']
             ];
         }
-        
+
         // Poids (35-110 kg)
         $poidsData = Patient::getChartData($patientId, 'Poids', 50);
         if ($poidsData) {
@@ -91,7 +96,7 @@ final class DashboardController {
                 'unit' => $poidsData['unite']
             ];
         }
-        
+
         // Saturation en oxygène (95-100%)
         $o2Data = Patient::getChartData($patientId, 'Saturation en oxygène', 50);
         if ($o2Data) {

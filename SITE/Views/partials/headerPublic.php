@@ -6,7 +6,7 @@
  * le toggle mode sombre et le menu burger. Détecte la page active via REQUEST_URI.
  *
  * Variables attendues :
- * @var string $currentPath Chemin extrait de la requête (ex: "/","/map")
+ * @var string $currentPath Chemin extrait de la requête
  *
  * @package    DashMed
  * @subpackage Views\Partials

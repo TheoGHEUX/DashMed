@@ -1,4 +1,29 @@
 <?php
+/**
+ * Contrôleur : Réinitialisation du mot de passe
+ *
+ * Gère l'affichage du formulaire de réinitialisation (showForm) et le traitement
+ * du nouveau mot de passe (submit). Utilise un token stocké dans la table
+ * password_resets et protège les soumissions avec CSRF.
+ *
+ * Méthodes principales :
+ *  - showForm(): affiche la vue de reset (email + token en GET)
+ *  - submit():   valide CSRF, vérifie token, met à jour le mot de passe et invalide le token
+ *
+ * Variables passées aux vues :
+ *  - $errors  (array)   Liste d'erreurs à afficher
+ *  - $success (string)  Message de succès
+ *  - $email   (string)  Email affiché dans le formulaire
+ *  - $token   (string)  Token (hidden)
+ *
+ * Remarques de sécurité :
+ *  - Vérification stricte du token (hash SHA-256) et usage en transaction
+ *  - Validation côté serveur de la complexité du mot de passe
+ *  - Invalidation du token après usage (used_at)
+ *
+ * @package Controllers
+ */
+
 namespace Controllers;
 
 use Core\Csrf;
@@ -20,7 +45,7 @@ final class ResetPasswordController
             $errors[] = 'Lien de réinitialisation invalide ou expiré.';
         }
 
-    \View::render('auth/reset-password', compact('errors', 'success', 'email', 'token'));
+        \View::render('auth/reset-password', compact('errors', 'success', 'email', 'token'));
     }
 
     public function submit(): void
@@ -123,7 +148,7 @@ final class ResetPasswordController
         \View::render('auth/reset-password', [
             'errors'  => $errors,
             'success' => $success,
-            'email'   => $emailPosted, 
+            'email'   => $emailPosted,
             'token'   => $token,
         ]);
     }

@@ -4,8 +4,25 @@ namespace Controllers;
 use Core\Csrf;
 use Models\User;
 
+/**
+ * Contrôleur : Changement de mot de passe
+ *
+ * Gère l'affichage et le traitement du formulaire de modification de mot de passe
+ * pour un utilisateur connecté.
+ *
+ * Variables passées aux vues :
+ *  - $errors  (array)   Erreurs à afficher
+ *  - $success (string)  Message de succès
+ *
+ * @package Controllers
+ */
 final class ChangePasswordController
 {
+    /**
+     * Affiche le formulaire de changement de mot de passe.
+     *
+     * @return void
+     */
     public function showForm(): void
     {
         if (session_status() !== PHP_SESSION_ACTIVE) session_start();
@@ -19,6 +36,11 @@ final class ChangePasswordController
         \View::render('auth/change-password', compact('errors', 'success'));
     }
 
+    /**
+     * Traite la soumission du formulaire de changement de mot de passe.
+     *
+     * @return void
+     */
     public function submit(): void
     {
         if (session_status() !== PHP_SESSION_ACTIVE) session_start();

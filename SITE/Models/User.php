@@ -4,8 +4,29 @@ namespace Models;
 use Core\Database;
 use PDO;
 
+/**
+ * Class User
+ *
+ * Représente les opérations basiques liées aux utilisateurs (table MEDECIN).
+ * Fournit des méthodes pour la création, la recherche, la mise à jour et la gestion
+ * des tokens de vérification d'email.
+ *
+ * Notes :
+ * - Toutes les méthodes utilisent Database::getConnection() pour obtenir un PDO.
+ * - Les retours utilisent des types scalaires simples (bool, string|null, array|null).
+ *
+ * @package Models
+ * @author  DashMed
+ * @version 1.0
+ */
 final class User
 {
+    /**
+     * Vérifie si une adresse email existe déjà (insensible à la casse).
+     *
+     * @param string $email Email à tester
+     * @return bool True si l'email existe, false sinon
+     */
     public static function emailExists(string $email): bool
     {
         $pdo = Database::getConnection();
@@ -14,6 +35,17 @@ final class User
         return (bool) $st->fetchColumn();
     }
 
+    /**
+     * Crée un nouvel utilisateur (médecin).
+     *
+     * @param string $name      Prénom
+     * @param string $lastName  Nom
+     * @param string $email     Email (sera trim + strtolower)
+     * @param string $hash      Hash du mot de passe
+     * @param string $sexe      Sexe (ex: 'M'/'F')
+     * @param string $specialite Spécialité
+     * @return bool True si l'insertion a réussi, false sinon
+     */
     public static function create(string $name, string $lastName, string $email, string $hash, string $sexe, string $specialite): bool
     {
         $pdo = Database::getConnection();
@@ -24,6 +56,12 @@ final class User
         return $st->execute([$name, $lastName, strtolower(trim($email)), $hash, $sexe, $specialite]);
     }
 
+    /**
+     * Récupère un utilisateur par son adresse email.
+     *
+     * @param string $email Email recherché
+     * @return array|null Tableau associatif de l'utilisateur ou null si non trouvé
+     */
     public static function findByEmail(string $email): ?array
     {
         $pdo = Database::getConnection();
@@ -48,6 +86,12 @@ final class User
         return $user ?: null;
     }
 
+    /**
+     * Récupère un utilisateur par son identifiant.
+     *
+     * @param int $id Identifiant utilisateur
+     * @return array|null Tableau associatif de l'utilisateur ou null si non trouvé
+     */
     public static function findById(int $id): ?array
     {
         $pdo = Database::getConnection();
@@ -72,6 +116,13 @@ final class User
         return $user ?: null;
     }
 
+    /**
+     * Met à jour le mot de passe d'un utilisateur.
+     *
+     * @param int    $id   Identifiant utilisateur
+     * @param string $hash Nouveau hash du mot de passe
+     * @return bool True si la mise à jour a réussi, false sinon
+     */
     public static function updatePassword(int $id, string $hash): bool
     {
         $pdo = Database::getConnection();
@@ -79,6 +130,13 @@ final class User
         return $st->execute([$hash, $id]);
     }
 
+    /**
+     * Met à jour l'adresse email d'un utilisateur.
+     *
+     * @param int    $id       Identifiant utilisateur
+     * @param string $newEmail Nouvelle adresse email (sera trim + strtolower)
+     * @return bool True si la mise à jour a réussi, false sinon
+     */
     public static function updateEmail(int $id, string $newEmail): bool
     {
         $pdo = Database::getConnection();
@@ -87,16 +145,19 @@ final class User
     }
 
     /**
-     * Génère et stocke un token de vérification d'email (valide 24h)
+     * Génère et stocke un token de vérification d'email (valide 24h).
+     *
+     * @param string $email Email de l'utilisateur
+     * @return string|null Token généré (64 hex chars) ou null si l'opération échoue
      */
     public static function generateEmailVerificationToken(string $email): ?string
     {
         $pdo = Database::getConnection();
-        
+
         // Génération d'un token sécurisé
         $token = bin2hex(random_bytes(32)); // 64 caractères hexadécimaux
         $expires = date('Y-m-d H:i:s', strtotime('+24 hours'));
-        
+
         $st = $pdo->prepare('
             UPDATE MEDECIN 
             SET email_verification_token = ?, 
@@ -104,21 +165,24 @@ final class User
                 date_derniere_maj = NOW()
             WHERE LOWER(email) = LOWER(?)
         ');
-        
+
         if ($st->execute([$token, $expires, strtolower(trim($email))])) {
             return $token;
         }
-        
+
         return null;
     }
 
     /**
-     * Vérifie un token de vérification d'email et active le compte
+     * Vérifie un token de vérification d'email et active le compte.
+     *
+     * @param string $token Token de vérification
+     * @return bool True si le token est valide et l'activation réussie, false sinon
      */
     public static function verifyEmailToken(string $token): bool
     {
         $pdo = Database::getConnection();
-        
+
         // Recherche du token valide (non expiré)
         $st = $pdo->prepare('
             SELECT med_id 
@@ -130,11 +194,11 @@ final class User
         ');
         $st->execute([$token]);
         $user = $st->fetch(PDO::FETCH_ASSOC);
-        
+
         if (!$user) {
             return false;
         }
-        
+
         // Activation du compte et suppression du token
         $st = $pdo->prepare('
             UPDATE MEDECIN 
@@ -145,12 +209,15 @@ final class User
                 date_derniere_maj = NOW()
             WHERE med_id = ?
         ');
-        
+
         return $st->execute([$user['med_id']]);
     }
 
     /**
-     * Trouve un utilisateur par son token de vérification
+     * Trouve un utilisateur par son token de vérification.
+     *
+     * @param string $token Token de vérification
+     * @return array|null Tableau associatif de l'utilisateur ou null si non trouvé
      */
     public static function findByVerificationToken(string $token): ?array
     {

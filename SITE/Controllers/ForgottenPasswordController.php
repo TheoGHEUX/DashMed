@@ -7,6 +7,19 @@ use Core\Mailer;
 use Models\User;
 use PDO;
 
+/**
+ * Contrôleur : Mot de passe oublié
+ *
+ * Gère l'affichage du formulaire de demande de réinitialisation de mot de passe
+ * et l'envoi du lien de réinitialisation par email. La réponse côté UI est
+ * neutre pour ne pas révéler l'existence d'un compte.
+ *
+ * Méthodes :
+ *  - showForm(): affiche la vue 'auth/forgotten-password'
+ *  - submit():   traite la demande, crée un token et envoie l'email (si le compte existe)
+ *
+ * @package Controllers
+ */
 final class ForgottenPasswordController
 {
     public function showForm(): void
@@ -104,10 +117,10 @@ final class ForgottenPasswordController
             $_SESSION['old'] = $old;
         }
 
-    // record this forgot-password request timestamp
-    $fpAttempts[] = $now;
-    $_SESSION['forgot_password_attempts'] = $fpAttempts;
-    $_SESSION['success'] = $success;
+        // record this forgot-password request timestamp
+        $fpAttempts[] = $now;
+        $_SESSION['forgot_password_attempts'] = $fpAttempts;
+        $_SESSION['success'] = $success;
         header('Location: /forgotten-password');
         exit;
     }

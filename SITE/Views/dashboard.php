@@ -13,9 +13,9 @@
  *
  * Variables attendues :
  * @var string $pageTitle               Titre de la page (défaut : "Dashboard")
- * @var string $pageDescription         Meta description (optionnel)
- * @var array<int,string> $pageStyles   Styles spécifiques (ex: ["/assets/style/dashboard.css"])
- * @var array<int,string> $pageScripts  Scripts spécifiques (ex: ["/assets/script/dashboard_charts.js"])
+ * @var string $pageDescription         Meta description
+ * @var array<int,string> $pageStyles   Styles spécifiques ( ["/assets/style/dashboard.css"])
+ * @var array<int,string> $pageScripts  Scripts spécifiques ( ["/assets/script/dashboard_charts.js"])
  */
 
 if (session_status() !== PHP_SESSION_ACTIVE) session_start();

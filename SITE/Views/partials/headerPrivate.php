@@ -11,7 +11,7 @@
  * @version    1.0
  *
  * Variables attendues :
- * @var string $currentPath Chemin extrait de la requête (ex: "/accueil", "/dashboard")
+ * @var string $currentPath Chemin extrait de la requête
  */
 $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 ?>
