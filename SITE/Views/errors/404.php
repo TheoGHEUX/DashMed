@@ -1,39 +1,27 @@
 <?php
 /**
- * Fichier : 404.php
- * Page d'erreur 404 de l'application DashMed.
+ * Vue : Page d'erreur 404 (Page non trouvée)
  *
- * Présente un message d'erreur et invite à retourner à la page d'accueil.
- * Utilise la structure dynamique avec head, header et footer inclus.
+ * Page simple affichant le code 404, un message et deux actions (accueil, dashboard).
  *
- * Variables dynamiques attendues :
- * - $pageTitle       : string   - Titre de la page
- * - $pageDescription : string   - Description pour les métadonnées
- * - $pageStyles      : array    - Styles CSS spécifiques
- * - $pageScripts     : array    - Scripts JS spécifiques
- *
- * @package DashMed
- * @version 1.0
- * @author FABRE Alexis, GHEUX Théo, JACOB Alexandre, TAHA CHAOUI Amir, UYSUN Ali
+ * Variables optionnelles (définies par le contrôleur) :
+ * @var string $pageTitle
+ * @var string $pageDescription
+ * @var array  $pageStyles
+ * @var array  $pageScripts
  */
-?>
-<!doctype html>
-<html lang="fr">
-<?php
-// Variables dynamiques transmises depuis le contrôleur (valeurs par défaut si absentes)
-$pageTitle = $pageTitle ?? "Page non trouvée - Erreur 404";
+
+http_response_code(404);
+
+// Valeurs par défaut pour le partial head
+$pageTitle       = $pageTitle ?? "Page non trouvée - Erreur 404";
 $pageDescription = $pageDescription ?? "La page que vous recherchez n'existe pas.";
-$pageStyles = $pageStyles ?? ["/assets/style/404.css"];
-$pageScripts = $pageScripts ?? [];
+$pageStyles      = $pageStyles ?? ["/assets/style/404.css"];
+$pageScripts     = $pageScripts ?? [];
+
 include __DIR__ . '/../partials/head.php';
 ?>
-<!doctype html>
-<html lang="fr">
-    
-<?php include __DIR__ . '/../partials/head.php'; ?>
-
 <body>
-
 <?php include __DIR__ . '/../partials/headerPublic.php'; ?>
 
 <main>
@@ -51,8 +39,6 @@ include __DIR__ . '/../partials/head.php';
         </div>
     </div>
 </main>
-
-
 
 <?php include __DIR__ . '/../partials/footer.php'; ?>
 </body>

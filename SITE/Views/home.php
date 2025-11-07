@@ -1,34 +1,39 @@
 <?php
 /**
- * Page publique d'accueil de l'application DashMed.
- * Présente le service, invite à l'inscription ou à la connexion.
- * Utilise les partials `head`, `header` et `footer` pour le rendu.
+ * Vue : Page d'accueil publique (Home)
  *
- * Variables dynamiques attendues :
- * @var string $pageTitle       Titre de la page (optionnel)
- * @var string $pageDescription Description pour la balise meta (optionnel)
- * @var array  $pageStyles      URLs des feuilles de style spécifiques (optionnel)
- * @var array  $pageScripts     URLs des scripts JS spécifiques (optionnel)
+ * Vitrine publique de l'application DashMed. Présente le hero, les CTA et les
+ * principales fonctionnalités pour inviter à l'inscription ou la connexion.
  *
- * @package DashMed
- * @author FABRE Alexis, GHEUX Théo, JACOB Alexandre, TAHA CHAOUI Amir, UYSUN Ali
+ * @package    DashMed
+ * @subpackage Views
+ * @category   Frontend
+ * @version    1.1
+ * @since      1.0
+ *
+ * Variables attendues :
+ * @var string $pageTitle               Titre de la page (défaut : "Accueil")
+ * @var string $pageDescription         Meta description (optionnel)
+ * @var array<int,string> $pageStyles   Styles spécifiques (ex: ["/assets/style/index.css"])
+ * @var array<int,string> $pageScripts  Scripts spécifiques (ex: ["/assets/script/header_responsive.js"])
+ *
+ * @see \SITE\Views\partials\head.php
+ * @see \SITE\Views\partials\headerPublic.php
+ * @see \SITE\Views\partials\footer.php
  */
-?>
-<!doctype html>
-<html lang="fr">
-<?php
-// Variables dynamiques transmises depuis le contrôleur
-$pageTitle = $pageTitle ?? "Accueil";
+
+$pageTitle       = $pageTitle ?? "Accueil";
 $pageDescription = $pageDescription ?? "Page d'accueil de DashMed : votre tableau de bord santé simple et moderne pour la médecine";
-$pageStyles = $pageStyles ?? ["/assets/style/index.css"];
-$pageScripts = ["/assets/script/header_responsive.js"];
+$pageStyles      = $pageStyles ?? ["/assets/style/index.css"];
+$pageScripts     = $pageScripts ?? ["/assets/script/header_responsive.js"];
+
 include __DIR__ . '/partials/head.php';
 ?>
 <body>
 <?php include __DIR__ . '/partials/headerPublic.php'; ?>
 <main>
     <section class="hero">
-        <h1>Votre tableau de bord santé, simple et moderne</h1>
+        <h1><?= htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8') ?></h1>
         <div class="cadre-hero">
             <img src="/assets/images/dashboard.webp" alt="Tableau de bord médical moderne" class="hero-bg" />
             <div class="hero-content">
@@ -45,27 +50,28 @@ include __DIR__ . '/partials/head.php';
     </section>
 
     <section class="features">
-        <h1>Pourquoi choisir DashMed ?</h1>
+        <h2>Pourquoi choisir DashMed ?</h2>
+
         <div class="cadre-features">
-            <img src="/assets/images/suivi.webp" alt="image representant un graphique de suivi" />
-            <div class="suivi-content">
-                <h2>Suivi clair</h2>
+            <img src="/assets/images/suivi.webp" alt="Graphique de suivi" />
+            <div class="feature-content">
+                <h3>Suivi clair</h3>
                 <p>Des indicateurs lisibles et des graphiques pour comprendre vos mesures en un coup d'œil.</p>
             </div>
         </div>
 
         <div class="cadre-features">
-            <img src="/assets/images/securite.webp" alt="image representant un cadenas sur un serveur" />
-            <div class="securite-content">
-                <h2>Sécurité</h2>
+            <img src="/assets/images/securite.webp" alt="Cadenas sur un serveur" />
+            <div class="feature-content">
+                <h3>Sécurité</h3>
                 <p>Vos données sont chiffrées et hébergées sur des serveurs conformes aux standards.</p>
             </div>
         </div>
 
         <div class="cadre-features">
-            <img src="/assets/images/personnalisable.webp" alt="image de personnalisation" />
-            <div class="personnalisable-content">
-                <h2>Personnalisable</h2>
+            <img src="/assets/images/personnalisable.webp" alt="Personnalisation" />
+            <div class="feature-content">
+                <h3>Personnalisable</h3>
                 <p>Adaptez vos tableaux, vos unités et vos objectifs selon votre pratique.</p>
             </div>
         </div>

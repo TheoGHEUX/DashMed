@@ -1,17 +1,34 @@
 <?php
 /**
- * Fichier : legal-notices.php
- * Page des mentions légales de l'application DashMed.
+ * Vue : Mentions légales
+ *
+ * Page des mentions légales et d'information sur la gestion des données (RGPD),
+ * conditions d'utilisation et droits des utilisateurs.
+ *
+ * @package    DashMed
+ * @subpackage Views
+ * @category   Frontend
+ * @version    1.0
+ * @since      1.0
+ *
+ * Variables attendues :
+ * @var string $pageTitle               Titre de la page (défaut : "Mentions légales")
+ * @var string $pageDescription         Meta description (optionnel)
+ * @var array<int,string> $pageStyles   Styles spécifiques (ex: ["/assets/style/legal_notices.css"])
+ * @var array<int,string> $pageScripts  Scripts spécifiques (optionnel)
+ *
+ * @see \SITE\Views\partials\head.php
+ * @see \SITE\Views\partials\headerPublic.php
+ * @see \SITE\Views\partials\footer.php
  */
 
-$pageTitle = "Mentions légales";
-$pageDescription = "Toutes les mentions légales de DashMed";
-$pageStyles = ["/assets/style/legal_notices.css"];
-$pageScripts = [];
+$pageTitle       = $pageTitle ?? "Mentions légales";
+$pageDescription = $pageDescription ?? "Toutes les mentions légales de DashMed";
+$pageStyles      = $pageStyles ?? ["/assets/style/legal_notices.css"];
+$pageScripts     = $pageScripts ?? [];
+
+include __DIR__ . '/partials/head.php';
 ?>
-<!doctype html>
-<html lang="fr">
-<?php include __DIR__ . '/partials/head.php'; ?>
 <body>
 <?php include __DIR__ . '/partials/headerPublic.php'; ?>
 

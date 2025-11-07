@@ -1,69 +1,64 @@
 <?php
 /**
- * Fichier : accueil.php
+ * Vue : Page d'accueil utilisateur (Accueil)
  *
- * Page d'accueil utilisateur pour l'application DashMed.
- * Affiche les statistiques, les activités récentes et propose des actions rapides.
- * Sécurise l'accès via session utilisateur et token CSRF.
- * Utilise les partials pour le head et le footer.
+ * Page d'accueil pour les utilisateurs authentifiés. Affiche une bannière de
+ * bienvenue et un lien vers le tableau de bord.
  *
- * @package DashMed
- * @version 1.1
- * @author FABRE Alexis, GHEUX Théo, JACOB Alexandre, TAHA CHAOUI Amir, UYSUN Ali
+ * @package    DashMed
+ * @subpackage Views
+ * @category   Frontend
+ * @version    1.1
+ * @since      1.0
+ *
+ * Variables attendues :
+ * @var string $pageTitle               Titre de la page (défaut : "Accueil")
+ * @var string $pageDescription         Meta description (optionnel)
+ * @var array<int,string> $pageStyles   Styles spécifiques (ex: ["/assets/style/accueil.css"])
+ * @var array<int,string> $pageScripts  Scripts spécifiques (ex: ["/assets/script/header_responsive.js"])
  */
 
-/**
- * Génère le token CSRF pour la sécurité des formulaires.
- * @var string $csrf_token
- */
-$csrf_token = \Core\Csrf::token();
+// ============================================================================
+// SÉCURITÉ : session & CSRF
+// ============================================================================
+if (session_status() !== PHP_SESSION_ACTIVE) session_start();
 
-/**
- * Vérifie la présence de la session utilisateur.
- * Redirige vers la page de connexion si l'utilisateur n'est pas authentifié.
- */
+// génère le token CSRF si la classe existe (silencieux sinon)
+$csrf_token = function_exists('\\Core\\Csrf::token') ? \Core\Csrf::token() : '';
+
+// contrôle d'accès : utilisateur requis
 if (empty($_SESSION['user'])) {
     header('Location: /login');
     exit;
 }
 
-/**
- * Variables dynamiques pour le template de la page.
- *
- * @var string $pageTitle       Titre de la page (balise <title>)
- * @var string $pageDescription Description pour la balise <meta name="description">
- * @var array  $pageStyles      Liste des feuilles de style spécifiques à la page
- * @var array  $pageScripts     Liste des scripts spécifiques à la page
- */
-$pageTitle = "Accueil";
-$pageDescription = "Page d'accueil accessible une fois connecté, espace pour voir l'activité et les informations des médecins";
-$pageStyles = [
-        "/assets/style/accueil.css"
-];
-$pageScripts = [
-        "/assets/script/header_responsive.js"
-];
-?>
-<!doctype html>
-<html lang="fr">
-<?php include __DIR__ . '/partials/head.php'; ?>
+// ============================================================================
+// CONFIGURATION : variables du template
+// ============================================================================
+$pageTitle       = $pageTitle ?? "Accueil";
+$pageDescription = $pageDescription ?? "Page d'accueil accessible une fois connecté";
+$pageStyles      = $pageStyles ?? ["/assets/style/accueil.css"];
+$pageScripts     = $pageScripts ?? ["/assets/script/header_responsive.js"];
 
+include __DIR__ . '/partials/head.php';
+?>
 <body>
 <?php include __DIR__ . '/partials/headerPrivate.php'; ?>
+
 <main>
     <div class="accueil-container">
-        <!-- Phrase d'accroche et Dashboard -->
         <section class="dashboard-banner">
             <div class="banner-content">
-                <h1 class="welcome-title" style="color: #0fb0c0 !important;">Bienvenue sur DashMed</h1>
+                <h1 class="welcome-title" style="color: #0fb0c0 !important;"><?= htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8') ?></h1>
                 <p>Votre plateforme médicale pour une gestion hospitalière efficace et sécurisée</p>
-                <a href="/dashboard" class="dashboard-card">
-                    <div class="card-icon">📊</div>
+
+                <a href="/dashboard" class="dashboard-card" role="link" aria-label="Accéder au tableau de bord">
+                    <div class="card-icon" aria-hidden="true">📊</div>
                     <div class="card-text">
                         <h3>Tableau de bord</h3>
                         <span>Voir toutes mes données</span>
                     </div>
-                    <div class="card-arrow">→</div>
+                    <div class="card-arrow" aria-hidden="true">→</div>
                 </a>
             </div>
         </section>

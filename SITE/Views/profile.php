@@ -1,27 +1,51 @@
 <?php
 /**
- * Fichier : profile.php
- * Page de profil utilisateur de l'application DashMed.
+ * Vue : Page Profil utilisateur
  *
- * @package DashMed
- * @version 2.0
- * @author FABRE Alexis, GHEUX Théo, JACOB Alexandre, TAHA CHAOUI Amir, UYSUN Ali
+ * Affiche les informations du compte pour l'utilisateur authentifié
+ * et propose les actions de modification (email, mot de passe).
+ *
+ * @package    DashMed
+ * @subpackage Views
+ * @category   Frontend
+ * @version    2.0
+ * @since      1.0
+ *
+ * @see        \SITE\Controllers\ProfileController
+ * @requires   PHP >= 7.4
+ *
+ * Variables attendues :
+ * @var array  $_SESSION['user']         Données utilisateur (name, last_name, sexe, specialite, email)
+ * @var string $pageTitle               Titre de la page (ex: "Profil")
+ * @var string $pageDescription         Meta description (optionnel)
+ * @var array<int,string> $pageStyles   Styles spécifiques (ex: ["/assets/style/profile.css"])
+ * @var array<int,string> $pageScripts  Scripts spécifiques (optionnel)
  */
 
+// ============================================================================
+// SÉCURITÉ : Contrôle d'authentification
+// ============================================================================
 if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+
 if (empty($_SESSION['user'])) {
     header('Location: /login');
     exit;
 }
 
-$user = $_SESSION['user'];
+// ============================================================================
+// RÉCUPÉRATION DES DONNÉES UTILISATEUR
+// ============================================================================
+$user  = $_SESSION['user'];
 $first = $user['name'] ?? '';
 $last  = $user['last_name'] ?? '';
 
-$pageTitle = "Profil";
-$pageDescription = "Consultez votre profil DashMed une fois connecté";
-$pageStyles = ["/assets/style/profile.css"];
-$pageScripts = [];
+// ============================================================================
+// CONFIGURATION : Variables du template
+// ============================================================================
+$pageTitle       = $pageTitle ?? "Profil";
+$pageDescription = $pageDescription ?? "Consultez votre profil DashMed une fois connecté";
+$pageStyles      = $pageStyles ?? ["/assets/style/profile.css"];
+$pageScripts     = $pageScripts ?? [];
 
 include __DIR__ . '/partials/head.php';
 ?>
@@ -32,31 +56,33 @@ include __DIR__ . '/partials/head.php';
         <h1 class="profile-title">Profil</h1>
 
         <div class="profile-card">
+            <!-- Avatar symbolique de l'utilisateur -->
             <div class="avatar">
                 <div class="avatar-circle" aria-hidden="true">👤</div>
             </div>
+
             <table class="info-table" aria-describedby="profil-infos">
                 <tbody>
                 <tr>
                     <th scope="row">Prénom</th>
-                    <td><?= htmlspecialchars($first) ?></td>
+                    <td><?= htmlspecialchars($first, ENT_QUOTES, 'UTF-8') ?></td>
                 </tr>
                 <tr>
                     <th scope="row">Nom</th>
-                    <td><?= htmlspecialchars($last) ?></td>
+                    <td><?= htmlspecialchars($last, ENT_QUOTES, 'UTF-8') ?></td>
                 </tr>
                 <tr>
                     <th scope="row">Sexe</th>
-                    <td><?= htmlspecialchars($user['sexe'] === 'M' ? 'Homme' : 'Femme') ?></td>
+                    <td><?= htmlspecialchars(($user['sexe'] ?? '') === 'M' ? 'Homme' : 'Femme', ENT_QUOTES, 'UTF-8') ?></td>
                 </tr>
                 <tr>
                     <th scope="row">Spécialité</th>
-                    <td><?= htmlspecialchars($user['specialite'] ?? '') ?></td>
+                    <td><?= htmlspecialchars($user['specialite'] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
                 </tr>
                 <tr>
                     <th scope="row">Adresse email</th>
                     <td class="email-cell">
-                        <span><?= htmlspecialchars($user['email'] ?? '') ?></span>
+                        <span><?= htmlspecialchars($user['email'] ?? '', ENT_QUOTES, 'UTF-8') ?></span>
                         <a class="btn-edit" href="/change-mail" title="Changer votre adresse email (connexion requise)">Changer</a>
                     </td>
                 </tr>

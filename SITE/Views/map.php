@@ -1,25 +1,39 @@
-<!--
-    Fichier : map.php
-
-    Page du plan du site de l'application DashMed.
-    Liste l'ensemble des pages accessibles pour faciliter la navigation.
-    La structure inclut le header (dupliqué ici), la liste des liens, et le pied de page inclus via partial.
-
-    @package DashMed
-    @author  FABRE Alexis, GHEUX Théo, JACOB Alexandre, TAHA CHAOUI Amir, UYSUN Ali
-    @version 1.0
--->
-<!doctype html>
-<html lang="fr">
 <?php
-$pageTitle = "Plan du site";
-$pageDescription = "Plan du site de DashMed";
-$pageStyles = ["/assets/style/map.css"];
-$pageScripts = ["/assets/script/header_responsive.js"];
+/**
+ * Vue : Plan du site (Sitemap)
+ *
+ * Page listant les pages publiques de l'application DashMed de façon hiérarchique
+ * pour faciliter la navigation et l'indexation.
+ *
+ * @package    DashMed
+ * @subpackage Views
+ * @category   Frontend
+ * @version    1.1
+ * @since      1.0
+ *
+ * Variables attendues :
+ * @var string $pageTitle               Titre de la page (ex: "Plan du site")
+ * @var string $pageDescription         Meta description (optionnel)
+ * @var array<int,string> $pageStyles   Styles spécifiques (ex: ["/assets/style/map.css"])
+ * @var array<int,string> $pageScripts  Scripts spécifiques (ex: ["/assets/script/header_responsive.js"])
+ *
+ * @see \SITE\Views\partials\head.php
+ * @see \SITE\Views\partials\headerPublic.php
+ * @see \SITE\Views\partials\footer.php
+ */
+
+// Configuration des variables de template (valeurs par défaut)
+$pageTitle       = $pageTitle ?? "Plan du site";
+$pageDescription = $pageDescription ?? "Plan du site de DashMed";
+$pageStyles      = $pageStyles ?? ["/assets/style/map.css"];
+$pageScripts     = $pageScripts ?? ["/assets/script/header_responsive.js"];
+
 include __DIR__ . '/partials/head.php';
 ?>
+<!doctype html>
+<html lang="fr">
 <body>
-    
+
 <?php include __DIR__ . '/partials/headerPublic.php'; ?>
 
 <main class="content">
@@ -32,6 +46,7 @@ include __DIR__ . '/partials/head.php';
                 <li>
                     <a href="/">Accueil</a>
                 </li>
+
                 <li>
                     <span>Espace utilisateur</span>
                     <ul class="level-2">
@@ -40,6 +55,7 @@ include __DIR__ . '/partials/head.php';
                         <li><a href="/forgotten-password">Mot de passe oublié</a></li>
                     </ul>
                 </li>
+
                 <li>
                     <span>Informations</span>
                     <ul class="level-2">
