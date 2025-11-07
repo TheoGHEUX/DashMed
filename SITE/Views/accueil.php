@@ -13,9 +13,9 @@
  *
  * Variables attendues :
  * @var string $pageTitle               Titre de la page (défaut : "Accueil")
- * @var string $pageDescription         Meta description (optionnel)
- * @var array<int,string> $pageStyles   Styles spécifiques (ex: ["/assets/style/accueil.css"])
- * @var array<int,string> $pageScripts  Scripts spécifiques (ex: ["/assets/script/header_responsive.js"])
+ * @var string $pageDescription         Meta description
+ * @var array<int,string> $pageStyles   Styles spécifiques ( ["/assets/style/accueil.css"])
+ * @var array<int,string> $pageScripts  Scripts spécifiques ( ["/assets/script/header_responsive.js"])
  */
 
 // ============================================================================

@@ -1,11 +1,14 @@
 <?php
 /**
- * Fichier : change-mail.php
- * Page de changement d'adresse email (utilisateur connecté) pour DashMed.
+ * Vue : Changement d'adresse email
  *
- * Variables:
- * - $errors  (array)
- * - $success (string)
+ * Formulaire accessible aux utilisateurs connectés pour modifier leur adresse email.
+ *
+ * Variables optionnelles :
+ *  - $errors  (array)   Erreurs de validation à afficher
+ *  - $success (string)  Message de succès
+ *
+ * @package DashMed
  */
 
 $csrf_token = \Core\Csrf::token();

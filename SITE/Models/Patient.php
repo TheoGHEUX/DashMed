@@ -5,15 +5,21 @@ use Core\Database;
 use PDO;
 
 /**
- * Modèle Patient : accès aux données patients et mesures.
+ * Class Patient
+ *
+ * Fournit les opérations de lecture et préparation des données patients.
+ * Méthodes statiques pour récupérer patient, mesures, valeurs et données
+ * destinées aux graphiques.
+ *
+ * @package Models
  */
 final class Patient
 {
     /**
      * Récupère un patient par son ID.
      *
-     * @param int $id
-     * @return array|null
+     * @param int $id Identifiant du patient (pt_id)
+     * @return array|null Tableau associatif du patient ou null si non trouvé
      */
     public static function findById(int $id): ?array
     {
@@ -43,8 +49,8 @@ final class Patient
     /**
      * Récupère toutes les mesures d'un patient.
      *
-     * @param int $patientId
-     * @return array Liste des mesures
+     * @param int $patientId Identifiant du patient (pt_id)
+     * @return array Liste des mesures (id_mesure, type_mesure, unite)
      */
     public static function getMesures(int $patientId): array
     {
@@ -63,11 +69,11 @@ final class Patient
     }
 
     /**
-     * Récupère les valeurs d'une mesure spécifique avec limite optionnelle.
+     * Récupère les valeurs d'une mesure spécifique.
      *
-     * @param int $mesureId
-     * @param int|null $limit
-     * @return array
+     * @param int      $mesureId Identifiant de la mesure
+     * @param int|null $limit    Nombre maximum de valeurs à retourner (optionnel)
+     * @return array Liste des valeurs (id_val, valeur, date_mesure, heure_mesure, datetime_mesure)
      */
     public static function getValeursMesure(int $mesureId, ?int $limit = null): array
     {
@@ -83,11 +89,11 @@ final class Patient
             WHERE id_mesure = ?
             ORDER BY date_mesure DESC, heure_mesure DESC
         ';
-        
+
         if ($limit !== null) {
             $sql .= ' LIMIT ' . (int)$limit;
         }
-        
+
         $st = $pdo->prepare($sql);
         $st->execute([$mesureId]);
         return $st->fetchAll(PDO::FETCH_ASSOC);
@@ -96,8 +102,8 @@ final class Patient
     /**
      * Récupère les dernières valeurs pour chaque type de mesure d'un patient.
      *
-     * @param int $patientId
-     * @return array
+     * @param int $patientId Identifiant du patient
+     * @return array Liste des mesures avec leur dernière valeur et date/heure
      */
     public static function getDernieresValeurs(int $patientId): array
     {
@@ -127,17 +133,17 @@ final class Patient
     }
 
     /**
-     * Récupère les données pour un graphique spécifique (dernières N valeurs).
+     * Récupère les données pour un graphique (dernières N valeurs) pour un type de mesure.
      *
-     * @param int $patientId
-     * @param string $typeMesure
-     * @param int $limit
-     * @return array|null
+     * @param int    $patientId  Identifiant du patient
+     * @param string $typeMesure Type de mesure (ex: "poids", "tension")
+     * @param int    $limit      Nombre de points à récupérer (par défaut 50)
+     * @return array|null Tableau contenant type_mesure, unite et valeurs (ou null si pas de mesure)
      */
     public static function getChartData(int $patientId, string $typeMesure, int $limit = 50): ?array
     {
         $pdo = Database::getConnection();
-        
+
         // Récupérer l'id_mesure pour ce type
         $st = $pdo->prepare('
             SELECT id_mesure, unite
@@ -147,11 +153,11 @@ final class Patient
         ');
         $st->execute([$patientId, $typeMesure]);
         $mesure = $st->fetch(PDO::FETCH_ASSOC);
-        
+
         if (!$mesure) {
             return null;
         }
-        
+
         // Récupérer les valeurs (les plus récentes en premier, puis on inverse)
         $st = $pdo->prepare('
             SELECT 
@@ -165,10 +171,10 @@ final class Patient
         ');
         $st->execute([$mesure['id_mesure'], $limit]);
         $valeurs = $st->fetchAll(PDO::FETCH_ASSOC);
-        
+
         // Inverser pour avoir les plus anciennes en premier (ordre chronologique)
         $valeurs = array_reverse($valeurs);
-        
+
         return [
             'type_mesure' => $typeMesure,
             'unite' => $mesure['unite'],
@@ -179,10 +185,10 @@ final class Patient
     /**
      * Normalise une valeur entre 0 et 1 selon un min/max.
      *
-     * @param float $value
-     * @param float $min
-     * @param float $max
-     * @return float
+     * @param float $value Valeur à normaliser
+     * @param float $min   Valeur minimale attendue
+     * @param float $max   Valeur maximale attendue
+     * @return float Valeur normalisée entre 0 et 1 (0.5 si min==max)
      */
     public static function normalizeValue(float $value, float $min, float $max): float
     {
@@ -195,10 +201,10 @@ final class Patient
     /**
      * Prépare les données normalisées pour les graphiques JavaScript.
      *
-     * @param array $valeurs
-     * @param float $min
-     * @param float $max
-     * @return array
+     * @param array $valeurs Liste de valeurs issues de la base (chaque élément doit avoir la clé 'valeur')
+     * @param float $min     Min pour la normalisation
+     * @param float $max     Max pour la normalisation
+     * @return array Tableau des valeurs normalisées (float)
      */
     public static function prepareChartValues(array $valeurs, float $min, float $max): array
     {

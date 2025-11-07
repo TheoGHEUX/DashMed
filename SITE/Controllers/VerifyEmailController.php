@@ -4,14 +4,29 @@ namespace Controllers;
 use Models\User;
 
 /**
- * Contrôleur pour la vérification d'email et le renvoi de lien de vérification.
+ * Contrôleur : Vérification d'email
+ *
+ * Gère l'activation du compte via token de vérification et le renvoi
+ * d'un nouvel email de vérification.
+ *
+ * Méthodes :
+ *  - verify() : vérifie le token passé en GET et affiche la vue correspondante
+ *  - resend() : génère/renvoie un token de vérification par email (POST)
+ *
+ * Les vues utilisées :
+ *  - Views/auth/verify-email.php
+ *  - Views/auth/resend-verification.php
+ *
+ * @package Controllers
  */
 final class VerifyEmailController
 {
     /**
-     * Vérifie le token passé en query string et active le compte si valide.
+     * Affiche la page de vérification d'email
      *
-     * @return void
+     * Variables passées à la vue :
+     *  - $success (string)
+     *  - $errors  (array)
      */
     public function verify(): void
     {
@@ -51,9 +66,11 @@ final class VerifyEmailController
     }
 
     /**
-     * Traite la requête de renvoi d'email de vérification.
+     * Renvoie un email de vérification
      *
-     * @return void
+     * Variables passées à la vue :
+     *  - $success (string)
+     *  - $errors  (array)
      */
     public function resend(): void
     {
@@ -74,10 +91,10 @@ final class VerifyEmailController
             } else {
                 // Génération d'un nouveau token
                 $token = User::generateEmailVerificationToken($email);
-                
+
                 if ($token) {
                     $mailSent = \Core\Mailer::sendEmailVerification($email, $user['name'], $token);
-                    
+
                     if ($mailSent) {
                         $success = 'Un nouvel email de vérification a été envoyé à votre adresse.';
                     } else {

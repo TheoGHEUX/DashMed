@@ -14,7 +14,7 @@
  * Variables attendues :
  * @var string $pageTitle               Titre de la page (défaut : "Dashboard")
  * @var string $pageDescription         Meta description
- * @var array<int,string> $pageStyles   Styles spécifiques (["/assets/style/dashboard.css"])
+ * @var array<int,string> $pageStyles   Styles spécifiques ( ["/assets/style/dashboard.css"])
  * @var array<int,string> $pageScripts  Scripts spécifiques ( ["/assets/script/dashboard_charts.js"])
  */
 

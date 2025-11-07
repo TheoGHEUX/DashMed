@@ -1,25 +1,38 @@
 <?php
 /**
- * Page d'inscription (public).
- * Formulaire d'enregistrement sécurisé par token CSRF. Valide les champs et affiche erreurs/succès.
+ * Vue : Inscription utilisateur
  *
- * Variables disponibles :
- * @var string     $csrf_token Token CSRF pour sécuriser le formulaire
- * @var array|null  $errors     Liste des erreurs à afficher (optionnel)
- * @var string|null $success    Message de succès (optionnel)
- * @var array|null  $old        Valeurs précédemment saisies (optionnel)
+ * Page d'inscription publique pour créer un compte DashMed.
+ *
+ * Variables optionnelles :
+ *  - $csrf_token (string)  Token CSRF
+ *  - $old (array)          Valeurs précédentes du formulaire (pour re-remplir)
+ *  - $errors (array)       Liste d'erreurs de validation
+ *  - $success (string)     Message de succès
+ *
+ * @package DashMed
  */
 
-$csrf_token = \Core\Csrf::token();
+$csrf_token = '';
+if (class_exists('\Core\Csrf')) {
+    if (method_exists('\Core\Csrf', 'token')) {
+        $csrf_token = \Core\Csrf::token();
+    } elseif (method_exists('\Core\Csrf', 'generate')) {
+        $csrf_token = \Core\Csrf::generate();
+    }
+}
 
-$pageTitle = "Inscription";
-$pageDescription = "Créez votre compte DashMed !";
-$pageStyles = ["/assets/style/authentication.css"];
-$pageScripts = [];
+$old = $old ?? [];
+$errors = $errors ?? [];
+$success = $success ?? '';
+
+$pageTitle = $pageTitle ?? "Inscription";
+$pageDescription = $pageDescription ?? "Créez votre compte DashMed !";
+$pageStyles = $pageStyles ?? ["/assets/style/authentication.css"];
+$pageScripts = $pageScripts ?? [];
+
+include __DIR__ . '/../partials/head.php';
 ?>
-<!doctype html>
-<html lang="fr">
-<?php include __DIR__ . '/../partials/head.php'; ?>
 <body>
 <?php include __DIR__ . '/../partials/headerPublic.php'; ?>
 
@@ -29,88 +42,93 @@ $pageScripts = [];
         <p class="subtitle">Créez votre compte</p>
 
         <?php if (!empty($success)): ?>
-            <div class="alert alert-success"><?= nl2br(htmlspecialchars($success, ENT_QUOTES, 'UTF-8')) ?></div>
+            <div class="alert alert-success" role="status">
+                <?= nl2br(htmlspecialchars($success, ENT_QUOTES, 'UTF-8')) ?>
+            </div>
         <?php endif; ?>
 
         <?php if (!empty($errors)): ?>
-            <div class="alert alert-error">
-                <ul class="errors">
-                    <?php foreach ($errors as $err): ?>
-                        <li><?= htmlspecialchars($err, ENT_QUOTES, 'UTF-8') ?></li>
+            <div class="alert alert-error" role="alert">
+                <ul class="errors" style="margin:0; padding-left:20px;">
+                    <?php foreach ((array)$errors as $err): ?>
+                        <li><?= htmlspecialchars($err ?? '', ENT_QUOTES, 'UTF-8') ?></li>
                     <?php endforeach; ?>
                 </ul>
             </div>
         <?php endif; ?>
 
-        <form class="form" action="/inscription" method="post">
-            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token, ENT_QUOTES, 'UTF-8') ?>"/>
+        <form class="form" action="/inscription" method="post" novalidate>
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 
             <div class="field">
-                <input type="text" name="name" placeholder="Prénom" required value="<?= htmlspecialchars($old['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>" />
+                <input
+                        type="text"
+                        name="name"
+                        placeholder="Prénom"
+                        required
+                        value="<?= htmlspecialchars($old['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                />
             </div>
 
             <div class="field">
-                <input type="text" name="last_name" placeholder="Nom" required value="<?= htmlspecialchars($old['last_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>" />
+                <input
+                        type="text"
+                        name="last_name"
+                        placeholder="Nom"
+                        required
+                        value="<?= htmlspecialchars($old['last_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                />
             </div>
 
             <div class="field">
-                <select name="sexe" required>
-                    <option value="" disabled selected>Sexe</option>
+                <label for="sexe" class="sr-only">Sexe</label>
+                <select id="sexe" name="sexe" required>
+                    <option value="" disabled <?= empty($old['sexe']) ? 'selected' : '' ?>>Sexe</option>
                     <option value="M" <?= ($old['sexe'] ?? '') === 'M' ? 'selected' : '' ?>>Homme</option>
                     <option value="F" <?= ($old['sexe'] ?? '') === 'F' ? 'selected' : '' ?>>Femme</option>
                 </select>
             </div>
 
             <div class="field">
-                <select name="specialite" required>
-                    <option value="" disabled selected>Spécialité</option>
-                    <option value="Addictologie" <?= ($old['specialite'] ?? '') === 'Addictologie' ? 'selected' : '' ?>>Addictologie</option>
-                    <option value="Algologie" <?= ($old['specialite'] ?? '') === 'Algologie' ? 'selected' : '' ?>>Algologie</option>
-                    <option value="Allergologie" <?= ($old['specialite'] ?? '') === 'Allergologie' ? 'selected' : '' ?>>Allergologie</option>
-                    <option value="Anesthésie-Réanimation" <?= ($old['specialite'] ?? '') === 'Anesthésie-Réanimation' ? 'selected' : '' ?>>Anesthésie-Réanimation</option>
-                    <option value="Cancérologie" <?= ($old['specialite'] ?? '') === 'Cancérologie' ? 'selected' : '' ?>>Cancérologie</option>
-                    <option value="Cardio-vasculaire HTA" <?= ($old['specialite'] ?? '') === 'Cardio-vasculaire HTA' ? 'selected' : '' ?>>Cardio-vasculaire HTA</option>
-                    <option value="Chirurgie" <?= ($old['specialite'] ?? '') === 'Chirurgie' ? 'selected' : '' ?>>Chirurgie</option>
-                    <option value="Dermatologie" <?= ($old['specialite'] ?? '') === 'Dermatologie' ? 'selected' : '' ?>>Dermatologie</option>
-                    <option value="Diabétologie-Endocrinologie" <?= ($old['specialite'] ?? '') === 'Diabétologie-Endocrinologie' ? 'selected' : '' ?>>Diabétologie-Endocrinologie</option>
-                    <option value="Génétique" <?= ($old['specialite'] ?? '') === 'Génétique' ? 'selected' : '' ?>>Génétique</option>
-                    <option value="Gériatrie" <?= ($old['specialite'] ?? '') === 'Gériatrie' ? 'selected' : '' ?>>Gériatrie</option>
-                    <option value="Gynécologie-Obstétrique" <?= ($old['specialite'] ?? '') === 'Gynécologie-Obstétrique' ? 'selected' : '' ?>>Gynécologie-Obstétrique</option>
-                    <option value="Hématologie" <?= ($old['specialite'] ?? '') === 'Hématologie' ? 'selected' : '' ?>>Hématologie</option>
-                    <option value="Hépato-gastro-entérologie" <?= ($old['specialite'] ?? '') === 'Hépato-gastro-entérologie' ? 'selected' : '' ?>>Hépato-gastro-entérologie</option>
-                    <option value="Imagerie médicale" <?= ($old['specialite'] ?? '') === 'Imagerie médicale' ? 'selected' : '' ?>>Imagerie médicale</option>
-                    <option value="Immunologie" <?= ($old['specialite'] ?? '') === 'Immunologie' ? 'selected' : '' ?>>Immunologie</option>
-                    <option value="Infectiologie" <?= ($old['specialite'] ?? '') === 'Infectiologie' ? 'selected' : '' ?>>Infectiologie</option>
-                    <option value="Médecine du sport" <?= ($old['specialite'] ?? '') === 'Médecine du sport' ? 'selected' : '' ?>>Médecine du sport</option>
-                    <option value="Médecine du travail" <?= ($old['specialite'] ?? '') === 'Médecine du travail' ? 'selected' : '' ?>>Médecine du travail</option>
-                    <option value="Médecine générale" <?= ($old['specialite'] ?? '') === 'Médecine générale' ? 'selected' : '' ?>>Médecine générale</option>
-                    <option value="Médecine physique et de réadaptation" <?= ($old['specialite'] ?? '') === 'Médecine physique et de réadaptation' ? 'selected' : '' ?>>Médecine physique et de réadaptation</option>
-                    <option value="Néphrologie" <?= ($old['specialite'] ?? '') === 'Néphrologie' ? 'selected' : '' ?>>Néphrologie</option>
-                    <option value="Neurologie" <?= ($old['specialite'] ?? '') === 'Neurologie' ? 'selected' : '' ?>>Neurologie</option>
-                    <option value="Nutrition" <?= ($old['specialite'] ?? '') === 'Nutrition' ? 'selected' : '' ?>>Nutrition</option>
-                    <option value="Ophtalmologie" <?= ($old['specialite'] ?? '') === 'Ophtalmologie' ? 'selected' : '' ?>>Ophtalmologie</option>
-                    <option value="ORL" <?= ($old['specialite'] ?? '') === 'ORL' ? 'selected' : '' ?>>ORL</option>
-                    <option value="Pédiatrie" <?= ($old['specialite'] ?? '') === 'Pédiatrie' ? 'selected' : '' ?>>Pédiatrie</option>
-                    <option value="Pneumologie" <?= ($old['specialite'] ?? '') === 'Pneumologie' ? 'selected' : '' ?>>Pneumologie</option>
-                    <option value="Psychiatrie" <?= ($old['specialite'] ?? '') === 'Psychiatrie' ? 'selected' : '' ?>>Psychiatrie</option>
-                    <option value="Radiologie" <?= ($old['specialite'] ?? '') === 'Radiologie' ? 'selected' : '' ?>>Radiologie</option>
-                    <option value="Rhumatologie" <?= ($old['specialite'] ?? '') === 'Rhumatologie' ? 'selected' : '' ?>>Rhumatologie</option>
-                    <option value="Sexologie" <?= ($old['specialite'] ?? '') === 'Sexologie' ? 'selected' : '' ?>>Sexologie</option>
-                    <option value="Toxicologie" <?= ($old['specialite'] ?? '') === 'Toxicologie' ? 'selected' : '' ?>>Toxicologie</option>
-                    <option value="Urologie" <?= ($old['specialite'] ?? '') === 'Urologie' ? 'selected' : '' ?>>Urologie</option>
+                <label for="specialite" class="sr-only">Spécialité</label>
+                <select id="specialite" name="specialite" required>
+                    <option value="" disabled <?= empty($old['specialite']) ? 'selected' : '' ?>>Spécialité</option>
+                    <?php
+                    $specialites = [
+                            "Addictologie","Algologie","Allergologie","Anesthésie-Réanimation","Cancérologie",
+                            "Cardio-vasculaire HTA","Chirurgie","Dermatologie","Diabétologie-Endocrinologie",
+                            "Génétique","Gériatrie","Gynécologie-Obstétrique","Hématologie",
+                            "Hépato-gastro-entérologie","Imagerie médicale","Immunologie","Infectiologie",
+                            "Médecine du sport","Médecine du travail","Médecine générale",
+                            "Médecine physique et de réadaptation","Néphrologie","Neurologie","Nutrition",
+                            "Ophtalmologie","ORL","Pédiatrie","Pneumologie","Psychiatrie","Radiologie",
+                            "Rhumatologie","Sexologie","Toxicologie","Urologie"
+                    ];
+                    foreach ($specialites as $sp): ?>
+                        <option value="<?= htmlspecialchars($sp, ENT_QUOTES, 'UTF-8') ?>" <?= ($old['specialite'] ?? '') === $sp ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($sp, ENT_QUOTES, 'UTF-8') ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
             </div>
 
             <div class="field">
-                <input type="email" name="email" placeholder="Adresse email" required value="<?= htmlspecialchars($old['email'] ?? '', ENT_QUOTES, 'UTF-8') ?>" />
+                <input
+                        type="email"
+                        name="email"
+                        placeholder="Adresse email"
+                        required
+                        value="<?= htmlspecialchars($old['email'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                        autocomplete="email"
+                />
             </div>
 
             <div class="field">
-                <input type="password" name="password" placeholder="Mot de passe" required />
+                <input type="password" name="password" placeholder="Mot de passe" required autocomplete="new-password" />
             </div>
 
             <div class="field">
-                <input type="password" name="password_confirm" placeholder="Confirmer le mot de passe" required />
+                <input type="password" name="password_confirm" placeholder="Confirmer le mot de passe" required autocomplete="new-password" />
             </div>
 
             <button class="btn" type="submit">S'inscrire</button>

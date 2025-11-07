@@ -2,15 +2,16 @@
 namespace Controllers;
 
 /**
- * Contrôleur des mentions légales.
+ * Contrôleur : Mentions légales
+ *
+ * Responsable de l'affichage de la page des mentions légales.
+ * Méthode unique :
+ *  - show(): rend la vue 'legal-notices'
+ *
+ * @package Controllers
  */
 final class LegalNoticesController
 {
-    /**
-     * Affiche la page des mentions légales.
-     *
-     * @return void
-     */
     public function show(): void
     {
         \View::render('legal-notices');

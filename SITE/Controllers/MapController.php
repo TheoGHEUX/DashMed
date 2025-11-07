@@ -2,15 +2,16 @@
 namespace Controllers;
 
 /**
- * Contrôleur de la carte (page publique).
+ * Contrôleur : Plan du site (Map)
+ *
+ * Responsable de l'affichage de la page du plan du site.
+ * Méthode unique :
+ *  - show(): rend la vue 'map'
+ *
+ * @package Controllers
  */
 final class MapController
 {
-    /**
-     * Affiche la vue contenant la carte.
-     *
-     * @return void
-     */
     public function show(): void
     {
         \View::render('map');

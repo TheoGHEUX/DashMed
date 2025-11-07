@@ -8,17 +8,20 @@ use Models\User;
 use PDO;
 
 /**
- * Contrôleur pour la fonctionnalité "mot de passe oublié" : affichage du formulaire
- * et traitement de la demande de réinitialisation (envoi du lien par email).
+ * Contrôleur : Mot de passe oublié
+ *
+ * Gère l'affichage du formulaire de demande de réinitialisation de mot de passe
+ * et l'envoi du lien de réinitialisation par email. La réponse côté UI est
+ * neutre pour ne pas révéler l'existence d'un compte.
+ *
+ * Méthodes :
+ *  - showForm(): affiche la vue 'auth/forgotten-password'
+ *  - submit():   traite la demande, crée un token et envoie l'email (si le compte existe)
+ *
+ * @package Controllers
  */
 final class ForgottenPasswordController
 {
-    /**
-     * Affiche le formulaire de demande de réinitialisation et transmet
-     * les messages d'erreur/succès conservés en session.
-     *
-     * @return void
-     */
     public function showForm(): void
     {
         $errors = $_SESSION['errors'] ?? null;
@@ -34,27 +37,21 @@ final class ForgottenPasswordController
         ]);
     }
 
-    /**
-     * Traite la soumission du formulaire : validation, génération de token,
-     * enregistrement en base et envoi (ne révèle jamais si l'email existe).
-     *
-     * @return void
-     */
     public function submit(): void
     {
         $errors = [];
         $success = '';
-        // Limitation simple par session pour éviter les abus
+        // Simple rate-limiting per session to avoid abuse of password reset endpoint
         if (session_status() !== PHP_SESSION_ACTIVE) session_start();
         $maxAttempts = 5;
-        $windowSeconds = 3600; // 1 heure
+        $windowSeconds = 3600; // 1 hour
         $now = time();
         $fpAttempts = $_SESSION['forgot_password_attempts'] ?? [];
         $fpAttempts = array_filter($fpAttempts, function ($ts) use ($now, $windowSeconds) {
             return ($now - $ts) <= $windowSeconds;
         });
         if (count($fpAttempts) >= $maxAttempts) {
-            // Réponse neutre côté UI
+            // Keep UI neutral, set success message and redirect
             $success = "Si un compte existe à cette adresse mail, un lien de réinitialisation a été envoyé.\nVeuillez attendre avant de refaire une demande.";
             $_SESSION['success'] = $success;
             header('Location: /forgotten-password');
@@ -80,7 +77,7 @@ final class ForgottenPasswordController
                 if ($user) {
                     $pdo = Database::getConnection();
 
-                    // Supprime les anciens tokens pour cet email ou expirés
+                    // Nettoyage des anciens tokens pour le mail associer au mdp réunitialiser
                     $del = $pdo->prepare('DELETE FROM password_resets WHERE email = ? OR expires_at < NOW()');
                     $del->execute([$old['email']]);
 
@@ -94,7 +91,7 @@ final class ForgottenPasswordController
                     );
                     $ins->execute([$old['email'], $tokenHash, $expiresAt]);
 
-                    // Construit l'URL de réinitialisation
+                    // Construit l'URL reset
                     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
                     $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
                     $resetUrl = $scheme . '://' . $host . '/reset-password?token=' . urlencode($token) . '&email=' . urlencode($old['email']);
@@ -103,11 +100,11 @@ final class ForgottenPasswordController
                     $displayName = trim(($user['name'] ?? '') . ' ' . ($user['last_name'] ?? ''));
                     Mailer::sendPasswordResetEmail($old['email'], $displayName ?: 'Utilisateur', $resetUrl);
                 } else {
-                    // En production, on reste neutre côté UI, mais on log pour faciliter le debug
+                    // En prod on reste neutre côté UI, mais on log pour faciliter le debug
                     error_log(sprintf('[FORGOT] Aucun utilisateur trouvé pour %s (message neutre renvoyé)', $old['email']));
                 }
 
-                // Réponse neutre
+                // Réponse neutre (utilise une vraie nouvelle ligne avec "\n")
                 $success = "Si un compte existe à cette adresse mail, un lien de réinitialisation a été envoyé.\nN'oubliez pas de vérifier votre courrier indésirable.";
                 $old = ['email' => ''];
             } catch (\Throwable $e) {
@@ -120,7 +117,7 @@ final class ForgottenPasswordController
             $_SESSION['old'] = $old;
         }
 
-        // Enregistrer l'horodatage de la demande pour la limitation
+        // record this forgot-password request timestamp
         $fpAttempts[] = $now;
         $_SESSION['forgot_password_attempts'] = $fpAttempts;
         $_SESSION['success'] = $success;

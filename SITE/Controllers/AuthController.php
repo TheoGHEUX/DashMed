@@ -6,7 +6,22 @@ use Core\Csrf;
 use Core\Mailer;
 
 /**
- * Contrôleur d'authentification : inscription, connexion, déconnexion.
+ * Contrôleur : Authentification & inscription
+ *
+ * Gère l'affichage et le traitement des formulaires d'inscription, de connexion
+ * et la déconnexion. Fournit également la liste des spécialités valides.
+ *
+ * Méthodes principales :
+ *  - showRegister(), register()
+ *  - showLogin(), login()
+ *  - logout()
+ *
+ * Variables passées aux vues :
+ *  - $errors  (array)
+ *  - $success (string)
+ *  - $old     (array) pour remplir les formulaires après erreur
+ *
+ * @package Controllers
  */
 final class AuthController
 {
@@ -49,11 +64,6 @@ final class AuthController
         'Urologie'
     ];
 
-    /**
-     * Affiche le formulaire d'inscription.
-     *
-     * @return void
-     */
     public function showRegister(): void
     {
         $errors = [];
@@ -69,12 +79,6 @@ final class AuthController
         require __DIR__ . '/../Views/auth/register.php';
     }
 
-    /**
-     * Traite la soumission du formulaire d'inscription.
-     * Valide les champs, crée l'utilisateur et envoie un email de vérification.
-     *
-     * @return void
-     */
     public function register(): void
     {
         $errors = [];
@@ -155,7 +159,7 @@ final class AuthController
                 )) {
                     // Génération du token de vérification d'email
                     $verificationToken = User::generateEmailVerificationToken($old['email']);
-                    
+
                     if ($verificationToken) {
                         // Envoi de l'email de vérification
                         $mailSent = Mailer::sendEmailVerification($old['email'], $old['name'], $verificationToken);
@@ -193,11 +197,6 @@ final class AuthController
         require __DIR__ . '/../Views/auth/register.php';
     }
 
-    /**
-     * Affiche le formulaire de connexion.
-     *
-     * @return void
-     */
     public function showLogin(): void
     {
         $errors = [];
@@ -209,11 +208,6 @@ final class AuthController
         require __DIR__ . '/../Views/auth/login.php';
     }
 
-    /**
-     * Traite la connexion : vérifie les identifiants et démarre la session.
-     *
-     * @return void
-     */
     public function login(): void
     {
         $errors = [];
@@ -280,11 +274,6 @@ final class AuthController
         require __DIR__ . '/../Views/auth/login.php';
     }
 
-    /**
-     * Déconnecte l'utilisateur en détruisant la session et le cookie de session.
-     *
-     * @return void
-     */
     public function logout(): void
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {
