@@ -18,7 +18,9 @@
  * @var array<int,string> $pageScripts  Scripts spécifiques ( ["/assets/script/dashboard_charts.js"])
  */
 
-if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
 if (empty($_SESSION['user'])) {
     header('Location: /login');
     exit;

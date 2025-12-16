@@ -1,4 +1,5 @@
 <?php
+
 namespace Core;
 
 use Controllers\AccueilController;
@@ -25,7 +26,7 @@ final class Router
 {
     private string $path;
     private string $method;
-    
+
     private const ROUTES = [
         'public' => [
             '/' => [HomeController::class, 'index'],
@@ -101,10 +102,15 @@ final class Router
                 if ($lines !== false) {
                     foreach ($lines as $line) {
                         $line = trim($line);
-                        if ($line === '' || str_starts_with($line, '#') || str_starts_with($line, ';')) continue;
-                        if (strpos($line, '=') === false) continue;
+                        if ($line === '' || str_starts_with($line, '#') || str_starts_with($line, ';')) {
+                            continue;
+                        }
+                        if (strpos($line, '=') === false) {
+                            continue;
+                        }
                         [$k, $v] = explode('=', $line, 2);
-                        $k = trim($k); $v = trim($v);
+                        $k = trim($k);
+                        $v = trim($v);
                         if ($v !== '' && (($v[0] === '"' && substr($v, -1) === '"') || ($v[0] === "'" && substr($v, -1) === "'"))) {
                             $v = substr($v, 1, -1);
                         }
@@ -128,16 +134,20 @@ final class Router
                 $dbName = $pdo->query('SELECT DATABASE()')->fetchColumn() ?: null;
                 $tables = [];
                 $q = $pdo->query('SHOW TABLES');
-                if ($q) { $tables = $q->fetchAll(\PDO::FETCH_COLUMN) ?: []; }
+                if ($q) {
+                    $tables = $q->fetchAll(\PDO::FETCH_COLUMN) ?: [];
+                }
 
                 $columns = [];
                 foreach (['medecin', 'users'] as $t) {
                     try {
-                        $st = $pdo->query('SHOW COLUMNS FROM `'.$t.'`');
+                        $st = $pdo->query('SHOW COLUMNS FROM `' . $t . '`');
                         if ($st) {
                             $columns[$t] = $st->fetchAll(\PDO::FETCH_COLUMN) ?: [];
                         }
-                    } catch (\Throwable $e) { /* ignore */ }
+                    } catch (\Throwable $e) {
+/* ignore */
+                    }
                 }
 
                 echo json_encode([
@@ -161,11 +171,11 @@ final class Router
         if ($this->tryRoute(self::ROUTES['public'])) {
             return;
         }
-        
+
         if ($this->tryRoute(self::ROUTES['auth'])) {
             return;
         }
-        
+
         if ($this->tryRoute(self::ROUTES['protected'], true)) {
             return;
         }
@@ -195,7 +205,7 @@ final class Router
         [$controllerClass, $postMethod, $getMethod] = array_pad($route, 3, null);
 
         $controller = new $controllerClass();
-        
+
         // Route avec une seule méthode (ex: logout, show)
         if ($getMethod === null) {
             $controller->$postMethod();

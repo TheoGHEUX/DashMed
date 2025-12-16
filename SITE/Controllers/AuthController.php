@@ -1,4 +1,5 @@
 <?php
+
 namespace Controllers;
 
 use Models\User;
@@ -61,7 +62,7 @@ final class AuthController
         'Rhumatologie',
         'Sexologie',
         'Toxicologie',
-        'Urologie'
+        'Urologie',
     ];
 
     public function showRegister(): void
@@ -73,7 +74,7 @@ final class AuthController
             'last_name' => '',
             'email' => '',
             'sexe' => '',
-            'specialite' => ''
+            'specialite' => '',
         ];
         $specialites = self::SPECIALITES_VALIDES;
         require __DIR__ . '/../Views/auth/register.php';
@@ -114,12 +115,12 @@ final class AuthController
             $errors[] = 'Adresse email invalide.';
         }
 
-        // Validation du sexe (empêcher la valeur vide)
+        // Validation du sexe
         if (empty($old['sexe']) || !in_array($old['sexe'], ['M', 'F'], true)) {
             $errors[] = 'Veuillez sélectionner un sexe valide.';
         }
 
-        // Validation de la spécialité (empêcher la valeur vide)
+        // Validation de la spécialité
         if (empty($old['specialite']) || !in_array($old['specialite'], self::SPECIALITES_VALIDES, true)) {
             $errors[] = 'Veuillez sélectionner une spécialité médicale valide.';
         }
@@ -131,13 +132,14 @@ final class AuthController
 
         // Validation de la complexité du mot de passe
         if (
-            strlen($password) < 12 ||
-            !preg_match('/[A-Z]/', $password) ||
-            !preg_match('/[a-z]/', $password) ||
-            !preg_match('/\d/', $password) ||
-            !preg_match('/[^A-Za-z0-9]/', $password)
+            strlen($password) < 12
+            || !preg_match('/[A-Z]/', $password)
+            || !preg_match('/[a-z]/', $password)
+            || !preg_match('/\d/', $password)
+            || !preg_match('/[^A-Za-z0-9]/', $password)
         ) {
-            $errors[] = 'Le mot de passe doit contenir au moins 12 caractères, avec majuscules, minuscules, chiffres et un caractère spécial.';
+            $errors[] = 'Le mot de passe doit contenir au moins 12 caractères, avec majuscules, '
+                . 'minuscules, chiffres et un caractère spécial.';
         }
 
         // Vérification de l'existence de l'email
@@ -146,51 +148,50 @@ final class AuthController
         }
 
         // Création du compte si aucune erreur
-        if (!$errors) {
-            $hash = password_hash($password, PASSWORD_DEFAULT);
-            try {
-                if (User::create(
-                    $old['name'],
-                    $old['last_name'],
+        if (
+            !$errors
+            && User::create(
+                $old['name'],
+                $old['last_name'],
+                $old['email'],
+                password_hash($password, PASSWORD_DEFAULT),
+                $old['sexe'],
+                $old['specialite']
+            )
+        ) {
+            // Génération du token de vérification d'email
+            $verificationToken = User::generateEmailVerificationToken($old['email']);
+
+            if ($verificationToken) {
+                // Envoi de l'email de vérification
+                $mailSent = Mailer::sendEmailVerification(
                     $old['email'],
-                    $hash,
-                    $old['sexe'],
-                    $old['specialite']
-                )) {
-                    // Génération du token de vérification d'email
-                    $verificationToken = User::generateEmailVerificationToken($old['email']);
+                    $old['name'],
+                    $verificationToken
+                );
 
-                    if ($verificationToken) {
-                        // Envoi de l'email de vérification
-                        $mailSent = Mailer::sendEmailVerification($old['email'], $old['name'], $verificationToken);
-                        $success = $mailSent
-                            ? 'Compte créé avec succès ! Un email de vérification a été envoyé à votre adresse. Veuillez vérifier votre boîte de réception pour activer votre compte.'
-                            : 'Compte créé avec succès. (Attention: l\'email de vérification n\'a pas pu être envoyé. Vous pouvez demander un nouveau lien.)';
-                    } else {
-                        $success = 'Compte créé mais erreur lors de la génération du lien de vérification. Contactez le support.';
-                    }
-
-                    // Réinitialisation des champs après succès
-                    $old = [
-                        'name' => '',
-                        'last_name' => '',
-                        'email' => '',
-                        'sexe' => '',
-                        'specialite' => ''
-                    ];
-                } else {
-                    $errors[] = 'L\'insertion en base de données a échoué.';
-                }
-            } catch (\Throwable $e) {
-                error_log(sprintf(
-                    '[REGISTER] Erreur: %s dans %s:%d',
-                    $e->getMessage(),
-                    $e->getFile(),
-                    $e->getLine()
-                ));
-                // DEBUG: Affichage temporaire de l'erreur complète
-                $errors[] = 'Erreur lors de la création du compte';
+                $success = $mailSent
+                    ? 'Compte créé avec succès ! Un email de vérification a été envoyé. '
+                        . 'Veuillez vérifier votre boîte de réception pour activer votre compte.'
+                    : 'Compte créé avec succès. (Attention: l\'email de vérification n\'a pas pu être envoyé. '
+                        . 'Vous pouvez demander un nouveau lien.)';
+            } else {
+                $success = 'Compte créé mais erreur lors de la génération du lien de vérification. '
+                    . 'Contactez le support.';
             }
+
+            // Réinitialisation des champs après succès
+            $old = [
+                'name' => '',
+                'last_name' => '',
+                'email' => '',
+                'sexe' => '',
+                'specialite' => '',
+            ];
+        } elseif (!$errors) {
+            $errors[] = 'L\'insertion en base de données a échoué.';
+        } elseif (!$errors) {
+            // Rien: bloc laissé pour clarté éventuelle
         }
 
         $specialites = self::SPECIALITES_VALIDES;
@@ -200,7 +201,6 @@ final class AuthController
     public function showLogin(): void
     {
         $errors = [];
-        // Affiche un message si on arrive depuis une réinitialisation réussie
         $success = (isset($_GET['reset']) && $_GET['reset'] === '1')
             ? 'Votre mot de passe a été réinitialisé. Vous pouvez vous connecter.'
             : '';
@@ -236,27 +236,23 @@ final class AuthController
                 if (!$user || !password_verify($password, $user['password'])) {
                     $errors[] = 'Identifiants incorrects.';
                 } elseif (!$user['email_verified']) {
-                    // Blocage si l'email n'est pas vérifié
-                    $errors[] = 'Votre adresse email n\'a pas encore été vérifiée. Veuillez consulter votre boîte de réception et cliquer sur le lien de vérification.';
+                    $errors[] = 'Adresse email non vérifiée. '
+                        . 'Consultez votre boîte de réception et cliquez sur le lien de vérification.';
                 } else {
-                    // Connexion réussie : création de la session
                     if (session_status() !== PHP_SESSION_ACTIVE) {
                         session_start();
                     }
-
-                    // Régénération de l'ID de session pour sécurité
                     session_regenerate_id(true);
 
                     $_SESSION['user'] = [
-                        'id'        => $user['user_id'],
-                        'email'     => $user['email'],
-                        'name'      => $user['name'],
-                        'last_name' => $user['last_name'],
-                        'sexe'      => $user['sexe'],
-                        'specialite'=> $user['specialite']
+                        'id'         => $user['user_id'],
+                        'email'      => $user['email'],
+                        'name'       => $user['name'],
+                        'last_name'  => $user['last_name'],
+                        'sexe'       => $user['sexe'],
+                        'specialite' => $user['specialite'],
                     ];
 
-                    // Redirection vers le tableau de bord
                     header('Location: /accueil');
                     exit;
                 }
@@ -280,7 +276,6 @@ final class AuthController
             session_start();
         }
 
-        // Destruction complète de la session
         $_SESSION = [];
 
         if (ini_get('session.use_cookies')) {
@@ -298,7 +293,6 @@ final class AuthController
 
         session_destroy();
 
-        // Redirection vers la page de connexion
         header('Location: /login');
         exit;
     }

@@ -1,4 +1,5 @@
 <?php
+
 namespace Controllers;
 
 use Models\Patient;
@@ -12,13 +13,15 @@ use Models\Patient;
  *
  * @package Controllers
  */
-final class DashboardController {
+final class DashboardController
+{
     /**
      * Affiche la page du tableau de bord avec graphiques et infos patients.
      *
      * @return void
      */
-    public function index(): void {
+    public function index(): void
+    {
         if (empty($_SESSION['user'])) {
             header('Location: /login');
             exit;

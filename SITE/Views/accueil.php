@@ -21,7 +21,9 @@
 // ============================================================================
 // SÉCURITÉ : session & CSRF
 // ============================================================================
-if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
 
 // génère le token CSRF si la classe existe (silencieux sinon)
 $csrf_token = function_exists('\\Core\\Csrf::token') ? \Core\Csrf::token() : '';

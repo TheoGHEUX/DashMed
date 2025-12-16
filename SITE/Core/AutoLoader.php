@@ -1,6 +1,8 @@
 <?php
 
-require 'Constant.php';
+namespace Core;
+
+require __DIR__ . '/Constant.php';
 
 /**
  * Gestionnaire d'autoloading pour le projet.

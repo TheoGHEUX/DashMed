@@ -1,5 +1,7 @@
 <?php
 
+namespace Core;
+
 /**
  * Constantes et chemins utilitaires du projet.
  *
@@ -8,10 +10,10 @@
 final class Constant
 {
     // Sous-répertoires relatifs au répertoire SITE
-    const VIEW_DIRECTORY       = '/Views/';
-    const MODEL_DIRECTORY      = '/Models/';
-    const CORE_DIRECTORY       = '/Core/';
-    const CONTROLLER_DIRECTORY = '/Controllers/';
+    public const VIEW_DIRECTORY       = '/Views/';
+    public const MODEL_DIRECTORY      = '/Models/';
+    public const CORE_DIRECTORY       = '/Core/';
+    public const CONTROLLER_DIRECTORY = '/Controllers/';
 
     /**
      * Retourne le chemin absolu du dossier racine (niveau SITE).

@@ -1,4 +1,5 @@
 <?php
+
 namespace Controllers;
 
 use Core\Csrf;
@@ -20,7 +21,9 @@ final class ChangeMailController
 {
     public function showForm(): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
         if (empty($_SESSION['user'])) {
             header('Location: /login');
             exit;
@@ -33,7 +36,9 @@ final class ChangeMailController
 
     public function submit(): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
         if (empty($_SESSION['user'])) {
             header('Location: /login');
             exit;
@@ -75,9 +80,8 @@ final class ChangeMailController
                 // Vérifier si le nouvel email est différent de l'ancien
                 if (strtolower($oldEmail) === strtolower($newEmail)) {
                     $errors[] = 'La nouvelle adresse email est identique à l\'ancienne.';
-                }
-                // Vérifier si l'email n'est pas déjà utilisé
-                elseif (User::emailExists($newEmail)) {
+                } elseif (User::emailExists($newEmail)) {
+                    // Email déjà utilisé
                     $errors[] = 'Cette adresse email est déjà utilisée par un autre compte.';
                 } else {
                     // Mise à jour de l'email

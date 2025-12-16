@@ -1,4 +1,5 @@
 <?php
+
 namespace Controllers;
 
 use Core\Csrf;
@@ -25,7 +26,9 @@ final class ChangePasswordController
      */
     public function showForm(): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
         if (empty($_SESSION['user'])) {
             header('Location: /login');
             exit;
@@ -43,7 +46,9 @@ final class ChangePasswordController
      */
     public function submit(): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
         if (empty($_SESSION['user'])) {
             header('Location: /login');
             exit;

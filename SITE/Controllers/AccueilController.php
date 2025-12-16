@@ -1,4 +1,5 @@
 <?php
+
 namespace Controllers;
 
 /**
@@ -11,13 +12,15 @@ namespace Controllers;
  *
  * @package Controllers
  */
-final class AccueilController {
+final class AccueilController
+{
     /**
      * Affiche la page d'accueil pour les utilisateurs connectés.
      *
      * @return void
      */
-    public function index(): void {
+    public function index(): void
+    {
         if (empty($_SESSION['user'])) {
             header('Location: /login');
             exit;

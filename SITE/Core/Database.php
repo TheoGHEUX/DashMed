@@ -1,4 +1,5 @@
 <?php
+
 namespace Core;
 
 use PDO;
@@ -23,7 +24,6 @@ final class Database
     public static function getConnection(): PDO
     {
         if (self::$pdo === null) {
-
             // Lecture optionnelle d'un fichier .env à la racine du projet
             $root = dirname(__DIR__, 2);
             $envFile = $root . DIRECTORY_SEPARATOR . '.env';
@@ -33,10 +33,15 @@ final class Database
                 if ($lines !== false) {
                     foreach ($lines as $line) {
                         $line = trim($line);
-                        if ($line === '' || str_starts_with($line, '#') || str_starts_with($line, ';')) continue;
-                        if (strpos($line, '=') === false) continue;
+                        if ($line === '' || str_starts_with($line, '#') || str_starts_with($line, ';')) {
+                            continue;
+                        }
+                        if (strpos($line, '=') === false) {
+                            continue;
+                        }
                         [$k, $v] = explode('=', $line, 2);
-                        $k = trim($k); $v = trim($v);
+                        $k = trim($k);
+                        $v = trim($v);
                         if ($v !== '' && (($v[0] === '"' && substr($v, -1) === '"') || ($v[0] === "'" && substr($v, -1) === "'"))) {
                             $v = substr($v, 1, -1);
                         }
@@ -61,7 +66,7 @@ final class Database
                     PDO::ATTR_EMULATE_PREPARES   => false,
                 ]);
             } catch (PDOException $e) {
-                error_log('DB CONNECTION FAIL: '.$e->getMessage());
+                error_log('DB CONNECTION FAIL: ' . $e->getMessage());
                 throw $e;
             }
         }

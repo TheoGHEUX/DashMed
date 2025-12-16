@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Vue : Connexion utilisateur
  *
@@ -42,17 +43,17 @@ include __DIR__ . '/../partials/head.php';
         <h1 id="login-title">Bienvenue dans DashMed</h1>
         <p class="subtitle">Connectez-vous pour continuer</p>
 
-        <?php if (!empty($errors)): ?>
+        <?php if (!empty($errors)) : ?>
             <div class="alert alert-error" role="alert" aria-live="assertive">
                 <ul class="errors" style="margin:0; padding-left:20px;">
-                    <?php foreach ((array)$errors as $err): ?>
+                    <?php foreach ((array)$errors as $err) : ?>
                         <li><?= htmlspecialchars($err ?? '', ENT_QUOTES, 'UTF-8') ?></li>
                     <?php endforeach; ?>
                 </ul>
             </div>
         <?php endif; ?>
 
-        <?php if (!empty($success)): ?>
+        <?php if (!empty($success)) : ?>
             <div class="alert alert-success" role="status" aria-live="polite">
                 <?= nl2br(htmlspecialchars($success, ENT_QUOTES, 'UTF-8')) ?>
             </div>

@@ -1,5 +1,7 @@
 <?php
 
+namespace Core;
+
 /**
  * Gestionnaire simple d'affichage des vues.
  *

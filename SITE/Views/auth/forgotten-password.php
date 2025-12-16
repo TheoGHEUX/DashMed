@@ -43,16 +43,16 @@ include __DIR__ . '/../partials/head.php';
         <h1 id="forgotten-title">Réinitialisez votre mot de passe</h1>
         <p class="subtitle">Entrez votre adresse email ci-dessous et vous recevrez un lien pour changer de mot de passe.</p>
 
-        <?php if (!empty($success)): ?>
+        <?php if (!empty($success)) : ?>
             <div class="alert alert-success" role="status" aria-live="polite">
                 <?= nl2br(htmlspecialchars($success, ENT_QUOTES, 'UTF-8')) ?>
             </div>
         <?php endif; ?>
 
-        <?php if (!empty($errors)): ?>
+        <?php if (!empty($errors)) : ?>
             <div class="alert alert-error" role="alert" aria-live="assertive">
                 <ul style="margin:0; padding-left:20px;">
-                    <?php foreach ((array)$errors as $err): ?>
+                    <?php foreach ((array)$errors as $err) : ?>
                         <li><?= htmlspecialchars($err ?? '', ENT_QUOTES, 'UTF-8') ?></li>
                     <?php endforeach; ?>
                 </ul>

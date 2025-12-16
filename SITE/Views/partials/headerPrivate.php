@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Partial : Header privé (navigation pour utilisateurs authentifiés)
  *

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Partial : Footer commun
  *
@@ -10,6 +11,7 @@
  * @subpackage Views\Partials
  * @category   Frontend
  */
+
 ?>
 <footer class="footer">
     <div class="container">

@@ -37,17 +37,17 @@ include __DIR__ . '/../partials/head.php';
     <section class="hero">
         <h1>Définissez un nouveau mot de passe</h1>
 
-        <?php if (!empty($errors)): ?>
+        <?php if (!empty($errors)) : ?>
             <div class="alert alert-error" role="alert">
                 <ul class="errors" style="margin:0; padding-left:20px;">
-                    <?php foreach ((array)$errors as $err): ?>
+                    <?php foreach ((array)$errors as $err) : ?>
                         <li><?= htmlspecialchars($err ?? '', ENT_QUOTES, 'UTF-8') ?></li>
                     <?php endforeach; ?>
                 </ul>
             </div>
         <?php endif; ?>
 
-        <?php if (!empty($success)): ?>
+        <?php if (!empty($success)) : ?>
             <div class="alert alert-success" role="status">
                 <?= nl2br(htmlspecialchars($success, ENT_QUOTES, 'UTF-8')) ?>
             </div>

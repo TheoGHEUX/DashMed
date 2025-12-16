@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Contrôleur : Réinitialisation du mot de passe
  *
@@ -75,9 +76,15 @@ final class ResetPasswordController
         $password = (string)($_POST['password'] ?? '');
         $confirm  = (string)($_POST['password_confirm'] ?? '');
 
-        if (!Csrf::validate($csrf))                            $errors[] = 'Session expirée ou jeton CSRF invalide.';
-        if ($token === '')                                     $errors[] = 'Lien invalide.';
-        if ($password !== $confirm)                            $errors[] = 'Mots de passe différents.';
+        if (!Csrf::validate($csrf)) {
+            $errors[] = 'Session expirée ou jeton CSRF invalide.';
+        }
+        if ($token === '') {
+            $errors[] = 'Lien invalide.';
+        }
+        if ($password !== $confirm) {
+            $errors[] = 'Mots de passe différents.';
+        }
         if (
             strlen($password) < 12 ||
             !preg_match('/[A-Z]/', $password) ||
@@ -177,7 +184,9 @@ final class ResetPasswordController
      */
     private function isValidToken(string $email, string $token): bool
     {
-        if ($email === '' || $token === '') return false;
+        if ($email === '' || $token === '') {
+            return false;
+        }
 
         $pdo = Database::getConnection();
         $tokenHash = hash('sha256', $token);
