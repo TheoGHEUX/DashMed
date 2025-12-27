@@ -515,9 +515,9 @@
     width: 50%;
     height: 100%;
     background: linear-gradient(90deg,
-        transparent 0%,
-        rgba(255, 255, 255, 0.3) 50%,
-        transparent 100%
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
     );
     transition: left 0.6s ease;
     pointer-events: none;
