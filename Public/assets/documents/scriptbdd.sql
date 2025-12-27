@@ -11,12 +11,12 @@ DROP TABLE IF EXISTS SUIVRE;
 DROP TABLE IF EXISTS PATIENT;
 DROP TABLE IF EXISTS MEDECIN;
 DROP
-DATABASE IF EXISTS dashmed-site_db;
+DATABASE IF EXISTS "dashmed-site_db";
 
 CREATE
-DATABASE IF NOT EXISTS dashmed-site_db
+DATABASE IF NOT EXISTS "dashmed-site_db"
     DEFAULT CHARACTER SET utf8mb4
     COLLATE utf8mb4_general_ci;
 
 USE
-dashmed-site_db;
+"dashmed-site_db";

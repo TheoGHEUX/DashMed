@@ -15,7 +15,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 	const DPR = window.devicePixelRatio || 1;
-	
+
 	// Ajouter la classe initial-load pour les animations de chargement
 	const grid = document.getElementById('dashboardGrid');
 	if (grid) {
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			grid.classList.remove('initial-load');
 		}, 1000);
 	}
-	
+
 	// Reset config if requested via URL parameter
 	const urlParams = new URLSearchParams(window.location.search);
 	if (urlParams.get('reset') === '1') {
@@ -34,11 +34,11 @@ document.addEventListener('DOMContentLoaded', () => {
 		// Remove the reset parameter from URL
 		window.history.replaceState({}, '', window.location.pathname);
 	}
-	
+
 	// Récupérer les données réelles du patient injectées par PHP
 	const patientData = window.patientChartData || {};
 	console.log('Données patient chargées:', patientData);
-	
+
 	// Gestion de la configuration des graphiques
 	const CHART_DEFINITIONS = {
 		'blood-pressure': {
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			// Utiliser les vraies données si disponibles
 			data: patientData['heart-rate']?.values || [0.48,0.52,0.50,0.55,0.58,0.54,0.56,0.60,0.55,0.53],
 			color: '#be185d',
-			minVal: 60,
+			minVal: 25,
 			maxVal: 100,
 			unit: 'bpm',
 			valueId: 'value-hr',
@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			// Utiliser les vraies données si disponibles
 			data: patientData['respiration']?.values || [0.40,0.42,0.44,0.43,0.45,0.46,0.44,0.43,0.42,0.44],
 			color: '#0ea5e9',
-			minVal: 12,
+			minVal: 0,
 			maxVal: 20,
 			unit: 'resp/min',
 			valueId: 'value-resp',
@@ -128,10 +128,10 @@ document.addEventListener('DOMContentLoaded', () => {
 		'oxygen-saturation': {
 			title: 'Saturation en oxygène',
 			type: 'area',
-			// Utiliser les vraies données si disponibles
+			// Utiliser les avraies données si disponibles
 			data: patientData['oxygen-saturation']?.values || [0.96,0.97,0.98,0.97,0.98,0.99,0.98,0.97,0.98,0.98],
 			color: '#06b6d4',
-			minVal: 95,
+			minVal: 90,
 			maxVal: 100,
 			unit: '%',
 			valueId: 'value-oxygen',
@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			note: (patientData['oxygen-saturation']?.unit || '%') + ', dernière mesure'
 		}
 	};
-	
+
 	let editMode = false;
 	let chartConfig = loadChartConfig();
 
@@ -176,13 +176,13 @@ document.addEventListener('DOMContentLoaded', () => {
 		// Axes
 		ctx.strokeStyle = axisColor;
 		ctx.lineWidth = 2;
-		
+
 		// Axe Y (ordonnées)
 		ctx.beginPath();
 		ctx.moveTo(paddingLeft, paddingTop);
 		ctx.lineTo(paddingLeft, height - paddingBottom);
 		ctx.stroke();
-		
+
 		// Axe X (abscisses)
 		ctx.beginPath();
 		ctx.moveTo(paddingLeft, height - paddingBottom);
@@ -195,19 +195,19 @@ document.addEventListener('DOMContentLoaded', () => {
 		ctx.fillStyle = textColor;
 		ctx.font = 'bold 11px sans-serif';
 		ctx.textAlign = 'right';
-		
+
 		const numHorizontalLines = 5;
 		for (let i = 0; i <= numHorizontalLines; i++) {
 			const ratio = i / numHorizontalLines;
 			const y = paddingTop + (height - paddingTop - paddingBottom) * ratio;
 			const value = maxVal - (maxVal - minVal) * ratio;
-			
+
 			// Ligne de grille
 			ctx.beginPath();
 			ctx.moveTo(paddingLeft, y);
 			ctx.lineTo(width - paddingRight, y);
 			ctx.stroke();
-			
+
 			// Label sur l'axe Y
 			ctx.fillStyle = textColor;
 			ctx.fillText(value.toFixed(1), paddingLeft - 8, y + 4);
@@ -219,11 +219,11 @@ document.addEventListener('DOMContentLoaded', () => {
 		ctx.fillStyle = textColor;
 		const numXLabels = Math.min(data.length, 10);
 		const xLabelStep = Math.floor(data.length / numXLabels);
-		
+
 		for (let i = 0; i < data.length; i += xLabelStep) {
 			const x = paddingLeft + ((width - paddingLeft - paddingRight) / (data.length - 1)) * i;
 			const y = height - paddingBottom;
-			
+
 			// Tick mark
 			ctx.beginPath();
 			ctx.moveTo(x, y);
@@ -231,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			ctx.strokeStyle = axisColor;
 			ctx.lineWidth = 2;
 			ctx.stroke();
-			
+
 			// Label
 			ctx.fillStyle = textColor;
 			ctx.fillText((i + 1).toString(), x, y + 18);
@@ -241,7 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		ctx.fillStyle = textColorLight;
 		ctx.font = '11px sans-serif';
 		ctx.fillText('Mesures', width / 2, height - 5);
-		
+
 		// Titre de l'axe Y (vertical)
 		ctx.save();
 		ctx.translate(15, height / 2);
@@ -254,11 +254,11 @@ document.addEventListener('DOMContentLoaded', () => {
 		// Dessiner la courbe
 		ctx.beginPath();
 		const step = (width - paddingLeft - paddingRight) / (data.length - 1);
-		
+
 		data.forEach((v, i) => {
 			const x = paddingLeft + i * step;
 			const y = paddingTop + (1 - v) * (height - paddingTop - paddingBottom);
-			
+
 			if (i === 0) {
 				ctx.moveTo(x, y);
 			} else {
@@ -275,7 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		const gradient = ctx.createLinearGradient(0, paddingTop, 0, height - paddingBottom);
 		gradient.addColorStop(0, color + '30');
 		gradient.addColorStop(1, color + '05');
-		
+
 		ctx.lineTo(width - paddingRight, height - paddingBottom);
 		ctx.lineTo(paddingLeft, height - paddingBottom);
 		ctx.closePath();
@@ -286,7 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		data.forEach((v, i) => {
 			const x = paddingLeft + i * step;
 			const y = paddingTop + (1 - v) * (height - paddingTop - paddingBottom);
-			
+
 			ctx.beginPath();
 			ctx.arc(x, y, 3, 0, Math.PI * 2);
 			ctx.fillStyle = '#ffffff';
@@ -294,7 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			ctx.strokeStyle = color;
 			ctx.lineWidth = 2;
 			ctx.stroke();
-			
+
 			ctx.beginPath();
 			ctx.arc(x, y, 1.5, 0, Math.PI * 2);
 			ctx.fillStyle = color;
@@ -321,7 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			textColorLight,
 			numHorizontalLines
 		};
-		
+
 		// Créer un tooltip HTML
 		let tooltip = document.querySelector('.chart-tooltip');
 		if (!tooltip) {
@@ -342,11 +342,11 @@ document.addEventListener('DOMContentLoaded', () => {
 			`;
 			document.body.appendChild(tooltip);
 		}
-		
+
 		// Fonction pour redessiner le graphique avec highlight
 		function redrawChart(highlightIndex = -1) {
 			ctx.clearRect(0, 0, width, height);
-			
+
 			// Axes
 			ctx.strokeStyle = chartData.axisColor;
 			ctx.lineWidth = 2;
@@ -358,61 +358,61 @@ document.addEventListener('DOMContentLoaded', () => {
 			ctx.moveTo(chartData.paddingLeft, chartData.height - chartData.paddingBottom);
 			ctx.lineTo(chartData.width - chartData.paddingRight, chartData.height - chartData.paddingBottom);
 			ctx.stroke();
-			
+
 			// Grille
 			ctx.strokeStyle = chartData.gridColor;
 			ctx.lineWidth = 1;
 			ctx.fillStyle = chartData.textColor;
 			ctx.font = 'bold 11px sans-serif';
 			ctx.textAlign = 'right';
-			
+
 			for (let i = 0; i <= chartData.numHorizontalLines; i++) {
 				const ratio = i / chartData.numHorizontalLines;
 				const y = chartData.paddingTop + (chartData.height - chartData.paddingTop - chartData.paddingBottom) * ratio;
 				const value = chartData.maxVal - (chartData.maxVal - chartData.minVal) * ratio;
-				
+
 				ctx.beginPath();
 				ctx.moveTo(chartData.paddingLeft, y);
 				ctx.lineTo(chartData.width - chartData.paddingRight, y);
 				ctx.stroke();
-				
+
 				ctx.fillStyle = chartData.textColor;
 				ctx.fillText(value.toFixed(1), chartData.paddingLeft - 8, y + 4);
 			}
-			
+
 			// Labels X
 			ctx.textAlign = 'center';
 			ctx.font = '10px sans-serif';
 			const numXLabels = Math.min(chartData.data.length, 10);
 			const xLabelStep = Math.floor(chartData.data.length / numXLabels);
-			
+
 			for (let i = 0; i < chartData.data.length; i += xLabelStep) {
 				const x = chartData.paddingLeft + ((chartData.width - chartData.paddingLeft - chartData.paddingRight) / (chartData.data.length - 1)) * i;
 				const y = chartData.height - chartData.paddingBottom;
-				
+
 				ctx.beginPath();
 				ctx.moveTo(x, y);
 				ctx.lineTo(x, y + 5);
 				ctx.strokeStyle = chartData.axisColor;
 				ctx.lineWidth = 2;
 				ctx.stroke();
-				
+
 				ctx.fillStyle = chartData.textColor;
 				ctx.fillText((i + 1).toString(), x, y + 18);
 			}
-			
+
 			// Titres axes
 			ctx.fillStyle = chartData.textColorLight;
 			ctx.font = '11px sans-serif';
 			ctx.fillText('Mesures', chartData.width / 2, chartData.height - 5);
-			
+
 			ctx.save();
 			ctx.translate(15, chartData.height / 2);
 			ctx.rotate(-Math.PI / 2);
 			ctx.textAlign = 'center';
 			ctx.fillText(chartData.unit || 'Valeur', 0, 0);
 			ctx.restore();
-			
+
 			// Courbe
 			ctx.beginPath();
 			chartData.data.forEach((v, i) => {
@@ -424,7 +424,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			ctx.lineWidth = 2.5;
 			ctx.strokeStyle = chartData.color;
 			ctx.stroke();
-			
+
 			// Remplissage
 			const gradient = ctx.createLinearGradient(0, chartData.paddingTop, 0, chartData.height - chartData.paddingBottom);
 			gradient.addColorStop(0, chartData.color + '30');
@@ -434,13 +434,13 @@ document.addEventListener('DOMContentLoaded', () => {
 			ctx.closePath();
 			ctx.fillStyle = gradient;
 			ctx.fill();
-			
+
 			// Points
 			chartData.data.forEach((v, i) => {
 				const x = chartData.paddingLeft + i * chartData.step;
 				const y = chartData.paddingTop + (1 - v) * (chartData.height - chartData.paddingTop - chartData.paddingBottom);
 				const isHighlighted = i === highlightIndex;
-				
+
 				ctx.beginPath();
 				ctx.arc(x, y, isHighlighted ? 5 : 3, 0, Math.PI * 2);
 				ctx.fillStyle = '#ffffff';
@@ -448,47 +448,47 @@ document.addEventListener('DOMContentLoaded', () => {
 				ctx.strokeStyle = chartData.color;
 				ctx.lineWidth = 2;
 				ctx.stroke();
-				
+
 				ctx.beginPath();
 				ctx.arc(x, y, 1.5, 0, Math.PI * 2);
 				ctx.fillStyle = chartData.color;
 				ctx.fill();
 			});
 		}
-		
+
 		// Event mousemove
 		canvas.addEventListener('mousemove', (e) => {
 			const rect = canvas.getBoundingClientRect();
 			const mouseX = e.clientX - rect.left;
 			const mouseY = e.clientY - rect.top;
-			
+
 			let closestIndex = -1;
 			let closestDistance = Infinity;
-			
+
 			// Trouver le point le plus proche sur l'axe X
 			chartData.data.forEach((v, i) => {
 				const x = chartData.paddingLeft + i * chartData.step;
 				const y = chartData.paddingTop + (1 - v) * (chartData.height - chartData.paddingTop - chartData.paddingBottom);
 				const distance = Math.sqrt(Math.pow(mouseX - x, 2) + Math.pow(mouseY - y, 2));
-				
+
 				if (distance < 20 && distance < closestDistance) {
 					closestDistance = distance;
 					closestIndex = i;
 				}
 			});
-			
+
 			if (closestIndex !== -1) {
 				canvas.style.cursor = 'pointer';
-				
+
 				// Redessiner avec highlight
 				redrawChart(closestIndex);
-				
+
 				// Afficher tooltip
 				const v = chartData.data[closestIndex];
 				const realValue = chartData.minVal + v * (chartData.maxVal - chartData.minVal);
 				const x = chartData.paddingLeft + closestIndex * chartData.step;
 				const y = chartData.paddingTop + (1 - v) * (chartData.height - chartData.paddingTop - chartData.paddingBottom);
-				
+
 				tooltip.textContent = `${realValue.toFixed(1)} ${chartData.unit}`;
 				tooltip.style.display = 'block';
 				tooltip.style.left = (rect.left + x) + 'px';
@@ -499,7 +499,7 @@ document.addEventListener('DOMContentLoaded', () => {
 				redrawChart();
 			}
 		});
-		
+
 		canvas.addEventListener('mouseleave', () => {
 			canvas.style.cursor = 'default';
 			tooltip.style.display = 'none';
@@ -544,18 +544,18 @@ document.addEventListener('DOMContentLoaded', () => {
 		ctx.fillStyle = textColor;
 		ctx.font = 'bold 11px sans-serif';
 		ctx.textAlign = 'right';
-		
+
 		const numHorizontalLines = 5;
 		for (let i = 0; i <= numHorizontalLines; i++) {
 			const ratio = i / numHorizontalLines;
 			const y = paddingTop + (height - paddingTop - paddingBottom) * ratio;
 			const value = maxVal - (maxVal - minVal) * ratio;
-			
+
 			ctx.beginPath();
 			ctx.moveTo(paddingLeft, y);
 			ctx.lineTo(width - paddingRight, y);
 			ctx.stroke();
-			
+
 			ctx.fillStyle = textColor;
 			ctx.fillText(value.toFixed(1), paddingLeft - 8, y + 4);
 		}
@@ -565,7 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			const yThr = paddingTop + (1 - threshold) * (height - paddingTop - paddingBottom);
 			ctx.fillStyle = 'rgba(239,68,68,0.08)';
 			ctx.fillRect(paddingLeft, paddingTop, width - paddingLeft - paddingRight, yThr - paddingTop);
-			
+
 			ctx.beginPath();
 			ctx.moveTo(paddingLeft, yThr);
 			ctx.lineTo(width - paddingRight, yThr);
@@ -574,7 +574,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			ctx.setLineDash([8, 4]);
 			ctx.stroke();
 			ctx.setLineDash([]);
-			
+
 			ctx.fillStyle = 'rgba(220,38,38,0.9)';
 			ctx.font = 'bold 11px sans-serif';
 			ctx.textAlign = 'left';
@@ -587,7 +587,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		ctx.fillStyle = textColor;
 		const numXLabels = Math.min(data.length, 10);
 		const xLabelStep = Math.floor(data.length / numXLabels);
-		
+
 		for (let i = 0; i < data.length; i += xLabelStep) {
 			const x = paddingLeft + ((width - paddingLeft - paddingRight) / (data.length - 1)) * i;
 			const y = height - paddingBottom;
@@ -604,7 +604,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		ctx.fillStyle = textColorLight;
 		ctx.font = '11px sans-serif';
 		ctx.fillText('Mesures', width / 2, height - 5);
-		
+
 		ctx.save();
 		ctx.translate(15, height / 2);
 		ctx.rotate(-Math.PI / 2);
@@ -642,7 +642,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			const y = paddingTop + (1 - v) * (height - paddingTop - paddingBottom);
 			const isAboveThreshold = threshold && v > threshold;
 			const pointColor = isAboveThreshold ? '#dc2626' : color;
-			
+
 			ctx.beginPath();
 			ctx.arc(x, y, 3, 0, Math.PI * 2);
 			ctx.fillStyle = '#ffffff';
@@ -650,7 +650,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			ctx.strokeStyle = pointColor;
 			ctx.lineWidth = 2;
 			ctx.stroke();
-			
+
 			ctx.beginPath();
 			ctx.arc(x, y, 1.5, 0, Math.PI * 2);
 			ctx.fillStyle = pointColor;
@@ -780,12 +780,12 @@ document.addEventListener('DOMContentLoaded', () => {
 	function loadChartConfig() {
 		// Liste complète de tous les graphiques disponibles
 		const allCharts = ['blood-pressure', 'heart-rate', 'respiration', 'temperature', 'glucose-trend', 'weight', 'oxygen-saturation'];
-		
+
 		const saved = localStorage.getItem('dashboardChartConfig');
 		if (saved) {
 			try {
 				const config = JSON.parse(saved);
-				
+
 				// Vérifier que tous les graphiques définis existent dans la config
 				// Ajouter les graphiques manquants
 				allCharts.forEach(chartId => {
@@ -793,10 +793,10 @@ document.addEventListener('DOMContentLoaded', () => {
 						config.visible.push(chartId);
 					}
 				});
-				
+
 				// Supprimer les graphiques qui n'existent plus dans CHART_DEFINITIONS
 				config.visible = config.visible.filter(chartId => allCharts.includes(chartId));
-				
+
 				return config;
 			} catch (e) {
 				console.error('Failed to parse chart config', e);
@@ -808,31 +808,31 @@ document.addEventListener('DOMContentLoaded', () => {
 			sizes: {}
 		};
 	}
-	
+
 	function saveChartConfig() {
 		localStorage.setItem('dashboardChartConfig', JSON.stringify(chartConfig));
 	}
-	
+
 	// Apply saved configuration
 	function applyChartConfig() {
 		const grid = document.getElementById('dashboardGrid');
 		if (!grid) return;
-		
+
 		// Parcourir tous les graphiques HTML
 		document.querySelectorAll('.chart-card').forEach(card => {
 			const chartId = card.getAttribute('data-chart-id');
-			
+
 			// Vérifier si le graphique existe dans CHART_DEFINITIONS
 			if (!CHART_DEFINITIONS[chartId]) {
 				console.warn(`Graphique ${chartId} non défini dans CHART_DEFINITIONS`);
 				return;
 			}
-			
+
 			// Vérifier si le graphique est dans la liste visible
 			if (chartConfig.visible.includes(chartId)) {
 				// Afficher le graphique
 				card.style.display = 'block';
-				
+
 				// Apply column span (default 6 out of 12)
 				const colSpan = chartConfig.sizes[chartId] || 6;
 				card.setAttribute('data-col-span', colSpan);
@@ -842,29 +842,29 @@ document.addEventListener('DOMContentLoaded', () => {
 			}
 		});
 	}
-	
+
 	// Toggle edit mode
 	const toggleEditBtn = document.getElementById('toggleEditMode');
 	const addChartPanel = document.getElementById('addChartPanel');
-	
+
 	if (toggleEditBtn) {
 		toggleEditBtn.addEventListener('click', () => {
 			editMode = !editMode;
 			toggleEditBtn.classList.toggle('active', editMode);
-			
+
 			if (editMode) {
 				toggleEditBtn.innerHTML = '<span class="icon-edit">✓</span><span class="text-edit">Terminer</span>';
 			} else {
 				toggleEditBtn.innerHTML = '<span class="icon-edit">✎</span><span class="text-edit">Modifier</span>';
 			}
-			
+
 			// Show/hide resize handles, delete buttons and add edit-mode class
 			document.querySelectorAll('.chart-card').forEach(card => {
 				const handle = card.querySelector('.resize-handle');
 				if (handle) {
 					handle.style.display = editMode ? 'block' : 'none';
 				}
-				
+
 				// Add/remove delete button
 				let deleteBtn = card.querySelector('.btn-remove');
 				if (editMode) {
@@ -873,13 +873,13 @@ document.addEventListener('DOMContentLoaded', () => {
 						deleteBtn.className = 'btn-remove';
 						deleteBtn.innerHTML = '×';
 						deleteBtn.title = 'Supprimer ce graphique';
-						
+
 						const chartId = card.getAttribute('data-chart-id');
 						deleteBtn.addEventListener('click', (e) => {
 							e.stopPropagation();
 							removeChart(chartId);
 						});
-						
+
 						card.appendChild(deleteBtn);
 					}
 					deleteBtn.style.display = 'block';
@@ -888,7 +888,7 @@ document.addEventListener('DOMContentLoaded', () => {
 						deleteBtn.style.display = 'none';
 					}
 				}
-				
+
 				if (editMode) {
 					card.classList.add('edit-mode');
 					setupChartDrag(card);
@@ -897,7 +897,7 @@ document.addEventListener('DOMContentLoaded', () => {
 					card.draggable = false;
 				}
 			});
-			
+
 			// Show/hide add panel
 			if (addChartPanel) {
 				addChartPanel.style.display = editMode ? 'block' : 'none';
@@ -907,15 +907,15 @@ document.addEventListener('DOMContentLoaded', () => {
 			}
 		});
 	}
-	
+
 	// Variables pour l'auto-scroll lors du drag
 	let autoScrollInterval = null;
-	
+
 	// Setup drag functionality for chart cards
 	function setupChartDrag(card) {
 		card.draggable = true;
 		card.style.cursor = 'grab';
-		
+
 		card.addEventListener('dragstart', (e) => {
 			const chartId = card.getAttribute('data-chart-id');
 			e.dataTransfer.effectAllowed = 'move';
@@ -923,33 +923,33 @@ document.addEventListener('DOMContentLoaded', () => {
 			e.dataTransfer.setData('source', 'chart-card');
 			card.classList.add('dragging');
 			card.style.cursor = 'grabbing';
-			
+
 			// Bloquer les redraws pendant le drag
 			isReordering = true;
-			
+
 			// Désactiver les animations pendant le drag
 			const dashboardGrid = document.getElementById('dashboardGrid');
 			if (dashboardGrid) {
 				dashboardGrid.classList.add('reordering');
 			}
-			
+
 			// Ajouter une classe pour indiquer le mode drag sur toutes les cartes
 			document.querySelectorAll('.chart-card').forEach(c => {
 				if (c !== card) c.classList.add('drop-target-available');
 			});
-			
+
 			startAutoScroll();
 		});
-		
+
 		card.addEventListener('dragend', (e) => {
 			card.classList.remove('dragging');
 			card.style.cursor = 'grab';
-			
+
 			// Débloquer les redraws après un court délai
 			setTimeout(() => {
 				isReordering = false;
 			}, 150);
-			
+
 			// Réactiver les animations après un court délai
 			const dashboardGrid = document.getElementById('dashboardGrid');
 			if (dashboardGrid) {
@@ -957,41 +957,41 @@ document.addEventListener('DOMContentLoaded', () => {
 					dashboardGrid.classList.remove('reordering');
 				}, 100);
 			}
-			
+
 			// Retirer la classe de mode drag
 			document.querySelectorAll('.chart-card').forEach(c => {
 				c.classList.remove('drop-target-available', 'drop-before', 'drop-after', 'drop-left', 'drop-right');
 			});
-			
+
 			stopAutoScroll();
 		});
-		
+
 		// Setup drop zones on cards for reordering
 		card.addEventListener('dragover', (e) => {
 			if (!editMode) return;
 			const dragging = document.querySelector('.dragging');
 			if (!dragging || dragging === card) return;
-			
+
 			e.preventDefault();
 			e.dataTransfer.dropEffect = 'move';
-			
+
 			// Déterminer la direction du drop basé sur la position de la souris
 			const rect = card.getBoundingClientRect();
 			const midY = rect.top + rect.height / 2;
 			const midX = rect.left + rect.width / 2;
-			
+
 			// Nettoyer toutes les classes de drop
 			card.classList.remove('drop-before', 'drop-after', 'drop-left', 'drop-right');
-			
+
 			// Calculer la distance relative aux bords
 			const distanceTop = e.clientY - rect.top;
 			const distanceBottom = rect.bottom - e.clientY;
 			const distanceLeft = e.clientX - rect.left;
 			const distanceRight = rect.right - e.clientX;
-			
+
 			// Trouver le bord le plus proche
 			const minDistance = Math.min(distanceTop, distanceBottom, distanceLeft, distanceRight);
-			
+
 			if (minDistance === distanceTop) {
 				card.classList.add('drop-before');
 			} else if (minDistance === distanceBottom) {
@@ -1002,43 +1002,43 @@ document.addEventListener('DOMContentLoaded', () => {
 				card.classList.add('drop-right');
 			}
 		});
-		
+
 		card.addEventListener('dragleave', (e) => {
 			// Retirer les indicateurs seulement si on sort vraiment de la carte
 			if (!card.contains(e.relatedTarget)) {
 				card.classList.remove('drop-before', 'drop-after', 'drop-left', 'drop-right');
 			}
 		});
-		
+
 		card.addEventListener('drop', (e) => {
 			e.preventDefault();
 			e.stopPropagation();
-			
+
 			const dropClasses = ['drop-before', 'drop-after', 'drop-left', 'drop-right'];
 			const activeDropClass = dropClasses.find(cls => card.classList.contains(cls));
-			
+
 			card.classList.remove(...dropClasses);
-			
+
 			const source = e.dataTransfer.getData('source');
 			if (source !== 'chart-card') return;
-			
+
 			const draggedId = e.dataTransfer.getData('text/plain');
 			const targetId = card.getAttribute('data-chart-id');
-			
+
 			if (draggedId === targetId) return;
-			
+
 			// Reorder dans le tableau visible
 			const draggedIndex = chartConfig.visible.indexOf(draggedId);
 			const targetIndex = chartConfig.visible.indexOf(targetId);
-			
+
 			if (draggedIndex === -1 || targetIndex === -1) return;
-			
+
 			// Retirer de l'ancienne position
 			chartConfig.visible.splice(draggedIndex, 1);
-			
+
 			// Calculer la nouvelle position en fonction de la direction du drop
 			const newTargetIndex = chartConfig.visible.indexOf(targetId);
-			
+
 			// Pour tous les cas (gauche, droite, haut, bas), on utilise la même logique
 			// drop-before/drop-left = insérer AVANT la carte cible
 			// drop-after/drop-right = insérer APRÈS la carte cible
@@ -1052,27 +1052,27 @@ document.addEventListener('DOMContentLoaded', () => {
 				// Par défaut, insérer après
 				chartConfig.visible.splice(newTargetIndex + 1, 0, draggedId);
 			}
-			
+
 			saveChartConfig();
 			reorderChartsInDOMSmooth();
 		});
 	}
-	
+
 	// Réorganiser les cartes de manière fluide SANS recharger la page
 	function reorderChartsInDOMSmooth() {
 		const dashboardGrid = document.getElementById('dashboardGrid');
 		if (!dashboardGrid) return;
-		
+
 		// Récupérer toutes les cartes visibles
 		const allCards = Array.from(document.querySelectorAll('.chart-card'));
-		
+
 		// Construire l'ordre souhaité basé sur chartConfig.visible
 		const orderedCards = [];
 		chartConfig.visible.forEach(chartId => {
 			const card = allCards.find(c => c.getAttribute('data-chart-id') === chartId);
 			if (card) orderedCards.push(card);
 		});
-		
+
 		// Ajouter les cartes cachées à la fin
 		allCards.forEach(card => {
 			const cardId = card.getAttribute('data-chart-id');
@@ -1080,7 +1080,7 @@ document.addEventListener('DOMContentLoaded', () => {
 				orderedCards.push(card);
 			}
 		});
-		
+
 		// Réorganiser en utilisant insertBefore pour éviter les disparitions
 		orderedCards.forEach((card, index) => {
 			const currentIndex = Array.from(dashboardGrid.children).indexOf(card);
@@ -1094,43 +1094,43 @@ document.addEventListener('DOMContentLoaded', () => {
 			}
 		});
 	}
-	
+
 	// Reorder charts in the DOM based on the visible array order (ancienne méthode avec reload)
 	function reorderChartsInDOM() {
 		const dashboardGrid = document.getElementById('dashboardGrid');
 		if (!dashboardGrid) return;
-		
+
 		// Get all chart cards
 		const cards = Array.from(document.querySelectorAll('.chart-card'));
-		
+
 		// Sort cards based on their position in chartConfig.visible
 		cards.sort((a, b) => {
 			const aId = a.getAttribute('data-chart-id');
 			const bId = b.getAttribute('data-chart-id');
 			const aIndex = chartConfig.visible.indexOf(aId);
 			const bIndex = chartConfig.visible.indexOf(bId);
-			
+
 			// Hidden charts go to the end
 			if (aIndex === -1) return 1;
 			if (bIndex === -1) return -1;
-			
+
 			return aIndex - bIndex;
 		});
-		
+
 		// Reappend cards in the new order
 		cards.forEach(card => {
 			dashboardGrid.appendChild(card);
 		});
 	}
-	
+
 	// Auto-scroll functionality when dragging near edges
 	let lastMouseY = 0;
-	
+
 	function startAutoScroll() {
 		// Track mouse position during drag
 		document.addEventListener('dragover', handleDragScroll);
 	}
-	
+
 	function stopAutoScroll() {
 		document.removeEventListener('dragover', handleDragScroll);
 		if (autoScrollInterval) {
@@ -1138,19 +1138,19 @@ document.addEventListener('DOMContentLoaded', () => {
 			autoScrollInterval = null;
 		}
 	}
-	
+
 	function handleDragScroll(e) {
 		lastMouseY = e.clientY;
 		const scrollThreshold = 100; // pixels from edge to trigger scroll
 		const scrollSpeed = 15; // pixels per interval
 		const viewportHeight = window.innerHeight;
-		
+
 		// Clear existing interval
 		if (autoScrollInterval) {
 			clearInterval(autoScrollInterval);
 			autoScrollInterval = null;
 		}
-		
+
 		// Scroll up if near top
 		if (e.clientY < scrollThreshold) {
 			autoScrollInterval = setInterval(() => {
@@ -1170,26 +1170,26 @@ document.addEventListener('DOMContentLoaded', () => {
 			}, 16); // ~60fps
 		}
 	}
-	
+
 	// Update available charts panel
 	function updateAvailableCharts() {
 		const container = document.getElementById('availableCharts');
 		if (!container) return;
-		
+
 		container.innerHTML = '';
-		
+
 		Object.keys(CHART_DEFINITIONS).forEach(chartId => {
 			const isVisible = chartConfig.visible.includes(chartId);
 			const option = document.createElement('div');
 			option.className = 'chart-option' + (isVisible ? ' disabled' : '');
 			option.textContent = CHART_DEFINITIONS[chartId].title;
 			option.setAttribute('data-chart-id', chartId);
-			
+
 			if (!isVisible) {
 				// Drag & Drop functionality
 				option.draggable = true;
 				option.style.cursor = 'grab';
-				
+
 				option.addEventListener('dragstart', (e) => {
 					e.dataTransfer.effectAllowed = 'move';
 					e.dataTransfer.setData('text/plain', chartId);
@@ -1197,29 +1197,29 @@ document.addEventListener('DOMContentLoaded', () => {
 					option.style.opacity = '0.5';
 					option.style.cursor = 'grabbing';
 				});
-				
+
 				option.addEventListener('dragend', (e) => {
 					option.style.opacity = '1';
 					option.style.cursor = 'grab';
 				});
-				
+
 				// Keep click functionality as fallback
 				option.addEventListener('click', () => {
 					addChart(chartId);
 				});
 			}
-			
+
 			container.appendChild(option);
 		});
 	}
-	
+
 	// Add chart
 	function addChart(chartId) {
 		if (chartConfig.visible.includes(chartId)) return;
-		
+
 		chartConfig.visible.push(chartId);
 		saveChartConfig();
-		
+
 		// Show the card
 		const card = document.querySelector(`[data-chart-id="${chartId}"]`);
 		if (card) {
@@ -1227,11 +1227,11 @@ document.addEventListener('DOMContentLoaded', () => {
 			applyChartConfig();
 			reorderChartsInDOM();
 			initializeChart(chartId);
-			
+
 			// Setup drag for the newly added chart if in edit mode
 			if (editMode) {
 				setupChartDrag(card);
-				
+
 				// Add delete button if not already present
 				let deleteBtn = card.querySelector('.btn-remove');
 				if (!deleteBtn) {
@@ -1239,21 +1239,21 @@ document.addEventListener('DOMContentLoaded', () => {
 					deleteBtn.className = 'btn-remove';
 					deleteBtn.innerHTML = '×';
 					deleteBtn.title = 'Supprimer ce graphique';
-					
+
 					deleteBtn.addEventListener('click', (e) => {
 						e.stopPropagation();
 						removeChart(chartId);
 					});
-					
+
 					card.appendChild(deleteBtn);
 				}
 				deleteBtn.style.display = 'block';
 			}
 		}
-		
+
 		updateAvailableCharts();
 	}
-	
+
 	// Remove chart
 	function removeChart(chartId) {
 		const index = chartConfig.visible.indexOf(chartId);
@@ -1264,109 +1264,109 @@ document.addEventListener('DOMContentLoaded', () => {
 			updateAvailableCharts();
 		}
 	}
-	
+
 	// Resize chart
 	function resizeChart(chartId, colSpan) {
 		// Clamp between 3 and 12 columns
 		colSpan = Math.max(3, Math.min(12, colSpan));
 		chartConfig.sizes[chartId] = colSpan;
-		
+
 		const card = document.querySelector(`[data-chart-id="${chartId}"]`);
 		if (card) {
 			card.setAttribute('data-col-span', colSpan);
 		}
-		
+
 		saveChartConfig();
 		setTimeout(() => {
 			resizeAllCanvases();
 			redrawAllCharts();
 		}, 50);
 	}
-	
+
 	// Setup resize handles with smooth dragging
 	function setupResizeHandles() {
 		document.querySelectorAll('.chart-card').forEach(card => {
 			const handle = card.querySelector('.resize-handle');
 			if (!handle) return;
-			
+
 			const chartId = card.getAttribute('data-chart-id');
 			let isResizing = false;
 			let startX = 0;
 			let startColSpan = 6;
-			
+
 			handle.addEventListener('mousedown', (e) => {
 				if (!editMode) return;
-				
+
 				isResizing = true;
 				startX = e.clientX;
 				startColSpan = parseInt(card.getAttribute('data-col-span')) || 6;
-				
+
 				// Disable transitions during resize
 				card.classList.add('resizing');
-				
+
 				e.preventDefault();
 				e.stopPropagation();
-				
+
 				// Change cursor for whole document
 				document.body.style.cursor = 'ew-resize';
 			});
-			
+
 			const handleMouseMove = (e) => {
 				if (!isResizing) return;
-				
+
 				// Calculate how much we've moved
 				const grid = document.getElementById('dashboardGrid');
 				const gridRect = grid.getBoundingClientRect();
 				const gridWidth = gridRect.width;
-				
+
 				// One column width in pixels (including gap)
 				const colWidth = (gridWidth + 18) / 12;
-				
+
 				const deltaX = e.clientX - startX;
 				const colChange = Math.round(deltaX / colWidth);
-				
+
 				// Calculate new column span
 				let newColSpan = startColSpan + colChange;
 				newColSpan = Math.max(3, Math.min(12, newColSpan));
-				
+
 				// Apply immediately for smooth feedback
 				card.setAttribute('data-col-span', newColSpan);
-				
+
 				// Show size indicator
 				showResizeIndicator(newColSpan);
-				
+
 				e.preventDefault();
 			};
-			
+
 			const handleMouseUp = () => {
 				if (!isResizing) return;
-				
+
 				isResizing = false;
 				document.body.style.cursor = '';
-				
+
 				// Re-enable transitions
 				card.classList.remove('resizing');
-				
+
 				// Hide size indicator
 				hideResizeIndicator();
-				
+
 				// Save the final size
 				const finalColSpan = parseInt(card.getAttribute('data-col-span')) || 6;
 				chartConfig.sizes[chartId] = finalColSpan;
 				saveChartConfig();
-				
+
 				// Update canvas sizes AND redraw charts
 				setTimeout(() => {
 					resizeAllCanvases();
 					redrawAllCharts();
 				}, 100);
 			};
-			
+
 			document.addEventListener('mousemove', handleMouseMove);
 			document.addEventListener('mouseup', handleMouseUp);
 		});
 	}
-	
+
 	// Initialize chart animations
 	function initializeChart(chartId) {
 		const def = CHART_DEFINITIONS[chartId];
@@ -1374,14 +1374,14 @@ document.addEventListener('DOMContentLoaded', () => {
 			console.error(`Graphique ${chartId} non trouvé dans CHART_DEFINITIONS`);
 			return;
 		}
-		
+
 		const canvasId = 'chart-' + chartId;
 		const canvas = document.getElementById(canvasId);
 		if (!canvas) {
 			console.warn(`Canvas ${canvasId} non trouvé dans le DOM`);
 			return;
 		}
-		
+
 		if (def.type === 'area') {
 			animateArea(canvasId, def.data, def.color, def.minVal, def.maxVal, def.unit);
 		} else if (def.type === 'area-threshold') {
@@ -1392,31 +1392,31 @@ document.addEventListener('DOMContentLoaded', () => {
 			animateDualLineChart(canvasId, def.dataA, def.dataB, def.colorA, def.colorB);
 		}
 	}
-	
+
 	// Resize indicator functions
 	let resizeIndicator = null;
-	
+
 	function showResizeIndicator(colSpan) {
 		if (!resizeIndicator) {
 			resizeIndicator = document.createElement('div');
 			resizeIndicator.className = 'resize-indicator';
 			document.body.appendChild(resizeIndicator);
 		}
-		
+
 		const percentage = Math.round((colSpan / 12) * 100);
 		resizeIndicator.textContent = `${percentage}% (${colSpan}/12)`;
 		resizeIndicator.style.display = 'block';
 	}
-	
+
 	function hideResizeIndicator() {
 		if (resizeIndicator) {
 			resizeIndicator.style.display = 'none';
 		}
 	}
-	
+
 	// Setup resize handles
 	setupResizeHandles();
-	
+
 	// Setup drag & drop zone for the dashboard grid
 	const dashboardGrid = document.getElementById('dashboardGrid');
 	if (dashboardGrid) {
@@ -1426,27 +1426,27 @@ document.addEventListener('DOMContentLoaded', () => {
 			e.dataTransfer.dropEffect = 'move';
 			dashboardGrid.classList.add('drag-over');
 		});
-		
+
 		dashboardGrid.addEventListener('dragleave', (e) => {
 			if (e.target === dashboardGrid) {
 				dashboardGrid.classList.remove('drag-over');
 			}
 		});
-		
+
 		dashboardGrid.addEventListener('drop', (e) => {
 			e.preventDefault();
 			dashboardGrid.classList.remove('drag-over');
-			
+
 			const chartId = e.dataTransfer.getData('text/plain');
 			const source = e.dataTransfer.getData('source');
-			
+
 			// Only add if it's from chart-option panel (not from moving within grid)
 			if (source === 'chart-option' && chartId && !chartConfig.visible.includes(chartId)) {
 				addChart(chartId);
 			}
 		});
 	}
-	
+
 	// Setup drop zone for deleting charts
 	if (addChartPanel) {
 		addChartPanel.addEventListener('dragover', (e) => {
@@ -1458,27 +1458,27 @@ document.addEventListener('DOMContentLoaded', () => {
 				addChartPanel.classList.add('delete-zone-active');
 			}
 		});
-		
+
 		addChartPanel.addEventListener('dragleave', (e) => {
 			if (e.target === addChartPanel || !addChartPanel.contains(e.relatedTarget)) {
 				addChartPanel.classList.remove('delete-zone-active');
 			}
 		});
-		
+
 		addChartPanel.addEventListener('drop', (e) => {
 			e.preventDefault();
 			addChartPanel.classList.remove('delete-zone-active');
-			
+
 			const chartId = e.dataTransfer.getData('text/plain');
 			const source = e.dataTransfer.getData('source');
-			
+
 			// Only delete if it's from a chart card
 			if (source === 'chart-card' && chartId && chartConfig.visible.includes(chartId)) {
 				removeChart(chartId);
 			}
 		});
 	}
-	
+
 	// Populate sample numeric values under each chart
 	Object.keys(CHART_DEFINITIONS).forEach(chartId => {
 		const def = CHART_DEFINITIONS[chartId];
@@ -1511,20 +1511,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	// Apply saved configuration
 	applyChartConfig();
-	
+
 	// Reorder charts in DOM based on saved order
 	reorderChartsInDOM();
-	
+
 	// initial resize
 	resizeAllCanvases();
 
 	// Fonction pour redessiner tous les graphiques
 	let isReordering = false;
-	
+
 	function redrawAllCharts() {
 		// Ne pas redessiner pendant le drag/drop
 		if (isReordering) return;
-		
+
 		document.querySelectorAll('.chart-card').forEach(card => {
 			const chartId = card.getAttribute('data-chart-id');
 			if (chartId && CHART_DEFINITIONS[chartId]) {
