@@ -132,7 +132,7 @@
     transform: translateY(-2px);
 }
 
-.card { 
+.card {
     grid-column: span 6;
     min-height: 320px;
 }
@@ -514,9 +514,9 @@
     left: -100%;
     width: 50%;
     height: 100%;
-    background: linear-gradient(90deg, 
-        transparent 0%, 
-        rgba(255, 255, 255, 0.3) 50%, 
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.3) 50%,
         transparent 100%
     );
     transition: left 0.6s ease;
@@ -635,21 +635,23 @@
     border-radius: 12px;
 }
 
+
+
 @media (max-width: 1100px) {
     .dashboard-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     /* Améliorer la lisibilité sur tablette */
     .page-title {
         font-size: 1.5rem;
         font-weight: 700;
     }
-    
+
     .card-title {
         font-weight: 600;
     }
-    
+
     .large-value {
         font-weight: 700;
     }
@@ -659,7 +661,7 @@
     .dashboard-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .card,
     .card[data-col-span] {
         grid-column: span 1 !important;
@@ -668,48 +670,213 @@
     .chart-card canvas {
         height: 160px !important;
     }
-    
+
     .dashboard-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 12px;
     }
-    
+
     .page-title {
         font-size: 1.4rem;
     }
-    
+
     .btn-edit-mode {
         width: 100%;
         justify-content: center;
     }
-    
+
     .available-charts {
         grid-template-columns: 1fr;
     }
-    
+
     .card-controls {
         flex-direction: column;
         gap: 4px;
     }
-    
+
     .resize-handle {
         display: none !important;
     }
-    
+
     /* Améliorer le contraste des titres de cartes sur mobile */
     .card-title {
         font-size: 0.95rem;
         font-weight: 600;
     }
-    
+
     .large-value {
         font-size: 1.6rem;
         font-weight: 700;
     }
-    
+
     .small-note {
         font-size: 0.8rem;
     }
 }
 
+/* =======================
+ Haut de page du dashboard
+ ========================= */
+
+/* Conteneur global du bouton */
+.dashboard-actions {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+/* Bouton de sélection de patient */
+.btn-patients {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: var(--accent-primary, #0b6e4f);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-patients:hover {
+    background: var(--accent-hover, #0a5d42);
+}
+
+/* Contenu de la page patient */
+.patient-active {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 20px;
+    padding: 20px;
+}
+
+/* Titre de la section */
+.patient-active h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary, #243b53);
+    margin-bottom: 10px;
+}
+
+/* Carte patient */
+.patient-card {
+    background: var(--bg-card, #ffffff);
+    border: 1px solid var(--border-light, #e6eef8);
+    border-radius: 14px;
+    padding: 18px 24px;
+    box-shadow: var(--shadow-lg, 0 2px 8px rgba(15, 23, 42, 0.05));
+    max-width: 400px;
+    width: 100%;
+}
+
+/* Nom du patient */
+.patient-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text-primary, #0f172a);
+}
+
+/* Liste des infos patient */
+.patient-meta {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    text-align: left;
+}
+
+.patient-meta li {
+    margin-bottom: 6px;
+    font-size: 0.95rem;
+    color: var(--text-secondary, #475569);
+}
+
+.patient-meta li strong {
+    font-weight: 600;
+    margin-right: 4px;
+}
+
+/* Message "Aucun patient sélectionné" */
+.patient-active > p {
+    font-size: 1rem;
+    color: var(--text-secondary, #64748b);
+}
+
+/* === Responsive === */
+@media (max-width: 768px) {
+    .patient-active {
+        padding: 16px;
+        gap: 16px;
+    }
+
+    .patient-card {
+        padding: 16px;
+        max-width: 90%;
+    }
+
+    .patient-active h2 {
+        font-size: 1.3rem;
+    }
+
+    .patient-name {
+        font-size: 1.1rem;
+    }
+
+    .patient-meta li {
+        font-size: 0.9rem;
+    }
+}
+
+/* === Overlay liste des patients === */
+
+.patients-list-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.patients-list-overlay.show {
+    display: flex;
+}
+
+.patients-list-content {
+    background: #fff;
+    border-radius: 8px;
+    padding: 1.5rem;
+    max-height: 80vh;
+    overflow-y: auto;
+    width: 320px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.patients-list-overlay .patients-list-content a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.patients-list-overlay .patients-list-content a:hover {
+    color: var(--accent-primary);
+}
+
+.patients-list-overlay .patients-list-content h2 {
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+[data-theme="dark"] .patients-list-overlay .patients-list-content {
+    background: var(--bg-card);
+    color: var(--text-primary);
+}

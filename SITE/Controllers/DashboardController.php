@@ -24,9 +24,19 @@ final class DashboardController {
             exit;
         }
 
-        // Pour l'instant, on utilise le patient 1 (Alexandre Jacob)
-        // Plus tard, on récupérera les patients liés au médecin connecté
-        $patientId = 1;
+// 🧠 1. Si patient dans l’URL → sauvegarde
+        if (isset($_GET['patient']) && ctype_digit($_GET['patient'])) {
+            $_SESSION['last_patient_id'] = (int) $_GET['patient'];
+        }
+
+// 🧠 2. Patient actif
+        $patientId = $_SESSION['last_patient_id'] ?? null;
+
+// 🧠 3. Fallback (premier patient du médecin)
+        if (!$patientId) {
+            $patientId = Patient::getFirstPatientIdForDoctor($_SESSION['user']['id']);
+            $_SESSION['last_patient_id'] = $patientId;
+        }
 
         // Récupérer les informations du patient
         $patient = Patient::findById($patientId);
@@ -61,7 +71,7 @@ final class DashboardController {
         $fcData = Patient::getChartData($patientId, 'Fréquence cardiaque', 50);
         if ($fcData) {
             $chartData['heart-rate'] = [
-                'values' => Patient::prepareChartValues($fcData['valeurs'], 60, 100),
+                'values' => Patient::prepareChartValues($fcData['valeurs'], 25, 100),
                 'lastValue' => end($fcData['valeurs'])['valeur'],
                 'unit' => $fcData['unite']
             ];
@@ -71,7 +81,7 @@ final class DashboardController {
         $respData = Patient::getChartData($patientId, 'Fréquence respiratoire', 50);
         if ($respData) {
             $chartData['respiration'] = [
-                'values' => Patient::prepareChartValues($respData['valeurs'], 12, 20),
+                'values' => Patient::prepareChartValues($respData['valeurs'], 0, 20),
                 'lastValue' => end($respData['valeurs'])['valeur'],
                 'unit' => $respData['unite']
             ];
@@ -101,7 +111,7 @@ final class DashboardController {
         $o2Data = Patient::getChartData($patientId, 'Saturation en oxygène', 50);
         if ($o2Data) {
             $chartData['oxygen-saturation'] = [
-                'values' => Patient::prepareChartValues($o2Data['valeurs'], 95, 100),
+                'values' => Patient::prepareChartValues($o2Data['valeurs'], 90, 100),
                 'lastValue' => end($o2Data['valeurs'])['valeur'],
                 'unit' => $o2Data['unite']
             ];
@@ -110,3 +120,4 @@ final class DashboardController {
         require __DIR__ . '/../Views/dashboard.php';
     }
 }
+

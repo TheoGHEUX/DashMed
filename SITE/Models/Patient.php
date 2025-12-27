@@ -212,4 +212,22 @@ final class Patient
             return self::normalizeValue((float)$v['valeur'], $min, $max);
         }, $valeurs);
     }
+
+    public static function getFirstPatientIdForDoctor(int $medId): ?int
+    {
+        $pdo = Database::getConnection();
+
+        $st = $pdo->prepare('
+        SELECT pt_id
+        FROM suivre
+        WHERE med_id = ?
+        ORDER BY pt_id
+        LIMIT 1
+    ');
+
+        $st->execute([$medId]);
+        $row = $st->fetch(PDO::FETCH_ASSOC);
+
+        return $row ? (int) $row['pt_id'] : null;
+    }
 }

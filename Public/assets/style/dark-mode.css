@@ -8,29 +8,29 @@
     --bg-secondary: #f8f9fa;
     --bg-tertiary: #f1f5f9;
     --bg-card: #ffffff;
-    
+
     --text-primary: #0f172a;
     --text-secondary: #475569;
     --text-tertiary: #64748b;
-    
+
     --border-color: #e2e8f0;
     --border-light: #e6eef8;
-    
+
     --accent-primary: #0b6e4f;
     --accent-hover: #0a5d42;
     --accent-light: rgba(11, 110, 79, 0.1);
-    
+
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
     --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
     --shadow-lg: 0 6px 18px rgba(15, 23, 42, 0.04);
-    
+
     --input-bg: #ffffff;
     --input-border: #cbd5e1;
     --input-focus: #0b6e4f;
-    
+
     --header-bg: rgba(255, 255, 255, 0.95);
     --header-text: #0f172a;
-    
+
     --footer-bg: rgba(255, 255, 255, 0.95);
     --footer-text: #0f172a;
 }
@@ -41,29 +41,29 @@
     --bg-secondary: #1e293b;
     --bg-tertiary: #334155;
     --bg-card: #1e293b;
-    
+
     --text-primary: #f1f5f9;
     --text-secondary: #cbd5e1;
     --text-tertiary: #94a3b8;
-    
+
     --border-color: #334155;
     --border-light: #475569;
-    
+
     --accent-primary: #10b981;
     --accent-hover: #059669;
     --accent-light: rgba(16, 185, 129, 0.15);
-    
+
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
     --shadow-lg: 0 6px 18px rgba(0, 0, 0, 0.5);
-    
+
     --input-bg: #1e293b;
     --input-border: #475569;
     --input-focus: #10b981;
-    
+
     --header-bg: rgba(15, 23, 42, 0.95);
     --header-text: #f1f5f9;
-    
+
     --footer-bg: rgba(15, 23, 42, 0.95);
     --footer-text: #f1f5f9;
 }
@@ -249,24 +249,24 @@ footer a,
         order: -1;
         margin-right: 8px;
     }
-    
+
     /* Améliorer la visibilité des titres sur mobile en mode sombre */
     [data-theme="dark"] .page-title {
         color: #ffffff;
         font-weight: 700;
         text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
     }
-    
+
     [data-theme="dark"] .card-title {
         color: #f1f5f9;
         font-weight: 600;
     }
-    
+
     [data-theme="dark"] .large-value {
         color: #ffffff;
         font-weight: 700;
     }
-    
+
     [data-theme="dark"] .small-note {
         color: #cbd5e1;
     }
@@ -279,12 +279,12 @@ footer a,
         font-weight: 700;
         text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
     }
-    
+
     [data-theme="dark"] .card-title {
         color: #f1f5f9;
         font-weight: 600;
     }
-    
+
     [data-theme="dark"] .large-value {
         color: #ffffff;
     }
