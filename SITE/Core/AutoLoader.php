@@ -96,7 +96,7 @@ final class AutoLoader
 }
 
 // Enregistrement des autoloaders
-spl_autoload_register('AutoLoader::loadCore');
-spl_autoload_register('AutoLoader::loadModel');
-spl_autoload_register('AutoLoader::loadView');
-spl_autoload_register('AutoLoader::loadController');
+spl_autoload_register([AutoLoader::class, 'loadCore']);
+spl_autoload_register([AutoLoader::class, 'loadModel']);
+spl_autoload_register([AutoLoader::class, 'loadView']);
+spl_autoload_register([AutoLoader::class, 'loadController']);
