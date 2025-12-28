@@ -41,7 +41,10 @@ include __DIR__ . '/../partials/head.php';
 <main class="main">
     <section class="hero" aria-labelledby="forgotten-title">
         <h1 id="forgotten-title">Réinitialisez votre mot de passe</h1>
-        <p class="subtitle">Entrez votre adresse email ci-dessous et vous recevrez un lien pour changer de mot de passe.</p>
+        <p class="subtitle">
+            Entrez votre adresse email ci-dessous et vous recevrez
+            un lien pour changer de mot de passe.
+        </p>
 
         <?php if (!empty($success)) : ?>
             <div class="alert alert-success" role="status" aria-live="polite">
@@ -60,7 +63,9 @@ include __DIR__ . '/../partials/head.php';
         <?php endif; ?>
 
         <form class="form" action="/forgotten-password" method="post" novalidate>
-            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '', ENT_QUOTES, 'UTF-8') ?>">
+            <input type="hidden"
+                   name="csrf_token"
+                   value="<?= htmlspecialchars($csrf_token ?? '', ENT_QUOTES, 'UTF-8') ?>">
             <div class="field">
                 <label for="email" class="sr-only">Adresse email</label>
                 <input

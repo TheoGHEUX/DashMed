@@ -27,7 +27,9 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
         <nav id="mainnav" class="mainnav" aria-label="Navigation principale" aria-hidden="false">
             <a href="/"<?= ($currentPath === '/' ? ' class="current"' : '') ?>>Accueil</a>
             <a href="/map"<?= ($currentPath === '/map' ? ' class="current"' : '') ?>>Plan du site</a>
-            <a href="/mentions-legales"<?= ($currentPath === '/mentions-legales' || $currentPath === '/legal-notices' ? ' class="current"' : '') ?>>Mentions légales</a>
+            <a href="/mentions-legales"
+                <?= ($currentPath === '/mentions-legales' || $currentPath === '/legal-notices'
+                    ? ' class="current"' : '') ?>>Mentions légales</a>
             <a href="/login" class="nav-login">Connexion</a>
         </nav>
 

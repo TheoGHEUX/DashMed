@@ -55,7 +55,9 @@ final class ForgottenPasswordController
         });
         if (count($fpAttempts) >= $maxAttempts) {
             // Keep UI neutral, set success message and redirect
-            $success = "Si un compte existe à cette adresse mail, un lien de réinitialisation a été envoyé.\nVeuillez attendre avant de refaire une demande.";
+            $success = "Si un compte existe à cette adresse mail, "
+                . "un lien de réinitialisation a été envoyé.\n"
+                . "Veuillez attendre avant de refaire une demande.";
             $_SESSION['success'] = $success;
             header('Location: /forgotten-password');
             exit;
@@ -95,24 +97,38 @@ final class ForgottenPasswordController
                     $ins->execute([$old['email'], $tokenHash, $expiresAt]);
 
                     // Construit l'URL reset
-                    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+                    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+                        ? 'https' : 'http';
                     $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-                    $resetUrl = $scheme . '://' . $host . '/reset-password?token=' . urlencode($token) . '&email=' . urlencode($old['email']);
+                    $resetUrl = $scheme . '://' . $host . '/reset-password?token='
+                        . urlencode($token) . '&email=' . urlencode($old['email']);
 
                     // Nom d’affichage
                     $displayName = trim(($user['name'] ?? '') . ' ' . ($user['last_name'] ?? ''));
                     Mailer::sendPasswordResetEmail($old['email'], $displayName ?: 'Utilisateur', $resetUrl);
                 } else {
                     // En prod on reste neutre côté UI, mais on log pour faciliter le debug
-                    error_log(sprintf('[FORGOT] Aucun utilisateur trouvé pour %s (message neutre renvoyé)', $old['email']));
+                    error_log(sprintf(
+                        '[FORGOT] Aucun utilisateur trouvé pour %s (message neutre renvoyé)',
+                        $old['email']
+                    ));
                 }
 
                 // Réponse neutre (utilise une vraie nouvelle ligne avec "\n")
-                $success = "Si un compte existe à cette adresse mail, un lien de réinitialisation a été envoyé.\nN'oubliez pas de vérifier votre courrier indésirable.";
+                $success = "Si un compte existe à cette adresse mail, "
+                    . "un lien de réinitialisation a été envoyé.\n"
+                    . "N'oubliez pas de vérifier votre courrier indésirable.";
                 $old = ['email' => ''];
             } catch (\Throwable $e) {
-                error_log(sprintf('[FORGOT] %s in %s:%d', $e->getMessage(), $e->getFile(), $e->getLine()));
-                $success = "Si un compte existe à cette adresse mail, un lien de réinitialisation a été envoyé.\nN'oubliez pas de vérifier votre courrier indésirable.";
+                error_log(sprintf(
+                    '[FORGOT] %s in %s:%d',
+                    $e->getMessage(),
+                    $e->getFile(),
+                    $e->getLine()
+                ));
+                $success = "Si un compte existe à cette adresse mail, "
+                    . "un lien de réinitialisation a été envoyé.\n"
+                    . "N'oubliez pas de vérifier votre courrier indésirable.";
                 $old = ['email' => ''];
             }
         } else {

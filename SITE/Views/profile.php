@@ -75,7 +75,11 @@ include __DIR__ . '/partials/head.php';
                 </tr>
                 <tr>
                     <th scope="row">Sexe</th>
-                    <td><?= htmlspecialchars(($user['sexe'] ?? '') === 'M' ? 'Homme' : 'Femme', ENT_QUOTES, 'UTF-8') ?></td>
+                    <td><?= htmlspecialchars(
+                        ($user['sexe'] ?? '') === 'M' ? 'Homme' : 'Femme',
+                        ENT_QUOTES,
+                        'UTF-8'
+                    ) ?></td>
                 </tr>
                 <tr>
                     <th scope="row">Spécialité</th>
@@ -85,14 +89,18 @@ include __DIR__ . '/partials/head.php';
                     <th scope="row">Adresse email</th>
                     <td class="email-cell">
                         <span><?= htmlspecialchars($user['email'] ?? '', ENT_QUOTES, 'UTF-8') ?></span>
-                        <a class="btn-edit" href="/change-mail" title="Changer votre adresse email (connexion requise)">Changer</a>
+                        <a class="btn-edit"
+                           href="/change-mail"
+                           title="Changer votre adresse email (connexion requise)">Changer</a>
                     </td>
                 </tr>
                 <tr>
                     <th scope="row">Mot de passe</th>
                     <td class="email-cell">
                         <span aria-label="Mot de passe masqué">••••••••</span>
-                        <a class="btn-edit" href="/change-password" title="Changer votre mot de passe (connexion requise)">Changer</a>
+                        <a class="btn-edit"
+                           href="/change-password"
+                           title="Changer votre mot de passe (connexion requise)">Changer</a>
                     </td>
                 </tr>
                 </tbody>

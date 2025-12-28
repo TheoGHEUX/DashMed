@@ -47,12 +47,19 @@ final class User
      * @param string $specialite Spécialité
      * @return bool True si l'insertion a réussi, false sinon
      */
-    public static function create(string $name, string $lastName, string $email, string $hash, string $sexe, string $specialite): bool
-    {
+    public static function create(
+        string $name,
+        string $lastName,
+        string $email,
+        string $hash,
+        string $sexe,
+        string $specialite
+    ): bool {
         $pdo = Database::getConnection();
         $st = $pdo->prepare(
-            'INSERT INTO MEDECIN (prenom, nom, email, mdp, sexe, specialite, compte_actif, date_creation, date_derniere_maj)
-             VALUES (?, ?, ?, ?, ?, ?, 1, NOW(), NOW())'
+            'INSERT INTO MEDECIN (prenom, nom, email, mdp, sexe, specialite, '
+            . 'compte_actif, date_creation, date_derniere_maj) '
+            . 'VALUES (?, ?, ?, ?, ?, ?, 1, NOW(), NOW())'
         );
         return $st->execute([$name, $lastName, strtolower(trim($email)), $hash, $sexe, $specialite]);
     }

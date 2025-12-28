@@ -1,1 +1,8 @@
-.env.vscode/settings.json
+.env
+.vscode/
+
+# Dépendances
+vendor/
+
+# Cache PHPUnit
+.phpunit.cache/

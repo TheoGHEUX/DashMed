@@ -53,7 +53,10 @@ $pageScripts = [];
                 <input type="password" name="password" placeholder="Nouveau mot de passe" required />
             </div>
             <div class="field">
-                <input type="password" name="password_confirm" placeholder="Confirmez le nouveau mot de passe" required />
+                <input type="password"
+                       name="password_confirm"
+                       placeholder="Confirmez le nouveau mot de passe"
+                       required />
             </div>
             <button class="btn" type="submit">Mettre à jour</button>
         </form>

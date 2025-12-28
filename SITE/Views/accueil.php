@@ -51,7 +51,9 @@ include __DIR__ . '/partials/head.php';
     <div class="accueil-container">
         <section class="dashboard-banner">
             <div class="banner-content">
-                <h1 class="welcome-title" style="color: #0fb0c0 !important;"><?= htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8') ?></h1>
+                <h1 class="welcome-title" style="color: #0fb0c0 !important;">
+                    <?= htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8') ?>
+                </h1>
                 <p>Votre plateforme médicale pour une gestion hospitalière efficace et sécurisée</p>
 
                 <a href="/dashboard" class="dashboard-card" role="link" aria-label="Accéder au tableau de bord">

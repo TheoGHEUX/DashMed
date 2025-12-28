@@ -23,7 +23,8 @@
  */
 
 $pageTitle       = $pageTitle ?? "Accueil";
-$pageDescription = $pageDescription ?? "Page d'accueil de DashMed : votre tableau de bord santé simple et moderne pour la médecine";
+$pageDescription = $pageDescription
+    ?? "Page d'accueil de DashMed : votre tableau de bord santé simple et moderne pour la médecine";
 $pageStyles      = $pageStyles ?? ["/assets/style/index.css"];
 $pageScripts     = $pageScripts ?? ["/assets/script/header_responsive.js"];
 

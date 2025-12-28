@@ -77,7 +77,8 @@ final class ChangePasswordController
             !preg_match('/\d/', $newPassword) ||
             !preg_match('/[^A-Za-z0-9]/', $newPassword)
         ) {
-            $errors[] = 'Le mot de passe doit contenir au moins 12 caractères, avec majuscules, minuscules, chiffres et un caractère spécial.';
+            $errors[] = 'Le mot de passe doit contenir au moins 12 caractères, '
+                . 'avec majuscules, minuscules, chiffres et un caractère spécial.';
         }
 
         if (!$errors) {

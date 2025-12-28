@@ -217,7 +217,10 @@ include __DIR__ . '/partials/head.php';
         <article class="card chart-card" data-chart-id="oxygen-saturation">
             <div class="resize-handle" style="display: none;" aria-hidden="true"></div>
             <h2 class="card-title">Saturation en oxygène (%)</h2>
-            <canvas id="chart-oxygen-saturation" width="600" height="200" aria-label="Graphique saturation oxygène"></canvas>
+            <canvas id="chart-oxygen-saturation"
+                    width="600"
+                    height="200"
+                    aria-label="Graphique saturation oxygène"></canvas>
             <div class="card-footer">
                 <div class="large-value" id="value-oxygen">-</div>
                 <div class="small-note" id="note-oxygen">%, dernière mesure</div>

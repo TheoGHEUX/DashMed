@@ -54,7 +54,10 @@ $pageScripts = [];
                 <input type="email" name="new_email" placeholder="Nouvelle adresse email" required />
             </div>
             <div class="field">
-                <input type="email" name="new_email_confirm" placeholder="Confirmez la nouvelle adresse email" required />
+                <input type="email"
+                       name="new_email_confirm"
+                       placeholder="Confirmez la nouvelle adresse email"
+                       required />
             </div>
             <button class="btn" type="submit">Mettre à jour</button>
         </form>

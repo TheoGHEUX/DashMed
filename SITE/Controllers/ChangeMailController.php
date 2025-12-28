@@ -92,7 +92,8 @@ final class ChangeMailController
                         // Envoi des emails de notification
                         $this->sendEmailNotifications($oldEmail, $newEmail, $user['name']);
 
-                        $success = 'Votre adresse email a été mise à jour avec succès. Des emails de confirmation ont été envoyés à votre ancienne et nouvelle adresse.';
+                        $success = 'Votre adresse email a été mise à jour avec succès. '
+                            . 'Des emails de confirmation ont été envoyés à votre ancienne et nouvelle adresse.';
                     } else {
                         $errors[] = 'Impossible de mettre à jour l\'adresse email pour le moment.';
                     }
@@ -112,7 +113,8 @@ final class ChangeMailController
         $oldEmailSubject = "Modification de votre adresse email - DashMed";
         $oldEmailMessage = "Bonjour " . htmlspecialchars($userName) . ",\n\n";
         $oldEmailMessage .= "Votre adresse email associée à votre compte DashMed a été modifiée.\n\n";
-        $oldEmailMessage .= "Si vous n'êtes pas à l'origine de cette modification, veuillez contacter immédiatement notre service client pour sécuriser votre compte.\n\n";
+        $oldEmailMessage .= "Si vous n'êtes pas à l'origine de cette modification, "
+            . "veuillez contacter immédiatement notre service client pour sécuriser votre compte.\n\n";
         $oldEmailMessage .= "Cordialement,\n";
         $oldEmailMessage .= "L'équipe DashMed";
 
@@ -127,7 +129,8 @@ final class ChangeMailController
         $newEmailMessage = "Bonjour " . htmlspecialchars($userName) . ",\n\n";
         $newEmailMessage .= "Votre adresse email a été modifiée avec succès.\n\n";
         $newEmailMessage .= "Cette adresse (" . $newEmail . ") est maintenant associée à votre compte DashMed.\n\n";
-        $newEmailMessage .= "Si vous n'êtes pas à l'origine de cette modification, veuillez contacter immédiatement notre service client pour sécuriser votre compte.\n\n";
+        $newEmailMessage .= "Si vous n'êtes pas à l'origine de cette modification, "
+            . "veuillez contacter immédiatement notre service client pour sécuriser votre compte.\n\n";
         $newEmailMessage .= "Cordialement,\n";
         $newEmailMessage .= "L'équipe DashMed";
 

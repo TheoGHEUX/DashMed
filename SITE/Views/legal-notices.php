@@ -14,7 +14,7 @@
  * Variables attendues :
  * @var string $pageTitle               Titre de la page (défaut : "Mentions légales")
  * @var string $pageDescription         Meta description
- * @var array<int,string> $pageStyles   Styles spécifiques ( ["/assets/style/legal_notices.css"])
+ * @var array<int,string> $pageStyles   Styles spécifiques
  * @var array<int,string> $pageScripts  Scripts spécifiques
  *
  * @see \SITE\Views\partials\head.php
@@ -40,31 +40,84 @@ include __DIR__ . '/partials/head.php';
         <section class="legal-grid">
             <div class="panel short">
                 <h3>Politique de confidentialité</h3>
-                <p>Nous protégeons les données personnelles et de santé selon les normes en vigueur (RGPD, hébergement sécurisé). Les finalités et durées de conservation sont précisées dans notre politique complète.</p>
+                <p>
+                    Nous protégeons les données personnelles et de santé selon
+                    les normes en vigueur (RGPD, hébergement sécurisé).
+                    Les finalités et durées de conservation sont précisées
+                    dans notre politique complète.
+                </p>
                 <a class="more" href="#privacy-details">En savoir plus</a>
             </div>
 
             <div class="panel">
-                <h3>Conditions d’utilisation</h3>
-                <p>Ces conditions définissent l'usage professionnel de la plateforme MedDash par les établissements de santé. Elles couvrent les obligations de l'établissement utilisatrice, les engagements de MedDash en matière de sécurité et les limites de responsabilité.</p>
+                <h3>Conditions d'utilisation</h3>
+                <p>
+                    Ces conditions définissent l'usage professionnel de la
+                    plateforme MedDash par les établissements de santé.
+                    Elles couvrent les obligations de l'établissement
+                    utilisatrice, les engagements de MedDash en matière
+                    de sécurité et les limites de responsabilité.
+                </p>
                 <ul>
-                    <li><strong>Habilitations</strong> — gestion des accès par l'établissement ; identifiants personnels requis.</li>
-                    <li><strong>Sécurité</strong> — chiffrement, journaux d'audit et hébergement sécurisé conformes aux obligations applicables aux données de santé.</li>
-                    <li><strong>SLA</strong> — disponibilités et procédures d'incident précisées contractuellement ; maintenance planifiée annoncée à l'avance.</li>
-                    <li><strong>Responsabilités</strong> — l'établissement reste responsable du contenu clinique et des décisions médicales ; MedDash assure la plateforme et son intégrité technique.</li>
+                    <li>
+                        <strong>Habilitations</strong> — gestion des accès
+                        par l'établissement ; identifiants personnels requis.
+                    </li>
+                    <li>
+                        <strong>Sécurité</strong> — chiffrement, journaux
+                        d'audit et hébergement sécurisé conformes aux
+                        obligations applicables aux données de santé.
+                    </li>
+                    <li>
+                        <strong>SLA</strong> — disponibilités et procédures
+                        d'incident précisées contractuellement ; maintenance
+                        planifiée annoncée à l'avance.
+                    </li>
+                    <li>
+                        <strong>Responsabilités</strong> — l'établissement
+                        reste responsable du contenu clinique et des décisions
+                        médicales ; MedDash assure la plateforme et son
+                        intégrité technique.
+                    </li>
                 </ul>
                 <a class="more" href="#terms-details">Lire les détails</a>
             </div>
 
             <div class="panel full long">
                 <h3>Droits des utilisateurs et gestion des données</h3>
-                <p>Les utilisateurs et les patients bénéficient de droits encadrés par le RGPD et la réglementation relative aux données de santé. Les demandes d'accès, de rectification ou d'effacement sont traitées selon des procédures définies en collaboration avec l'établissement.</p>
+                <p>
+                    Les utilisateurs et les patients bénéficient de droits
+                    encadrés par le RGPD et la réglementation relative aux
+                    données de santé. Les demandes d'accès, de rectification
+                    ou d'effacement sont traitées selon des procédures définies
+                    en collaboration avec l'établissement.
+                </p>
                 <ul>
-                    <li><strong>Droit d'accès :</strong> possibilité de demander une copie des données détenues vous concernant.</li>
-                    <li><strong>Droit de rectification :</strong> correction des données inexactes via les procédures internes de l'établissement.</li>
-                    <li><strong>Droit à l'effacement :</strong> supprimable sous réserve des obligations légales de conservation (dossiers médicaux, archives réglementaires).</li>
-                    <li><strong>Logs et traçabilité :</strong> toutes les consultations et actions sont journalisées pour garantir la traçabilité et la sécurité.</li>
-                    <li><strong>Procédure de demande :</strong> les demandes doivent être adressées au DPO ou contact indiqué par l'établissement ; MedDash assiste techniquement le traitement de ces demandes.</li>
+                    <li>
+                        <strong>Droit d'accès :</strong> possibilité de demander
+                        une copie des données détenues vous concernant.
+                    </li>
+                    <li>
+                        <strong>Droit de rectification :</strong> correction des
+                        données inexactes via les procédures internes de
+                        l'établissement.
+                    </li>
+                    <li>
+                        <strong>Droit à l'effacement :</strong> supprimable sous
+                        réserve des obligations légales de conservation (dossiers
+                        médicaux, archives réglementaires).
+                    </li>
+                    <li>
+                        <strong>Logs et traçabilité :</strong> toutes les
+                        consultations et actions sont journalisées pour garantir
+                        la traçabilité et la sécurité.
+                    </li>
+                    <li>
+                        <strong>Procédure de demande :</strong> les demandes
+                        doivent être adressées au DPO ou contact indiqué par
+                        l'établissement ; MedDash assiste techniquement le
+                        traitement de ces demandes.
+                    </li>
                 </ul>
                 <a class="more" href="#rights-details">Procédure complète</a>
             </div>

@@ -36,7 +36,10 @@ include __DIR__ . '/../partials/head.php';
                 </div>
 
                 <div class="auth-links">
-                    <a href="/login" class="btn-primary" style="display: inline-block; padding: 12px 24px; text-decoration: none; border-radius: 5px;">
+                    <a href="/login"
+                       class="btn-primary"
+                       style="display: inline-block; padding: 12px 24px;
+                              text-decoration: none; border-radius: 5px;">
                         Se connecter
                     </a>
                 </div>

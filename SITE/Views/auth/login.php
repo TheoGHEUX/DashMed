@@ -60,7 +60,9 @@ include __DIR__ . '/../partials/head.php';
         <?php endif; ?>
 
         <form class="form" action="/login" method="post" autocomplete="on" novalidate>
-            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '', ENT_QUOTES, 'UTF-8') ?>" />
+            <input type="hidden"
+                   name="csrf_token"
+                   value="<?= htmlspecialchars($csrf_token ?? '', ENT_QUOTES, 'UTF-8') ?>" />
 
             <div class="field">
                 <label for="email" class="sr-only">Adresse email</label>

@@ -111,7 +111,9 @@ final class Router
                         [$k, $v] = explode('=', $line, 2);
                         $k = trim($k);
                         $v = trim($v);
-                        if ($v !== '' && (($v[0] === '"' && substr($v, -1) === '"') || ($v[0] === "'" && substr($v, -1) === "'"))) {
+                        $isDoubleQuoted = ($v !== '' && $v[0] === '"' && substr($v, -1) === '"');
+                        $isSingleQuoted = ($v !== '' && $v[0] === "'" && substr($v, -1) === "'");
+                        if ($isDoubleQuoted || $isSingleQuoted) {
                             $v = substr($v, 1, -1);
                         }
                         $env[$k] = $v;

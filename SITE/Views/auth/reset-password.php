@@ -54,15 +54,29 @@ include __DIR__ . '/../partials/head.php';
         <?php endif; ?>
 
         <form class="form" action="/reset-password" method="post" novalidate>
-            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '', ENT_QUOTES, 'UTF-8') ?>">
-            <input type="hidden" name="email" value="<?= htmlspecialchars($email ?? '', ENT_QUOTES, 'UTF-8') ?>">
-            <input type="hidden" name="token" value="<?= htmlspecialchars($token ?? '', ENT_QUOTES, 'UTF-8') ?>">
+            <input type="hidden"
+                   name="csrf_token"
+                   value="<?= htmlspecialchars($csrf_token ?? '', ENT_QUOTES, 'UTF-8') ?>">
+            <input type="hidden"
+                   name="email"
+                   value="<?= htmlspecialchars($email ?? '', ENT_QUOTES, 'UTF-8') ?>">
+            <input type="hidden"
+                   name="token"
+                   value="<?= htmlspecialchars($token ?? '', ENT_QUOTES, 'UTF-8') ?>">
 
             <div class="field">
-                <input type="password" name="password" placeholder="Nouveau mot de passe" required autocomplete="new-password">
+                <input type="password"
+                       name="password"
+                       placeholder="Nouveau mot de passe"
+                       required
+                       autocomplete="new-password">
             </div>
             <div class="field">
-                <input type="password" name="password_confirm" placeholder="Confirmer le mot de passe" required autocomplete="new-password">
+                <input type="password"
+                       name="password_confirm"
+                       placeholder="Confirmer le mot de passe"
+                       required
+                       autocomplete="new-password">
             </div>
             <button class="btn" type="submit">Changer mon mot de passe</button>
         </form>

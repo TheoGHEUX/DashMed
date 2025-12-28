@@ -71,7 +71,8 @@ final class ResetPasswordController
 
         $csrf     = (string)($_POST['csrf_token'] ?? '');
         $token    = (string)($_POST['token'] ?? '');
-        // On ne fera pas confiance à l'email posté pour la mise à jour, on le garde seulement pour ré-afficher le formulaire si erreur
+        // On ne fera pas confiance à l'email posté pour la mise à jour,
+        // on le garde seulement pour ré-afficher le formulaire si erreur
         $emailPosted = strtolower(trim((string)($_POST['email'] ?? '')));
         $password = (string)($_POST['password'] ?? '');
         $confirm  = (string)($_POST['password_confirm'] ?? '');
@@ -132,14 +133,21 @@ final class ResetPasswordController
 
                 // 2) Mettre à jour le mot de passe de l'utilisateur correspondant à l'email récupéré
                 $hash = password_hash($password, PASSWORD_DEFAULT);
-                $u = $pdo->prepare('UPDATE MEDECIN SET mdp = ?, date_derniere_maj = NOW() WHERE LOWER(email) = LOWER(?)');
+                $u = $pdo->prepare(
+                    'UPDATE MEDECIN SET mdp = ?, date_derniere_maj = NOW() '
+                    . 'WHERE LOWER(email) = LOWER(?)'
+                );
                 $u->execute([$hash, $emailFromToken]);
 
                 if ($u->rowCount() === 0) {
                     // Aucun utilisateur correspondant -> rollback et message d'erreur
                     $pdo->rollBack();
-                    error_log(sprintf('[RESET] No user row updated for email=%s (from token)', $emailFromToken));
-                    $errors[] = 'Une erreur technique est survenue lors de la réinitialisation. Veuillez réessayer.';
+                    error_log(sprintf(
+                        '[RESET] No user row updated for email=%s (from token)',
+                        $emailFromToken
+                    ));
+                    $errors[] = 'Une erreur technique est survenue lors de la réinitialisation. '
+                        . 'Veuillez réessayer.';
                     \View::render('auth/reset-password', [
                         'errors'  => $errors,
                         'success' => $success,
@@ -150,7 +158,9 @@ final class ResetPasswordController
                 }
 
                 // 3) Invalider le token (par token_hash, pour être strict)
-                $t = $pdo->prepare('UPDATE password_resets SET used_at = NOW() WHERE token_hash = ? AND used_at IS NULL');
+                $t = $pdo->prepare(
+                    'UPDATE password_resets SET used_at = NOW() WHERE token_hash = ? AND used_at IS NULL'
+                );
                 $t->execute([$tokenHash]);
 
                 $pdo->commit();

@@ -55,7 +55,8 @@ final class VerifyEmailController
                 } else {
                     // Validation du token et activation du compte
                     if (User::verifyEmailToken($token)) {
-                        $success = 'Votre adresse email a été vérifiée avec succès ! Vous pouvez maintenant vous connecter.';
+                        $success = 'Votre adresse email a été vérifiée avec succès ! '
+                            . 'Vous pouvez maintenant vous connecter.';
                     } else {
                         $errors[] = 'Une erreur est survenue lors de la vérification. Veuillez réessayer.';
                     }
@@ -86,7 +87,8 @@ final class VerifyEmailController
 
             if (!$user) {
                 // Ne pas révéler si l'email existe ou non (sécurité)
-                $success = 'Si cette adresse email est enregistrée et non vérifiée, un nouvel email de vérification a été envoyé.';
+                $success = 'Si cette adresse email est enregistrée et non vérifiée, '
+                    . 'un nouvel email de vérification a été envoyé.';
             } elseif ($user['email_verified']) {
                 $errors[] = 'Cette adresse email est déjà vérifiée.';
             } else {

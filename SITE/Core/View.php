@@ -35,7 +35,8 @@ final class View
                 }
                 include $fallback;
             } else {
-                echo '<!doctype html><html><head><meta charset="utf-8"><title>404</title></head><body><h1>404 - Vue introuvable</h1></body></html>';
+                echo '<!doctype html><html><head><meta charset="utf-8"><title>404</title></head>'
+                    . '<body><h1>404 - Vue introuvable</h1></body></html>';
             }
             ob_end_flush();
             return;

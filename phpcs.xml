@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<ruleset name="DashMed Coding Standard">
+    <description>Standard de codage pour le projet DashMed</description>
+
+    <!-- Dossiers à analyser -->
+    <file>SITE</file>
+    <file>Public</file>
+    <file>tests</file>
+
+    <!-- Dossiers/fichiers à exclure -->
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/node_modules/*</exclude-pattern>
+    <exclude-pattern>*.min.js</exclude-pattern>
+    <exclude-pattern>*.min.css</exclude-pattern>
+
+    <!-- Arguments par défaut -->
+    <arg name="colors"/>
+    <arg name="extensions" value="php"/>
+    <arg value="sp"/>
+
+    <!-- Utiliser PSR-12 comme base -->
+    <rule ref="PSR12">
+        <!-- Exclure certaines règles trop strictes pour les vues -->
+        <exclude name="PSR12.Files.FileHeader.IncorrectOrder"/>
+        <exclude name="PSR12.Files.FileHeader.SpacingAfterBlock"/>
+    </rule>
+
+    <!-- Limite de longueur de ligne à 120 caractères (warning) -->
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit" value="120"/>
+            <property name="absoluteLineLimit" value="0"/>
+        </properties>
+    </rule>
+
+    <!-- Autoriser les effets de bord dans certains fichiers (autoloader, bootstrap) -->
+    <rule ref="PSR1.Files.SideEffects">
+        <exclude-pattern>*/Core/AutoLoader.php</exclude-pattern>
+        <exclude-pattern>*/Public/index.php</exclude-pattern>
+        <exclude-pattern>*/tests/bootstrap.php</exclude-pattern>
+    </rule>
+
+    <!-- Les fichiers de vue peuvent mélanger PHP et HTML -->
+    <rule ref="PSR1.Files.SideEffects.FoundWithSymbols">
+        <exclude-pattern>*/Views/*</exclude-pattern>
+    </rule>
+</ruleset>
