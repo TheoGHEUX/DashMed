@@ -55,7 +55,7 @@ final class ResetPasswordController
             $errors[] = 'Lien de réinitialisation invalide ou expiré.';
         }
 
-        \View::render('auth/reset-password', compact('errors', 'success', 'email', 'token'));
+        \Core\View::render('auth/reset-password', compact('errors', 'success', 'email', 'token'));
     }
 
     /**
@@ -119,7 +119,7 @@ final class ResetPasswordController
                 if (!$row || empty($row['email'])) {
                     $pdo->rollBack();
                     $errors[] = 'Lien de réinitialisation invalide ou expiré.';
-                    \View::render('auth/reset-password', [
+                    \Core\View::render('auth/reset-password', [
                         'errors'  => $errors,
                         'success' => $success,
                         // on garde ce qui était dans le formulaire pour ne pas "perdre" l’utilisateur
@@ -148,7 +148,7 @@ final class ResetPasswordController
                     ));
                     $errors[] = 'Une erreur technique est survenue lors de la réinitialisation. '
                         . 'Veuillez réessayer.';
-                    \View::render('auth/reset-password', [
+                    \Core\View::render('auth/reset-password', [
                         'errors'  => $errors,
                         'success' => $success,
                         'email'   => $emailPosted,
@@ -177,7 +177,7 @@ final class ResetPasswordController
             }
         }
 
-        \View::render('auth/reset-password', [
+        \Core\View::render('auth/reset-password', [
             'errors'  => $errors,
             'success' => $success,
             'email'   => $emailPosted,
@@ -215,3 +215,4 @@ final class ResetPasswordController
         return (bool) $st->fetchColumn();
     }
 }
+

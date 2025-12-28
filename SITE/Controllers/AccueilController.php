@@ -28,3 +28,4 @@ final class AccueilController
         require __DIR__ . '/../Views/accueil.php';
     }
 }
+

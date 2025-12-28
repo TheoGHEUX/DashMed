@@ -31,7 +31,7 @@ final class ForgottenPasswordController
 
         unset($_SESSION['errors'], $_SESSION['success'], $_SESSION['old']);
 
-        \View::render('auth/forgotten-password', [
+        \Core\View::render('auth/forgotten-password', [
             'errors' => $errors,
             'success' => $success,
             'old' => $old
@@ -144,3 +144,4 @@ final class ForgottenPasswordController
         exit;
     }
 }
+

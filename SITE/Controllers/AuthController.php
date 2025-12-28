@@ -297,3 +297,4 @@ final class AuthController
         exit;
     }
 }
+

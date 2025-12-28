@@ -15,6 +15,7 @@ final class MapController
 {
     public function show(): void
     {
-        \View::render('map');
+        \Core\View::render('map');
     }
 }
+

@@ -36,7 +36,7 @@ final class ChangePasswordController
 
         $errors = [];
         $success = '';
-        \View::render('auth/change-password', compact('errors', 'success'));
+        \Core\View::render('auth/change-password', compact('errors', 'success'));
     }
 
     /**
@@ -99,6 +99,7 @@ final class ChangePasswordController
             }
         }
 
-        \View::render('auth/change-password', compact('errors', 'success'));
+        \Core\View::render('auth/change-password', compact('errors', 'success'));
     }
 }
+
