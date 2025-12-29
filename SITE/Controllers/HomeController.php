@@ -19,4 +19,3 @@ final class HomeController
         \Core\View::render('home');
     }
 }
-

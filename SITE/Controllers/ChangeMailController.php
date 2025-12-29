@@ -141,4 +141,3 @@ final class ChangeMailController
         mail($newEmail, $newEmailSubject, $newEmailMessage, $newEmailHeaders);
     }
 }
-

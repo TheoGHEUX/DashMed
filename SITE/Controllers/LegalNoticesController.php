@@ -18,4 +18,3 @@ final class LegalNoticesController
         \Core\View::render('legal-notices');
     }
 }
-

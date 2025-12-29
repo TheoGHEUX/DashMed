@@ -112,4 +112,3 @@ final class VerifyEmailController
         require __DIR__ . '/../Views/auth/resend-verification.php';
     }
 }
-

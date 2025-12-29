@@ -215,4 +215,3 @@ final class ResetPasswordController
         return (bool) $st->fetchColumn();
     }
 }
-

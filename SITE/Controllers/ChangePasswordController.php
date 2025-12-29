@@ -102,4 +102,3 @@ final class ChangePasswordController
         \Core\View::render('auth/change-password', compact('errors', 'success'));
     }
 }
-

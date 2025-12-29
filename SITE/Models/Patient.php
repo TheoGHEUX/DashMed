@@ -208,7 +208,7 @@ final class Patient
      */
     public static function prepareChartValues(array $valeurs, float $min, float $max): array
     {
-        return array_map(function($v) use ($min, $max) {
+        return array_map(function ($v) use ($min, $max) {
             return self::normalizeValue((float)$v['valeur'], $min, $max);
         }, $valeurs);
     }

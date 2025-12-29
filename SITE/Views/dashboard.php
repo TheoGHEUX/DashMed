@@ -8,141 +8,33 @@
  * @package    DashMed
  * @subpackage Views
  * @category   Frontend
- * @version    1.3
+ * @version    1.2
  * @since      1.0
+ *
+ * Variables attendues :
+ * @var string $pageTitle               Titre de la page (défaut : "Dashboard")
+ * @var string $pageDescription         Meta description
+ * @var array<int,string> $pageStyles   Styles spécifiques ( ["/assets/style/dashboard.css"])
+ * @var array<int,string> $pageScripts  Scripts spécifiques ( ["/assets/script/dashboard_charts.js"])
  */
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
-
 if (empty($_SESSION['user'])) {
     header('Location: /login');
     exit;
 }
 
-use Core\Database;
-
-$patients = [];
-$patient   = null; // Patient actif
-
-try {
-    $pdo = Database::getConnection();
-
-    // Récupération de tous les patients suivis par le médecin
-    $stmt = $pdo->prepare("
-        SELECT 
-            p.pt_id,
-            p.nom,
-            p.prenom,
-            p.date_naissance,
-            p.sexe,
-            p.groupe_sanguin,
-            p.telephone
-        FROM suivre s
-        JOIN patient p ON p.pt_id = s.pt_id
-        WHERE s.med_id = :med_id
-        ORDER BY p.nom, p.prenom
-    ");
-    $stmt->execute([':med_id' => $_SESSION['user']['id']]);
-    $patients = $stmt->fetchAll();
-
-    // Déterminer le patient sélectionné :
-    // 1) depuis l'URL ?patient=ID
-    // 2) sinon depuis la session (dernier patient consulté)
-    // 3) sinon le premier de la liste
-    $selectedPtId = $_GET['patient'] ?? $_SESSION['lastPatientId'] ?? ($patients[0]['pt_id'] ?? null);
-
-    if ($selectedPtId) {
-        foreach ($patients as $p) {
-            if ($p['pt_id'] == $selectedPtId) {
-                $patient = $p;
-                $_SESSION['lastPatientId'] = $selectedPtId; // Sauvegarde pour la prochaine visite
-                break;
-            }
-        }
-    }
-
-} catch (PDOException $e) {
-    error_log($e->getMessage());
-}
-
 $pageTitle       = $pageTitle ?? "Dashboard";
 $pageDescription = $pageDescription ?? "Tableau de bord - Suivi médical";
 $pageStyles      = $pageStyles ?? ['/assets/style/dashboard.css'];
-
-// ⚡ Chargement des scripts : chart + dashboard.js
-$pageScripts     = $pageScripts ?? [
-        '/assets/script/dashboard_charts.js',
-        '/assets/script/dashboard.js'
-];
+$pageScripts     = $pageScripts ?? ['/assets/script/dashboard_charts.js'];
 
 include __DIR__ . '/partials/head.php';
 ?>
-
 <body>
-
 <?php include __DIR__ . '/partials/headerPrivate.php'; ?>
-
-<!-- Données du patient pour les scripts -->
-<script>
-    window.patientChartData = <?= json_encode($chartData ?? [], JSON_UNESCAPED_UNICODE) ?>;
-    window.activePatient = <?= json_encode($patient ?? [], JSON_UNESCAPED_UNICODE) ?>;
-</script>
-
-<div class="dashboard-actions">
-    <button class="btn-patients" id="togglePatients"
-            aria-expanded="false"
-            aria-controls="patientsList">
-        <span class="btn-patients-label">Sélectionner un patient</span>
-        <span class="btn-patients-arrow" aria-hidden="true">▾</span>
-    </button>
-</div>
-
-<section class="patient-active">
-    <h2>Patient sélectionné</h2>
-
-    <?php if (!empty($patient)): ?>
-        <div class="patient-card">
-            <p class="patient-name">
-                <?= htmlspecialchars($patient['prenom']) ?> <?= htmlspecialchars($patient['nom']) ?>
-            </p>
-            <ul class="patient-meta">
-                <li><strong>Sexe :</strong> <?= htmlspecialchars($patient['sexe']) ?></li>
-                <li><strong>Date de naissance :</strong> <?= htmlspecialchars($patient['date_naissance']) ?></li>
-                <li><strong>Groupe sanguin :</strong> <?= htmlspecialchars($patient['groupe_sanguin'] ?? '—') ?></li>
-                <li><strong>Téléphone :</strong> <?= htmlspecialchars($patient['telephone'] ?? '—') ?></li>
-            </ul>
-        </div>
-    <?php else: ?>
-        <p>Aucun patient sélectionné.</p>
-    <?php endif; ?>
-</section>
-
-<section class="patients-list-overlay" id="patientsList">
-    <div class="patients-list-content">
-        <h2>Patients suivis</h2>
-        <?php if (empty($patients)): ?>
-            <p>Aucun patient associé.</p>
-        <?php else: ?>
-            <ul>
-                <?php foreach ($patients as $p): ?>
-                    <li class="patient-item"
-                        data-pt-id="<?= htmlspecialchars($p['pt_id']) ?>"
-                        data-nom="<?= htmlspecialchars($p['nom']) ?>"
-                        data-prenom="<?= htmlspecialchars($p['prenom']) ?>"
-                        data-date-naissance="<?= htmlspecialchars($p['date_naissance']) ?>"
-                        data-sexe="<?= htmlspecialchars($p['sexe']) ?>">
-                        <a href="/dashboard?patient=<?= urlencode($p['pt_id']) ?>">
-                            <?= htmlspecialchars($p['prenom']) ?> <?= htmlspecialchars($p['nom']) ?>
-                        </a>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-        <?php endif; ?>
-    </div>
-</section>
-
 
 <main class="dashboard-main container">
     <div class="dashboard-header">
@@ -234,10 +126,10 @@ include __DIR__ . '/partials/head.php';
     </div>
 
     <section class="dashboard-legend">
-        <p><br><em>Si l'affichage d'un élément vous semble anormal, actualisez la page ou vider le cache du navigateur.</em> </p>
+        <p>Les valeurs affichées sont des placeholders.</p>
     </section>
 </main>
 
 <?php include __DIR__ . '/partials/footer.php'; ?>
-
 </body>
+</html>

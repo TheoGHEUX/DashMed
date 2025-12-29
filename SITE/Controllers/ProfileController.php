@@ -37,4 +37,3 @@ final class ProfileController
         require __DIR__ . '/../Views/profile.php';
     }
 }
-

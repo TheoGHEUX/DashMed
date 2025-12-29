@@ -144,4 +144,3 @@ final class ForgottenPasswordController
         exit;
     }
 }
-

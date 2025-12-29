@@ -18,4 +18,3 @@ final class MapController
         \Core\View::render('map');
     }
 }
-
