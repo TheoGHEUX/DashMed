@@ -219,7 +219,7 @@ final class Patient
 
         $st = $pdo->prepare('
         SELECT pt_id
-        FROM SUIVRE
+        FROM suivre
         WHERE med_id = ?
         ORDER BY pt_id
         LIMIT 1

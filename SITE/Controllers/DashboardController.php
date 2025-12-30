@@ -39,15 +39,7 @@ final class DashboardController
             $patientId = Patient::getFirstPatientIdForDoctor($_SESSION['user']['id']);
             $_SESSION['last_patient_id'] = $patientId;
         }
-        // Si aucun patient n'est trouvé, afficher le dashboard sans données
-        if (!$patientId) {
-            \Core\View::render('dashboard', [
-                'patient' => null,
-                'chartDataJson' => '{}',
-                'lastValues' => []
-            ]);
-            return;
-        }
+
         // Récupérer les informations du patient
         $patient = Patient::findById($patientId);
 
