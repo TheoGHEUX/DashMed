@@ -37,7 +37,7 @@ final class Patient
                 ville,
                 code_postal,
                 adresse
-            FROM PATIENT
+            FROM patient
             WHERE pt_id = ?
             LIMIT 1
         ');
@@ -60,7 +60,7 @@ final class Patient
                 id_mesure,
                 type_mesure,
                 unite
-            FROM MESURES
+            FROM mesures
             WHERE pt_id = ?
             ORDER BY id_mesure
         ');
@@ -85,7 +85,7 @@ final class Patient
                 date_mesure,
                 heure_mesure,
                 CONCAT(date_mesure, " ", heure_mesure) as datetime_mesure
-            FROM VALEURS_MESURES
+            FROM valeurs_mesures
             WHERE id_mesure = ?
             ORDER BY date_mesure DESC, heure_mesure DESC
         ';
@@ -116,12 +116,12 @@ final class Patient
                 vm.valeur as derniere_valeur,
                 vm.date_mesure as derniere_date,
                 vm.heure_mesure as derniere_heure
-            FROM MESURES m
-            INNER JOIN VALEURS_MESURES vm ON m.id_mesure = vm.id_mesure
+            FROM mesures m
+            INNER JOIN valeurs_mesures vm ON m.id_mesure = vm.id_mesure
             WHERE m.pt_id = ?
             AND (vm.date_mesure, vm.heure_mesure) = (
                 SELECT date_mesure, heure_mesure
-                FROM VALEURS_MESURES
+                FROM valeurs_mesures
                 WHERE id_mesure = m.id_mesure
                 ORDER BY date_mesure DESC, heure_mesure DESC
                 LIMIT 1
@@ -147,7 +147,7 @@ final class Patient
         // Récupérer l'id_mesure pour ce type
         $st = $pdo->prepare('
             SELECT id_mesure, unite
-            FROM MESURES
+            FROM mesures
             WHERE pt_id = ? AND type_mesure = ?
             LIMIT 1
         ');
@@ -164,7 +164,7 @@ final class Patient
                 valeur,
                 date_mesure,
                 heure_mesure
-            FROM VALEURS_MESURES
+            FROM valeurs_mesures
             WHERE id_mesure = ?
             ORDER BY date_mesure DESC, heure_mesure DESC
             LIMIT ?
