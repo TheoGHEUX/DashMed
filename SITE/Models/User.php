@@ -8,7 +8,7 @@ use PDO;
 /**
  * Class User
  *
- * Représente les opérations basiques liées aux utilisateurs (table MEDECIN).
+ * Représente les opérations basiques liées aux utilisateurs (table medecin).
  * Fournit des méthodes pour la création, la recherche, la mise à jour et la gestion
  * des tokens de vérification d'email.
  *
@@ -31,7 +31,7 @@ final class User
     public static function emailExists(string $email): bool
     {
         $pdo = Database::getConnection();
-        $st = $pdo->prepare('SELECT 1 FROM MEDECIN WHERE LOWER(email) = LOWER(?) LIMIT 1');
+        $st = $pdo->prepare('SELECT 1 FROM medecin WHERE LOWER(email) = LOWER(?) LIMIT 1');
         $st->execute([$email]);
         return (bool) $st->fetchColumn();
     }
@@ -57,7 +57,7 @@ final class User
     ): bool {
         $pdo = Database::getConnection();
         $st = $pdo->prepare(
-            'INSERT INTO MEDECIN (prenom, nom, email, mdp, sexe, specialite, '
+            'INSERT INTO medecin (prenom, nom, email, mdp, sexe, specialite, '
             . 'compte_actif, date_creation, date_derniere_maj) '
             . 'VALUES (?, ?, ?, ?, ?, ?, 1, NOW(), NOW())'
         );
@@ -85,7 +85,7 @@ final class User
                 email_verified,
                 email_verification_token,
                 email_verification_expires
-            FROM MEDECIN
+            FROM medecin
             WHERE LOWER(email) = LOWER(?)
             LIMIT 1
         ');
@@ -115,7 +115,7 @@ final class User
                 email_verified,
                 email_verification_token,
                 email_verification_expires
-            FROM MEDECIN
+            FROM medecin
             WHERE med_id = ?
             LIMIT 1
         ');
@@ -134,7 +134,7 @@ final class User
     public static function updatePassword(int $id, string $hash): bool
     {
         $pdo = Database::getConnection();
-        $st = $pdo->prepare('UPDATE MEDECIN SET mdp = ?, date_derniere_maj = NOW() WHERE med_id = ?');
+        $st = $pdo->prepare('UPDATE medecin SET mdp = ?, date_derniere_maj = NOW() WHERE med_id = ?');
         return $st->execute([$hash, $id]);
     }
 
@@ -148,7 +148,7 @@ final class User
     public static function updateEmail(int $id, string $newEmail): bool
     {
         $pdo = Database::getConnection();
-        $st = $pdo->prepare('UPDATE MEDECIN SET email = ?, date_derniere_maj = NOW() WHERE med_id = ?');
+        $st = $pdo->prepare('UPDATE medecin SET email = ?, date_derniere_maj = NOW() WHERE med_id = ?');
         return $st->execute([strtolower(trim($newEmail)), $id]);
     }
 
@@ -167,7 +167,7 @@ final class User
         $expires = date('Y-m-d H:i:s', strtotime('+24 hours'));
 
         $st = $pdo->prepare('
-            UPDATE MEDECIN 
+            UPDATE medecin 
             SET email_verification_token = ?, 
                 email_verification_expires = ?,
                 date_derniere_maj = NOW()
@@ -194,7 +194,7 @@ final class User
         // Recherche du token valide (non expiré)
         $st = $pdo->prepare('
             SELECT med_id 
-            FROM MEDECIN 
+            FROM medecin 
             WHERE email_verification_token = ? 
             AND email_verification_expires > NOW()
             AND email_verified = 0
@@ -209,7 +209,7 @@ final class User
 
         // Activation du compte et suppression du token
         $st = $pdo->prepare('
-            UPDATE MEDECIN 
+            UPDATE medecin 
             SET email_verified = 1,
                 email_verification_token = NULL,
                 email_verification_expires = NULL,
@@ -238,7 +238,7 @@ final class User
                 email,
                 email_verified,
                 email_verification_expires
-            FROM MEDECIN
+            FROM medecin
             WHERE email_verification_token = ?
             LIMIT 1
         ');
