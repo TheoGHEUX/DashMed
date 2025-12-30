@@ -22,104 +22,112 @@ final class DashboardController
      */
     public function index(): void
     {
+        // 🔐 Sécurité : utilisateur connecté
         if (empty($_SESSION['user'])) {
             header('Location: /login');
             exit;
         }
 
-// 🧠 1. Si patient dans l’URL → sauvegarde
+        // Patient sélectionné dans l’URL → sauvegarde
         if (isset($_GET['patient']) && ctype_digit($_GET['patient'])) {
             $_SESSION['last_patient_id'] = (int) $_GET['patient'];
         }
 
-// 🧠 2. Patient actif
+        // Patient actif (session)
         $patientId = $_SESSION['last_patient_id'] ?? null;
 
-// 🧠 3. Fallback (premier patient du médecin)
-        if (!$patientId) {
-            $patientId = Patient::getFirstPatientIdForDoctor($_SESSION['user']['id']);
-            $_SESSION['last_patient_id'] = $patientId;
+        // Fallback : premier patient du médecin
+        if ($patientId === null) {
+            $patientId = Patient::getFirstPatientIdForDoctor((int) $_SESSION['user']['id']);
+
+            if ($patientId !== null) {
+                $_SESSION['last_patient_id'] = $patientId;
+            }
         }
 
-        // Récupérer les informations du patient
-        $patient = Patient::findById($patientId);
+        // Charger le patient uniquement si un ID existe
+        $patient = null;
+        if ($patientId !== null) {
+            $patient = Patient::findById($patientId);
+        }
 
-        // Récupérer les données pour chaque type de graphique
+        // Aucun patient → dashboard vide mais stable
+        if ($patientId === null || $patient === null) {
+            $chartData = [];
+            require __DIR__ . '/../Views/dashboard.php';
+            return;
+        }
+
+        // 📊 Données graphiques
         $chartData = [];
 
-        // Température corporelle (35-40°C)
-        $tempData = Patient::getChartData($patientId, 'Température corporelle', 50);
-        if ($tempData) {
+        // Température corporelle (35–40 °C)
+        if ($data = Patient::getChartData($patientId, 'Température corporelle', 50)) {
             $chartData['temperature'] = [
-                'values' => Patient::prepareChartValues($tempData['valeurs'], 35.0, 40.0),
-                'lastValue' => end($tempData['valeurs'])['valeur'],
-                'unit' => $tempData['unite']
+                'values'    => Patient::prepareChartValues($data['valeurs'], 35.0, 40.0),
+                'lastValue' => end($data['valeurs'])['valeur'],
+                'unit'      => $data['unite']
             ];
         }
 
-        // Tension artérielle (100-140 mmHg)
-        $tensionData = Patient::getChartData($patientId, 'Tension arterielle', 50);
-        if (!$tensionData) {
-            $tensionData = Patient::getChartData($patientId, 'Tension artérielle', 50);
-        }
-        if ($tensionData) {
+        // Tension artérielle (100–140 mmHg)
+        $data = Patient::getChartData($patientId, 'Tension arterielle', 50)
+            ?: Patient::getChartData($patientId, 'Tension artérielle', 50);
+
+        if ($data) {
             $chartData['blood-pressure'] = [
-                'values' => Patient::prepareChartValues($tensionData['valeurs'], 100, 140),
-                'lastValue' => end($tensionData['valeurs'])['valeur'],
-                'unit' => $tensionData['unite']
+                'values'    => Patient::prepareChartValues($data['valeurs'], 100, 140),
+                'lastValue' => end($data['valeurs'])['valeur'],
+                'unit'      => $data['unite']
             ];
         }
 
-        // Fréquence cardiaque (60-100 bpm)
-        $fcData = Patient::getChartData($patientId, 'Fréquence cardiaque', 50);
-        if ($fcData) {
+        // Fréquence cardiaque (25–100 bpm)
+        if ($data = Patient::getChartData($patientId, 'Fréquence cardiaque', 50)) {
             $chartData['heart-rate'] = [
-                'values' => Patient::prepareChartValues($fcData['valeurs'], 25, 100),
-                'lastValue' => end($fcData['valeurs'])['valeur'],
-                'unit' => $fcData['unite']
+                'values'    => Patient::prepareChartValues($data['valeurs'], 25, 100),
+                'lastValue' => end($data['valeurs'])['valeur'],
+                'unit'      => $data['unite']
             ];
         }
 
-        // Fréquence respiratoire (12-20 resp/min)
-        $respData = Patient::getChartData($patientId, 'Fréquence respiratoire', 50);
-        if ($respData) {
+        // Fréquence respiratoire (0–20 resp/min)
+        if ($data = Patient::getChartData($patientId, 'Fréquence respiratoire', 50)) {
             $chartData['respiration'] = [
-                'values' => Patient::prepareChartValues($respData['valeurs'], 0, 20),
-                'lastValue' => end($respData['valeurs'])['valeur'],
-                'unit' => $respData['unite']
+                'values'    => Patient::prepareChartValues($data['valeurs'], 0, 20),
+                'lastValue' => end($data['valeurs'])['valeur'],
+                'unit'      => $data['unite']
             ];
         }
 
-        // Glycémie (4.0-7.5 mmol/L)
-        $glycemieData = Patient::getChartData($patientId, 'Glycémie', 50);
-        if ($glycemieData) {
+        // Glycémie (4.0–7.5 mmol/L)
+        if ($data = Patient::getChartData($patientId, 'Glycémie', 50)) {
             $chartData['glucose-trend'] = [
-                'values' => Patient::prepareChartValues($glycemieData['valeurs'], 4.0, 7.5),
-                'lastValue' => end($glycemieData['valeurs'])['valeur'],
-                'unit' => $glycemieData['unite']
+                'values'    => Patient::prepareChartValues($data['valeurs'], 4.0, 7.5),
+                'lastValue' => end($data['valeurs'])['valeur'],
+                'unit'      => $data['unite']
             ];
         }
 
-        // Poids (35-110 kg)
-        $poidsData = Patient::getChartData($patientId, 'Poids', 50);
-        if ($poidsData) {
+        // Poids (35–110 kg)
+        if ($data = Patient::getChartData($patientId, 'Poids', 50)) {
             $chartData['weight'] = [
-                'values' => Patient::prepareChartValues($poidsData['valeurs'], 35, 110),
-                'lastValue' => end($poidsData['valeurs'])['valeur'],
-                'unit' => $poidsData['unite']
+                'values'    => Patient::prepareChartValues($data['valeurs'], 35, 110),
+                'lastValue' => end($data['valeurs'])['valeur'],
+                'unit'      => $data['unite']
             ];
         }
 
-        // Saturation en oxygène (95-100%)
-        $o2Data = Patient::getChartData($patientId, 'Saturation en oxygène', 50);
-        if ($o2Data) {
+        // Saturation en oxygène (90–100 %)
+        if ($data = Patient::getChartData($patientId, 'Saturation en oxygène', 50)) {
             $chartData['oxygen-saturation'] = [
-                'values' => Patient::prepareChartValues($o2Data['valeurs'], 90, 100),
-                'lastValue' => end($o2Data['valeurs'])['valeur'],
-                'unit' => $o2Data['unite']
+                'values'    => Patient::prepareChartValues($data['valeurs'], 90, 100),
+                'lastValue' => end($data['valeurs'])['valeur'],
+                'unit'      => $data['unite']
             ];
         }
 
+        // 🧾 Affichage
         require __DIR__ . '/../Views/dashboard.php';
     }
 }

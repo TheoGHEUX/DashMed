@@ -25,7 +25,7 @@ if (empty($_SESSION['user'])) {
 use Core\Database;
 
 $patients = [];
-$patient   = null; // Patient actif
+$patient   = null; // Patient acdtif
 
 try {
     $pdo = Database::getConnection();
@@ -144,6 +144,7 @@ include __DIR__ . '/partials/head.php';
 </section>
 
 
+<?php if (!empty($patient)) : ?>
 <main class="dashboard-main container">
     <div class="dashboard-header">
         <h1 class="page-title"><?= htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8') ?></h1>
@@ -236,6 +237,7 @@ include __DIR__ . '/partials/head.php';
             actualisez la page ou videz le cache du navigateur.</em></p>
     </section>
 </main>
+<?php endif; ?>
 
 <?php include __DIR__ . '/partials/footer.php'; ?>
 
