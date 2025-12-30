@@ -1,20 +1,13 @@
 <?php
 /**
  * Partial : head commun
- *
- * Section <head> partagée pour les vues. Gère titre, meta description,
- * styles communs, styles/scripts spécifiques, Google Fonts et scripts globaux.
- *
- * Variables attendues (optionnelles) :
- * @var string $pageTitle
- * @var string $pageDescription
- * @var array  $pageStyles
- * @var array  $pageScripts
  */
 ?>
+<!DOCTYPE html>
+<html lang="fr">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="<?= htmlspecialchars($pageDescription ?? '', ENT_QUOTES) ?>">
 
     <title><?= htmlspecialchars($pageTitle ?? 'DashMed', ENT_QUOTES) ?></title>
@@ -31,29 +24,23 @@
 
     <?php
     // Styles spécifiques
-    $pageStyles = $pageStyles ?? [];
-    if (!empty($pageStyles) && is_array($pageStyles)) {
-        foreach ($pageStyles as $href) {
-            echo '<link rel="stylesheet" href="' . htmlspecialchars($href, ENT_QUOTES) . '">' . PHP_EOL;
-        }
+    foreach ($pageStyles ?? [] as $href) {
+        echo '<link rel="stylesheet" href="' . htmlspecialchars($href, ENT_QUOTES) . '">' . PHP_EOL;
     }
     ?>
 
     <link rel="icon" href="/assets/images/logo.png">
 
     <?php
-    // Scripts spécifiques (defer)
-    $pageScripts = $pageScripts ?? [];
-    if (!empty($pageScripts) && is_array($pageScripts)) {
-        foreach ($pageScripts as $src) {
-            echo '<script src="' . htmlspecialchars($src, ENT_QUOTES) . '" defer></script>' . PHP_EOL;
-        }
+    // Scripts spécifiques
+    foreach ($pageScripts ?? [] as $src) {
+        echo '<script src="' . htmlspecialchars($src, ENT_QUOTES) . '" defer></script>' . PHP_EOL;
     }
 
-    // dark-mode.js prioritaire (sans defer) pour éviter FOUC
+    // dark mode (sans defer)
     echo '<script src="/assets/script/dark-mode.js"></script>' . PHP_EOL;
 
-    // Script global pour le header responsive (defer)
+    // header responsive
     echo '<script src="/assets/script/header_responsive.js" defer></script>' . PHP_EOL;
     ?>
 </head>
