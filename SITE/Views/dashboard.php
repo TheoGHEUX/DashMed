@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Vue : Tableau de bord médical (Dashboard)
  *
@@ -62,7 +63,6 @@ try {
             }
         }
     }
-
 } catch (PDOException $e) {
     error_log($e->getMessage());
 }
