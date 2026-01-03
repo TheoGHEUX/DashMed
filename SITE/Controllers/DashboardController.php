@@ -22,20 +22,27 @@ final class DashboardController
      */
     public function index(): void
     {
-        // 🔐 Sécurité : utilisateur connecté
+        // Vérification de l'authentification
         if (empty($_SESSION['user'])) {
             header('Location: /login');
             exit;
         }
 
-        // 👥 Patients suivis par le médecin
+        // Patients suivis par le médecin
         $patients = Patient::getPatientsForDoctor(
             (int) $_SESSION['user']['id']
         );
 
-        // Patient sélectionné via URL
+        /// Patient sélectionné via URL
+        $doctorPatients = array_column(Patient::getPatientsForDoctor($_SESSION['user']['id']), 'pt_id');
+
         if (isset($_GET['patient']) && ctype_digit($_GET['patient'])) {
-            $_SESSION['last_patient_id'] = (int) $_GET['patient'];
+            $requestedId = (int) $_GET['patient'];
+
+            // Patient autorisé : on actualise la page sinon on reste sur le patient actuel
+            if (in_array($requestedId, $doctorPatients, true)) {
+                $_SESSION['last_patient_id'] = $requestedId;
+            }
         }
 
         $patientId = $_SESSION['last_patient_id']
@@ -45,7 +52,7 @@ final class DashboardController
             ? Patient::findById($patientId)
             : null;
 
-        // Fallback : premier patient du médecin
+        // Affichage d'un patient par défaut : premier patient du médecin
         if ($patientId === null) {
             $patientId = Patient::getFirstPatientIdForDoctor((int) $_SESSION['user']['id']);
 
@@ -60,14 +67,14 @@ final class DashboardController
             $patient = Patient::findById($patientId);
         }
 
-        // Aucun patient → dashboard vide mais stable
+        // Aucun patient : dashboard vide
         if ($patientId === null || $patient === null) {
             $chartData = [];
             require __DIR__ . '/../Views/dashboard.php';
             return;
         }
 
-        // 📊 Données graphiques
+        // Données graphiques (type/intervalles des ordonnées/unité)
         $chartData = [];
 
         // Température corporelle (35–40 °C)
@@ -164,7 +171,7 @@ final class DashboardController
             ];
         }
 
-        // 🧾 Affichage
+        // Affichage
         require __DIR__ . '/../Views/dashboard.php';
     }
 }

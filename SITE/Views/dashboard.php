@@ -87,11 +87,8 @@ include __DIR__ . '/partials/head.php';
             <ul>
                 <?php foreach ($patients as $p) : ?>
                     <li class="patient-item"
-                        data-pt-id="<?= htmlspecialchars($p['pt_id']) ?>"
                         data-nom="<?= htmlspecialchars($p['nom']) ?>"
-                        data-prenom="<?= htmlspecialchars($p['prenom']) ?>"
-                        data-date-naissance="<?= htmlspecialchars($p['date_naissance']) ?>"
-                        data-sexe="<?= htmlspecialchars($p['sexe']) ?>">
+                        data-prenom="<?= htmlspecialchars($p['prenom']) ?>">
                         <a href="/dashboard?patient=<?= urlencode($p['pt_id']) ?>">
                             <?= htmlspecialchars($p['prenom']) ?> <?= htmlspecialchars($p['nom']) ?>
                         </a>
