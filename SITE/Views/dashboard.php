@@ -39,7 +39,11 @@ try {
             p.date_naissance,
             p.sexe,
             p.groupe_sanguin,
-            p.telephone
+            p.telephone,
+            p.ville,
+            p.code_postal,
+            p.adresse,
+            p.email
         FROM suivre s
         JOIN patient p ON p.pt_id = s.pt_id
         WHERE s.med_id = :med_id
@@ -108,10 +112,12 @@ include __DIR__ . '/partials/head.php';
                 <?= htmlspecialchars($patient['prenom']) ?> <?= htmlspecialchars($patient['nom']) ?>
             </p>
             <ul class="patient-meta">
-                <li><strong>Sexe :</strong> <?= htmlspecialchars($patient['sexe']) ?></li>
-                <li><strong>Date de naissance :</strong> <?= htmlspecialchars($patient['date_naissance']) ?></li>
-                <li><strong>Groupe sanguin :</strong> <?= htmlspecialchars($patient['groupe_sanguin'] ?? '—') ?></li>
-                <li><strong>Téléphone :</strong> <?= htmlspecialchars($patient['telephone'] ?? '—') ?></li>
+                <li><strong>Sexe :</strong> <?= htmlspecialchars($patient['sexe'] ?? '-') ?></li>
+                <li><strong>Date de naissance :</strong> <?= htmlspecialchars($patient['date_naissance'] ?? '-') ?></li>
+                <li><strong>Groupe sanguin :</strong> <?= htmlspecialchars($patient['groupe_sanguin'] ?? '-') ?></li>
+                <li><strong>Téléphone :</strong> <?= htmlspecialchars($patient['telephone'] ?? '-') ?></li>
+                <li><strong>Adresse:</strong> <?= htmlspecialchars($patient['adresse'] ?? '-') ?>, <?= htmlspecialchars($patient['code_postal'] ?? '-') ?> <?= htmlspecialchars($patient['ville'] ?? '-') ?></li>
+                <li><strong>E-mail :</strong> <?= htmlspecialchars($patient['email'] ?? '-') ?></li>
             </ul>
         </div>
     <?php else : ?>
