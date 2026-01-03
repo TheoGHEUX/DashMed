@@ -47,6 +47,34 @@ final class Patient
         return $patient ?: null;
     }
 
+    public static function getPatientsForDoctor(int $doctorId): array
+    {
+        $pdo = Database::getConnection();
+
+        $stmt = $pdo->prepare("
+        SELECT 
+            p.pt_id,
+            p.nom,
+            p.prenom,
+            p.date_naissance,
+            p.sexe,
+            p.groupe_sanguin,
+            p.telephone,
+            p.ville,
+            p.code_postal,
+            p.adresse,
+            p.email
+        FROM suivre s
+        JOIN patient p ON p.pt_id = s.pt_id
+        WHERE s.med_id = :med_id
+        ORDER BY p.nom, p.prenom
+    ");
+
+        $stmt->execute([':med_id' => $doctorId]);
+
+        return $stmt->fetchAll();
+    }
+
     /**
      * Récupère toutes les mesures d'un patient.
      *
@@ -230,5 +258,86 @@ final class Patient
         $row = $st->fetch(PDO::FETCH_ASSOC);
 
         return $row ? (int) $row['pt_id'] : null;
+    }
+
+    public static function getSeuilPreoccupant(
+        int $patientId,
+        string $typeMesure
+    ): ?float {
+        $pdo = Database::getConnection();
+
+        $sql = "
+        SELECT sa.seuil_max
+        FROM seuil_alerte sa
+        JOIN mesures m ON m.id_mesure = sa.id_mesure
+        WHERE sa.statut = 'préoccupant'
+          AND m.type_mesure = :type
+          AND m.pt_id = :pt_id
+        LIMIT 1
+    ";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            ':type'   => $typeMesure,
+            ':pt_id' => $patientId
+        ]);
+
+        $row = $stmt->fetch();
+
+        return $row ? (float) $row['seuil_max'] : null;
+    }
+
+    public static function getSeuilUrgent(
+        int $patientId,
+        string $typeMesure
+    ): ?float {
+        $pdo = Database::getConnection();
+
+        $sql = "
+        SELECT sa.seuil_max
+        FROM seuil_alerte sa
+        JOIN mesures m ON m.id_mesure = sa.id_mesure
+        WHERE sa.statut = 'urgent'
+          AND m.type_mesure = :type
+          AND m.pt_id = :pt_id
+        LIMIT 1
+    ";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            ':type'   => $typeMesure,
+            ':pt_id' => $patientId
+        ]);
+
+        $row = $stmt->fetch();
+
+        return $row ? (float) $row['seuil_max'] : null;
+    }
+
+    public static function getSeuilCritique(
+        int $patientId,
+        string $typeMesure
+    ): ?float {
+        $pdo = Database::getConnection();
+
+        $sql = "
+        SELECT sa.seuil_max
+        FROM seuil_alerte sa
+        JOIN mesures m ON m.id_mesure = sa.id_mesure
+        WHERE sa.statut = 'critique'
+          AND m.type_mesure = :type
+          AND m.pt_id = :pt_id
+        LIMIT 1
+    ";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            ':type'   => $typeMesure,
+            ':pt_id' => $patientId
+        ]);
+
+        $row = $stmt->fetch();
+
+        return $row ? (float) $row['seuil_max'] : null;
     }
 }

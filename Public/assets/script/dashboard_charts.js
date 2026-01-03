@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			minVal: 100,
 			maxVal: 140,
 			unit: 'mmHg',
+            threshold: patientData['blood-pressure']?.seuil_preoccupant ?? null,
 			valueId: 'value-bp',
 			noteId: 'note-bp',
 			value: patientData['blood-pressure']?.lastValue?.toFixed(0) || '122',
@@ -64,6 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			minVal: 25,
 			maxVal: 100,
 			unit: 'bpm',
+            threshold: patientData['heart-rate']?.seuil_preoccupant ?? null,
 			valueId: 'value-hr',
 			noteId: 'note-hr',
 			value: patientData['heart-rate']?.lastValue?.toFixed(0) || '72',
@@ -78,7 +80,8 @@ document.addEventListener('DOMContentLoaded', () => {
 			minVal: 0,
 			maxVal: 20,
 			unit: 'resp/min',
-			valueId: 'value-resp',
+            threshold: patientData['respiration']?.seuil_preoccupant ?? null,
+            valueId: 'value-resp',
 			noteId: 'note-resp',
 			value: patientData['respiration']?.lastValue?.toFixed(0) || '16',
 			note: (patientData['respiration']?.unit || 'Resp/min')
@@ -92,6 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			minVal: 35.0,
 			maxVal: 40.0,
 			unit: '°C',
+            threshold: patientData['temperature']?.seuil_preoccupant ?? null,
 			valueId: 'value-temp',
 			noteId: 'note-temp',
 			value: patientData['temperature']?.lastValue?.toFixed(1) || '36.7',
@@ -103,9 +107,10 @@ document.addEventListener('DOMContentLoaded', () => {
 			// Utiliser les vraies données si disponibles
 			data: patientData['glucose-trend']?.values || [0.52,0.50,0.54,0.58,0.62,0.60,0.56,0.54,0.52,0.55],
 			color: '#7c3aed',
-			minVal: 4.0,
+			minVal: 3.0,
 			maxVal: 7.5,
 			unit: 'mmol/L',
+            threshold: patientData['glucose-trend']?.seuil_preoccupant ?? null,
 			valueId: 'value-glucose-trend',
 			noteId: 'note-glucose',
 			value: patientData['glucose-trend']?.lastValue?.toFixed(1) || '5.9',
@@ -120,6 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			minVal: 35,
 			maxVal: 110,
 			unit: 'kg',
+            threshold: patientData['weight']?.seuil_preoccupant ?? null,
 			valueId: 'value-weight',
 			noteId: 'note-weight',
 			value: patientData['weight']?.lastValue?.toFixed(1) || '72.5',
@@ -134,6 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			minVal: 90,
 			maxVal: 100,
 			unit: '%',
+            threshold: patientData['oxygen-saturation']?.seuil_preoccupant ?? null,
 			valueId: 'value-oxygen',
 			noteId: 'note-oxygen',
 			value: patientData['oxygen-saturation']?.lastValue?.toFixed(0) || '98',
@@ -560,26 +567,28 @@ document.addEventListener('DOMContentLoaded', () => {
 			ctx.fillText(value.toFixed(1), paddingLeft - 8, y + 4);
 		}
 
-		// Seuil de danger
-		if (typeof threshold === 'number') {
-			const yThr = paddingTop + (1 - threshold) * (height - paddingTop - paddingBottom);
-			ctx.fillStyle = 'rgba(239,68,68,0.08)';
-			ctx.fillRect(paddingLeft, paddingTop, width - paddingLeft - paddingRight, yThr - paddingTop);
+        // Seuil préoccupant
+        if (typeof threshold === 'number') {
 
-			ctx.beginPath();
-			ctx.moveTo(paddingLeft, yThr);
-			ctx.lineTo(width - paddingRight, yThr);
-			ctx.strokeStyle = 'rgba(220,38,38,0.75)';
-			ctx.lineWidth = 2;
-			ctx.setLineDash([8, 4]);
-			ctx.stroke();
-			ctx.setLineDash([]);
+            const thresholdNorm = (threshold - minVal) / (maxVal - minVal);
 
-			ctx.fillStyle = 'rgba(220,38,38,0.9)';
-			ctx.font = 'bold 11px sans-serif';
-			ctx.textAlign = 'left';
-			ctx.fillText('Seuil critique', paddingLeft + 10, yThr - 5);
-		}
+            const yThr = paddingTop +
+                (1 - thresholdNorm) * (height - paddingTop - paddingBottom);
+
+            ctx.beginPath();
+            ctx.moveTo(paddingLeft, yThr);
+            ctx.lineTo(width - paddingRight, yThr);
+            ctx.strokeStyle = 'rgba(250,204,21,0.9)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([6, 4]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.fillStyle = 'rgba(250,204,21,0.95)';
+            ctx.font = 'bold 11px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText('Seuil préoccupant', paddingLeft + 3, yThr - 5);
+        }
 
 		// Labels axe X
 		ctx.textAlign = 'center';
@@ -658,24 +667,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 	}
 
-	// Sparkline (ligne fine, faible padding) - Version statique
-	function animateSparkline(canvasId, data, color) {
-		const canvas = document.getElementById(canvasId); if (!canvas) return;
-		function draw() {
-			const {ctx, width, height} = setupCanvas(canvas);
-			ctx.clearRect(0, 0, width, height);
-			const padding = 6;
-			ctx.beginPath(); ctx.lineWidth = 1.6; ctx.strokeStyle = color;
-			const step = (width - padding * 2) / (data.length - 1);
-			data.forEach((v, i) => {
-				const x = padding + i * step; const y = padding + (1 - v) * (height - padding * 2);
-				if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-			});
-			ctx.stroke();
-		}
-		draw();
-	}
-
 	// Bar chart - Version statique
 	function animateBarChart(canvasId, data, color) {
 		const canvas = document.getElementById(canvasId); if (!canvas) return;
@@ -727,38 +718,6 @@ document.addEventListener('DOMContentLoaded', () => {
 			// small legend dots
 			ctx.fillStyle = colorA; ctx.fillRect(width - padding - 90, padding, 10, 10); ctx.fillStyle = '#081e2b'; ctx.font = '12px sans-serif'; ctx.fillText('Systolique', width - padding - 72, padding + 9);
 			ctx.fillStyle = colorB; ctx.fillRect(width - padding - 90, padding + 16, 10, 10); ctx.fillStyle = '#081e2b'; ctx.fillText('Diastolique', width - padding - 72, padding + 25);
-		}
-		draw();
-	}
-
-	// Donut chart (type progress) - Version statique
-	function animateDonut(canvasId, value, color) {
-		const canvas = document.getElementById(canvasId); if (!canvas) return;
-		function draw() {
-			const {ctx, width, height} = setupCanvas(canvas);
-			ctx.clearRect(0, 0, width, height);
-			const cx = width / 2; const cy = height / 2; const r = Math.min(width, height) * 0.32; const thickness = r * 0.45;
-			// background ring
-			ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.lineWidth = thickness; ctx.strokeStyle = '#eef6fb'; ctx.stroke();
-			// progress
-			const pct = Math.max(0, Math.min(1, value));
-			ctx.beginPath(); ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * pct); ctx.lineWidth = thickness; ctx.strokeStyle = color; ctx.lineCap = 'round'; ctx.stroke();
-		}
-		draw();
-	}
-
-	// Gauge (demi-cercle) - Version statique
-	function animateGauge(canvasId, value, color) {
-		const canvas = document.getElementById(canvasId); if (!canvas) return;
-		function draw() {
-			const {ctx, width, height} = setupCanvas(canvas);
-			ctx.clearRect(0, 0, width, height);
-			const cx = width / 2; const cy = height * 0.75; const r = Math.min(width, height) * 0.4;
-			// background arc
-			ctx.beginPath(); ctx.arc(cx, cy, r, Math.PI, 0); ctx.lineWidth = 12; ctx.strokeStyle = '#eef6fb'; ctx.stroke();
-			// value arc
-			const pct = Math.max(0, Math.min(1, value));
-			ctx.beginPath(); ctx.arc(cx, cy, r, Math.PI, Math.PI + Math.PI * pct); ctx.lineWidth = 12; ctx.strokeStyle = color; ctx.lineCap = 'round'; ctx.stroke();
 		}
 		draw();
 	}
@@ -1382,9 +1341,28 @@ document.addEventListener('DOMContentLoaded', () => {
 			return;
 		}
 
-		if (def.type === 'area') {
-			animateArea(canvasId, def.data, def.color, def.minVal, def.maxVal, def.unit);
-		} else if (def.type === 'area-threshold') {
+        if (def.type === 'area') {
+            if (typeof def.threshold === 'number') {
+                animateAreaWithThreshold(
+                    canvasId,
+                    def.data,
+                    def.color,
+                    def.threshold,
+                    def.minVal,
+                    def.maxVal,
+                    def.unit
+                );
+            } else {
+                animateArea(
+                    canvasId,
+                    def.data,
+                    def.color,
+                    def.minVal,
+                    def.maxVal,
+                    def.unit
+                );
+            }
+        } else if (def.type === 'area-threshold') {
 			animateAreaWithThreshold(canvasId, def.data, def.color, def.threshold, def.minVal, def.maxVal, def.unit);
 		} else if (def.type === 'bar') {
 			animateBarChart(canvasId, def.data, def.color);

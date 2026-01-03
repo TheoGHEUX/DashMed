@@ -24,53 +24,6 @@ if (empty($_SESSION['user'])) {
 
 use Core\Database;
 
-$patients = [];
-$patient   = null; // Patient acdtif
-
-try {
-    $pdo = Database::getConnection();
-
-    // Récupération de tous les patients suivis par le médecin
-    $stmt = $pdo->prepare("
-        SELECT 
-            p.pt_id,
-            p.nom,
-            p.prenom,
-            p.date_naissance,
-            p.sexe,
-            p.groupe_sanguin,
-            p.telephone,
-            p.ville,
-            p.code_postal,
-            p.adresse,
-            p.email
-        FROM suivre s
-        JOIN patient p ON p.pt_id = s.pt_id
-        WHERE s.med_id = :med_id
-        ORDER BY p.nom, p.prenom
-    ");
-    $stmt->execute([':med_id' => $_SESSION['user']['id']]);
-    $patients = $stmt->fetchAll();
-
-    // Déterminer le patient sélectionné :
-    // 1) depuis l'URL ?patient=ID
-    // 2) sinon depuis la session (dernier patient consulté)
-    // 3) sinon le premier de la liste
-    $selectedPtId = $_GET['patient'] ?? $_SESSION['lastPatientId'] ?? ($patients[0]['pt_id'] ?? null);
-
-    if ($selectedPtId) {
-        foreach ($patients as $p) {
-            if ($p['pt_id'] == $selectedPtId) {
-                $patient = $p;
-                $_SESSION['lastPatientId'] = $selectedPtId; // Sauvegarde pour la prochaine visite
-                break;
-            }
-        }
-    }
-} catch (PDOException $e) {
-    error_log($e->getMessage());
-}
-
 $pageTitle       = $pageTitle ?? "Dashboard";
 $pageDescription = $pageDescription ?? "Tableau de bord - Suivi médical";
 $pageStyles      = $pageStyles ?? ['/assets/style/dashboard.css'];
