@@ -50,8 +50,12 @@ document.addEventListener('DOMContentLoaded', () => {
 			minVal: 100,
 			maxVal: 140,
 			unit: 'mmHg',
-            threshold: patientData['blood-pressure']?.seuil_preoccupant ?? null,
-			valueId: 'value-bp',
+            thresholds: {
+                preoccupant: patientData['blood-pressure']?.seuil_preoccupant ?? null,
+                urgent: patientData['blood-pressure']?.seuil_urgent ?? null,
+                critique: patientData['blood-pressure']?.seuil_critique ?? null,
+            },
+            valueId: 'value-bp',
 			noteId: 'note-bp',
 			value: patientData['blood-pressure']?.lastValue?.toFixed(0) || '122',
 			note: (patientData['blood-pressure']?.unit || 'mmHg') + ', dernière mesure'
@@ -65,8 +69,12 @@ document.addEventListener('DOMContentLoaded', () => {
 			minVal: 25,
 			maxVal: 100,
 			unit: 'bpm',
-            threshold: patientData['heart-rate']?.seuil_preoccupant ?? null,
-			valueId: 'value-hr',
+            thresholds: {
+                preoccupant: patientData['heart-rate']?.seuil_preoccupant ?? null,
+                urgent: patientData['heart-rate']?.seuil_urgent ?? null,
+                critique: patientData['heart-rate']?.seuil_critique ?? null,
+            },
+            valueId: 'value-hr',
 			noteId: 'note-hr',
 			value: patientData['heart-rate']?.lastValue?.toFixed(0) || '72',
 			note: (patientData['heart-rate']?.unit || 'BPM') + ', dernière mesure'
@@ -80,7 +88,11 @@ document.addEventListener('DOMContentLoaded', () => {
 			minVal: 0,
 			maxVal: 20,
 			unit: 'resp/min',
-            threshold: patientData['respiration']?.seuil_preoccupant ?? null,
+            thresholds: {
+                preoccupant: patientData['respiration']?.seuil_preoccupant ?? null,
+                urgent: patientData['respiration']?.seuil_urgent ?? null,
+                critique: patientData['respiration']?.seuil_critique ?? null,
+            },
             valueId: 'value-resp',
 			noteId: 'note-resp',
 			value: patientData['respiration']?.lastValue?.toFixed(0) || '16',
@@ -95,8 +107,12 @@ document.addEventListener('DOMContentLoaded', () => {
 			minVal: 35.0,
 			maxVal: 40.0,
 			unit: '°C',
-            threshold: patientData['temperature']?.seuil_preoccupant ?? null,
-			valueId: 'value-temp',
+            thresholds: {
+                preoccupant: patientData['temperature']?.seuil_preoccupant ?? null,
+                urgent: patientData['temperature']?.seuil_urgent ?? null,
+                critique: patientData['temperature']?.seuil_critique ?? null,
+            },
+            valueId: 'value-temp',
 			noteId: 'note-temp',
 			value: patientData['temperature']?.lastValue?.toFixed(1) || '36.7',
 			note: (patientData['temperature']?.unit || '°C') + ', dernière mesure'
@@ -110,8 +126,12 @@ document.addEventListener('DOMContentLoaded', () => {
 			minVal: 3.0,
 			maxVal: 7.5,
 			unit: 'mmol/L',
-            threshold: patientData['glucose-trend']?.seuil_preoccupant ?? null,
-			valueId: 'value-glucose-trend',
+            thresholds: {
+                preoccupant: patientData['glucose-trend']?.seuil_preoccupant ?? null,
+                urgent: patientData['glucose-trend']?.seuil_urgent ?? null,
+                critique: patientData['glucose-trend']?.seuil_critique ?? null,
+            },
+            valueId: 'value-glucose-trend',
 			noteId: 'note-glucose',
 			value: patientData['glucose-trend']?.lastValue?.toFixed(1) || '5.9',
 			note: (patientData['glucose-trend']?.unit || 'mmol/L')
@@ -125,8 +145,12 @@ document.addEventListener('DOMContentLoaded', () => {
 			minVal: 35,
 			maxVal: 110,
 			unit: 'kg',
-            threshold: patientData['weight']?.seuil_preoccupant ?? null,
-			valueId: 'value-weight',
+            thresholds: {
+                preoccupant: patientData['weight']?.seuil_preoccupant ?? null,
+                urgent: patientData['weight']?.seuil_urgent ?? null,
+                critique: patientData['weight']?.seuil_critique ?? null,
+            },
+            valueId: 'value-weight',
 			noteId: 'note-weight',
 			value: patientData['weight']?.lastValue?.toFixed(1) || '72.5',
 			note: (patientData['weight']?.unit || 'kg') + ', dernière mesure'
@@ -140,8 +164,12 @@ document.addEventListener('DOMContentLoaded', () => {
 			minVal: 90,
 			maxVal: 100,
 			unit: '%',
-            threshold: patientData['oxygen-saturation']?.seuil_preoccupant ?? null,
-			valueId: 'value-oxygen',
+            thresholds: {
+                preoccupant: patientData['oxygen-saturation']?.seuil_preoccupant ?? null,
+                urgent: patientData['oxygen-saturation']?.seuil_urgent ?? null,
+                critique: patientData['oxygen-saturation']?.seuil_critique ?? null,
+            },
+            valueId: 'value-oxygen',
 			noteId: 'note-oxygen',
 			value: patientData['oxygen-saturation']?.lastValue?.toFixed(0) || '98',
 			note: (patientData['oxygen-saturation']?.unit || '%') + ', dernière mesure'
@@ -515,159 +543,173 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	// Area avec ligne de seuil (pour température) - Version médicale avec axes
-	function animateAreaWithThreshold(canvasId, data, color, threshold, minVal, maxVal, unit) {
-		const canvas = document.getElementById(canvasId);
-		if (!canvas) return;
+    /**
+     * Affiche un graphique area avec plusieurs seuils (préoccupant, urgent, critique)
+     * @param {string} canvasId ID du canvas
+     * @param {number[]} data Tableau des valeurs normalisées entre 0 et 1
+     * @param {string} color Couleur principale de la ligne
+     * @param {object} thresholds Objet { preoccupant, urgent, critique } avec valeurs numériques ou null
+     * @param {number} minVal Valeur minimale de l'axe Y
+     * @param {number} maxVal Valeur maximale de l'axe Y
+     * @param {string} unit Unité à afficher
+     */
+    function animateAreaWithThreshold(canvasId, data, color, thresholds = {}, minVal = 0, maxVal = 1, unit = '') {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
 
-		// Détection du mode sombre (via data-theme)
-		const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
-		const axisColor = isDarkMode ? 'rgba(255,255,255,0.9)' : 'rgba(100,110,120,0.4)';
-		const gridColor = isDarkMode ? 'rgba(255,255,255,0.25)' : 'rgba(200,210,220,0.2)';
-		const textColor = isDarkMode ? 'rgba(255,255,255,0.95)' : 'rgba(60,70,80,0.8)';
-		const textColorLight = isDarkMode ? 'rgba(255,255,255,0.85)' : 'rgba(60,70,80,0.7)';
+        const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+        const axisColor = isDarkMode ? 'rgba(255,255,255,0.9)' : 'rgba(100,110,120,0.4)';
+        const gridColor = isDarkMode ? 'rgba(255,255,255,0.25)' : 'rgba(200,210,220,0.2)';
+        const textColor = isDarkMode ? 'rgba(255,255,255,0.95)' : 'rgba(60,70,80,0.8)';
+        const textColorLight = isDarkMode ? 'rgba(255,255,255,0.85)' : 'rgba(60,70,80,0.7)';
 
-		const {ctx, width, height} = setupCanvas(canvas);
-		const paddingLeft = 50;
-		const paddingRight = 20;
-		const paddingTop = 20;
-		const paddingBottom = 40;
-		ctx.clearRect(0, 0, width, height);
+        const {ctx, width, height} = setupCanvas(canvas);
+        const paddingLeft = 50, paddingRight = 20, paddingTop = 20, paddingBottom = 40;
+        ctx.clearRect(0, 0, width, height);
 
-		// Axes
-		ctx.strokeStyle = axisColor;
-		ctx.lineWidth = 2;
-		ctx.beginPath();
-		ctx.moveTo(paddingLeft, paddingTop);
-		ctx.lineTo(paddingLeft, height - paddingBottom);
-		ctx.stroke();
-		ctx.beginPath();
-		ctx.moveTo(paddingLeft, height - paddingBottom);
-		ctx.lineTo(width - paddingRight, height - paddingBottom);
-		ctx.stroke();
+        // Axes
+        ctx.strokeStyle = axisColor;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(paddingLeft, paddingTop);
+        ctx.lineTo(paddingLeft, height - paddingBottom);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(paddingLeft, height - paddingBottom);
+        ctx.lineTo(width - paddingRight, height - paddingBottom);
+        ctx.stroke();
 
-		// Grille horizontale avec labels
-		ctx.strokeStyle = gridColor;
-		ctx.lineWidth = 1;
-		ctx.fillStyle = textColor;
-		ctx.font = 'bold 11px sans-serif';
-		ctx.textAlign = 'right';
-
-		const numHorizontalLines = 5;
-		for (let i = 0; i <= numHorizontalLines; i++) {
-			const ratio = i / numHorizontalLines;
-			const y = paddingTop + (height - paddingTop - paddingBottom) * ratio;
-			const value = maxVal - (maxVal - minVal) * ratio;
-
-			ctx.beginPath();
-			ctx.moveTo(paddingLeft, y);
-			ctx.lineTo(width - paddingRight, y);
-			ctx.stroke();
-
-			ctx.fillStyle = textColor;
-			ctx.fillText(value.toFixed(1), paddingLeft - 8, y + 4);
-		}
-
-        // Seuil préoccupant
-        if (typeof threshold === 'number') {
-
-            const thresholdNorm = (threshold - minVal) / (maxVal - minVal);
-
-            const yThr = paddingTop +
-                (1 - thresholdNorm) * (height - paddingTop - paddingBottom);
+        // Grille horizontale avec labels
+        ctx.strokeStyle = gridColor;
+        ctx.lineWidth = 1;
+        ctx.fillStyle = textColor;
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'right';
+        const numHorizontalLines = 5;
+        for (let i = 0; i <= numHorizontalLines; i++) {
+            const ratio = i / numHorizontalLines;
+            const y = paddingTop + (height - paddingTop - paddingBottom) * ratio;
+            const value = maxVal - (maxVal - minVal) * ratio;
 
             ctx.beginPath();
-            ctx.moveTo(paddingLeft, yThr);
-            ctx.lineTo(width - paddingRight, yThr);
-            ctx.strokeStyle = 'rgba(250,204,21,0.9)';
-            ctx.lineWidth = 2;
-            ctx.setLineDash([6, 4]);
+            ctx.moveTo(paddingLeft, y);
+            ctx.lineTo(width - paddingRight, y);
             ctx.stroke();
-            ctx.setLineDash([]);
 
-            ctx.fillStyle = 'rgba(250,204,21,0.95)';
-            ctx.font = 'bold 11px sans-serif';
-            ctx.textAlign = 'left';
-            ctx.fillText('Seuil préoccupant', paddingLeft + 3, yThr - 5);
+            ctx.fillStyle = textColor;
+            ctx.fillText(value.toFixed(1), paddingLeft - 8, y + 4);
         }
 
-		// Labels axe X
-		ctx.textAlign = 'center';
-		ctx.font = '10px sans-serif';
-		ctx.fillStyle = textColor;
-		const numXLabels = Math.min(data.length, 10);
-		const xLabelStep = Math.floor(data.length / numXLabels);
+        // Dessin des seuils
+        const seuilColors = {
+            preoccupant: 'rgba(250,204,21,0.9)',
+            urgent: 'rgba(249,115,22,0.9)',
+            critique: 'rgba(220,38,38,0.9)'
+        };
 
-		for (let i = 0; i < data.length; i += xLabelStep) {
-			const x = paddingLeft + ((width - paddingLeft - paddingRight) / (data.length - 1)) * i;
-			const y = height - paddingBottom;
-			ctx.beginPath();
-			ctx.moveTo(x, y);
-			ctx.lineTo(x, y + 5);
-			ctx.strokeStyle = axisColor;
-			ctx.lineWidth = 2;
-			ctx.stroke();
-			ctx.fillStyle = textColor;
-			ctx.fillText((i + 1).toString(), x, y + 18);
-		}
+        for (const [key, val] of Object.entries(thresholds)) {
+            if (typeof val === 'number') {
+                const yThr = paddingTop + (1 - (val - minVal) / (maxVal - minVal)) * (height - paddingTop - paddingBottom);
+                ctx.beginPath();
+                ctx.moveTo(paddingLeft, yThr);
+                ctx.lineTo(width - paddingRight, yThr);
+                ctx.strokeStyle = seuilColors[key] || '#000';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([6, 4]);
+                ctx.stroke();
+                ctx.setLineDash([]);
 
-		ctx.fillStyle = textColorLight;
-		ctx.font = '11px sans-serif';
-		ctx.fillText('Mesures', width / 2, height - 5);
+                ctx.fillStyle = seuilColors[key];
+                ctx.font = 'bold 11px sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText(`Seuil ${key}`, paddingLeft + 3, yThr - 5);
+            }
+        }
 
-		ctx.save();
-		ctx.translate(15, height / 2);
-		ctx.rotate(-Math.PI / 2);
-		ctx.textAlign = 'center';
-		ctx.fillStyle = textColorLight;
-		ctx.fillText(unit || 'Valeur', 0, 0);
-		ctx.restore();
+        // Labels axe X
+        ctx.textAlign = 'center';
+        ctx.font = '10px sans-serif';
+        ctx.fillStyle = textColor;
+        const numXLabels = Math.min(data.length, 10);
+        const xLabelStep = Math.floor(data.length / numXLabels) || 1;
+        for (let i = 0; i < data.length; i += xLabelStep) {
+            const x = paddingLeft + ((width - paddingLeft - paddingRight) / (data.length - 1)) * i;
+            const y = height - paddingBottom;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x, y + 5);
+            ctx.strokeStyle = axisColor;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.fillStyle = textColor;
+            ctx.fillText((i + 1).toString(), x, y + 18);
+        }
 
-		// Courbe
-		ctx.beginPath();
-		const step = (width - paddingLeft - paddingRight) / (data.length - 1);
-		data.forEach((v, i) => {
-			const x = paddingLeft + i * step;
-			const y = paddingTop + (1 - v) * (height - paddingTop - paddingBottom);
-			if (i === 0) ctx.moveTo(x, y);
-			else ctx.lineTo(x, y);
-		});
+        ctx.fillStyle = textColorLight;
+        ctx.font = '11px sans-serif';
+        ctx.fillText('Mesures', width / 2, height - 5);
 
-		ctx.lineWidth = 2.5;
-		ctx.strokeStyle = color;
-		ctx.stroke();
+        ctx.save();
+        ctx.translate(15, height / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.textAlign = 'center';
+        ctx.fillStyle = textColorLight;
+        ctx.fillText(unit || 'Valeur', 0, 0);
+        ctx.restore();
 
-		const gradient = ctx.createLinearGradient(0, paddingTop, 0, height - paddingBottom);
-		gradient.addColorStop(0, color + '30');
-		gradient.addColorStop(1, color + '05');
-		ctx.lineTo(width - paddingRight, height - paddingBottom);
-		ctx.lineTo(paddingLeft, height - paddingBottom);
-		ctx.closePath();
-		ctx.fillStyle = gradient;
-		ctx.fill();
+        // Courbe principale
+        ctx.beginPath();
+        const step = (width - paddingLeft - paddingRight) / (data.length - 1);
+        data.forEach((v, i) => {
+            const x = paddingLeft + i * step;
+            const y = paddingTop + (1 - (v - minVal) / (maxVal - minVal)) * (height - paddingTop - paddingBottom);
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        });
 
-		// Points
-		data.forEach((v, i) => {
-			const x = paddingLeft + i * step;
-			const y = paddingTop + (1 - v) * (height - paddingTop - paddingBottom);
-			const isAboveThreshold = threshold && v > threshold;
-			const pointColor = isAboveThreshold ? '#dc2626' : color;
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = color;
+        ctx.stroke();
 
-			ctx.beginPath();
-			ctx.arc(x, y, 3, 0, Math.PI * 2);
-			ctx.fillStyle = '#ffffff';
-			ctx.fill();
-			ctx.strokeStyle = pointColor;
-			ctx.lineWidth = 2;
-			ctx.stroke();
+        // Remplissage dégradé
+        const gradient = ctx.createLinearGradient(0, paddingTop, 0, height - paddingBottom);
+        gradient.addColorStop(0, color + '30');
+        gradient.addColorStop(1, color + '05');
+        ctx.lineTo(width - paddingRight, height - paddingBottom);
+        ctx.lineTo(paddingLeft, height - paddingBottom);
+        ctx.closePath();
+        ctx.fillStyle = gradient;
+        ctx.fill();
 
-			ctx.beginPath();
-			ctx.arc(x, y, 1.5, 0, Math.PI * 2);
-			ctx.fillStyle = pointColor;
-			ctx.fill();
-		});
-	}
+        // Points
+        data.forEach((v, i) => {
+            const x = paddingLeft + i * step;
+            const y = paddingTop + (1 - (v - minVal) / (maxVal - minVal)) * (height - paddingTop - paddingBottom);
 
-	// Bar chart - Version statique
+            // Déterminer si la valeur dépasse un seuil majorant
+            let isAboveThreshold = false;
+            for (const val of Object.values(thresholds)) {
+                if (typeof val === 'number' && v > val) isAboveThreshold = true;
+            }
+
+            const pointColor = isAboveThreshold ? '#dc2626' : color;
+
+            ctx.beginPath();
+            ctx.arc(x, y, 3, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            ctx.strokeStyle = pointColor;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(x, y, 1.5, 0, Math.PI * 2);
+            ctx.fillStyle = pointColor;
+            ctx.fill();
+        });
+    }
+
+    // Bar chart - Version statique
 	function animateBarChart(canvasId, data, color) {
 		const canvas = document.getElementById(canvasId); if (!canvas) return;
 		function draw() {
@@ -1342,12 +1384,12 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 
         if (def.type === 'area') {
-            if (typeof def.threshold === 'number') {
+            if (def.thresholds) {
                 animateAreaWithThreshold(
                     canvasId,
                     def.data,
                     def.color,
-                    def.threshold,
+                    def.thresholds,
                     def.minVal,
                     def.maxVal,
                     def.unit
@@ -1362,13 +1404,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     def.unit
                 );
             }
-        } else if (def.type === 'area-threshold') {
-			animateAreaWithThreshold(canvasId, def.data, def.color, def.threshold, def.minVal, def.maxVal, def.unit);
-		} else if (def.type === 'bar') {
-			animateBarChart(canvasId, def.data, def.color);
-		} else if (def.type === 'dual') {
-			animateDualLineChart(canvasId, def.dataA, def.dataB, def.colorA, def.colorB);
-		}
+        }
 	}
 
 	// Resize indicator functions

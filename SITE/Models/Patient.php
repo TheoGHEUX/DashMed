@@ -302,84 +302,42 @@ final class Patient
         return $row ? (int) $row['pt_id'] : null;
     }
 
-    public static function getSeuilPreoccupant(
-        int $patientId,
-        string $typeMesure
-    ): ?float {
+    /**
+     * Récupère la valeur seuil pour un patient et une mesure donnée selon le statut.
+     *
+     * @param int $patientId
+     * @param string $typeMesure
+     * @param string $statut 'préoccupant', 'urgent' ou 'critique'
+     * @param bool|null $majorant true = seuil max, false = seuil min, null = indifférent
+     * @return float|null
+     */
+    public static function getSeuilByStatus(int $patientId, string $typeMesure, string $statut, bool $majorant): ?float
+    {
         $pdo = Database::getConnection();
 
         $sql = "
-        SELECT sa.seuil_max
+        SELECT seuil
         FROM seuil_alerte sa
         JOIN mesures m ON m.id_mesure = sa.id_mesure
-        WHERE sa.statut = 'préoccupant'
+        WHERE sa.statut = :statut
           AND m.type_mesure = :type
           AND m.pt_id = :pt_id
+          AND sa.majorant = :majorant
         LIMIT 1
     ";
 
         $stmt = $pdo->prepare($sql);
+
         $stmt->execute([
-            ':type'   => $typeMesure,
-            ':pt_id' => $patientId
+            ':statut' => $statut,
+            ':type' => $typeMesure,
+            ':pt_id' => $patientId,
+            ':majorant' => $majorant ? 1 : 0
         ]);
 
         $row = $stmt->fetch();
-
-        return $row ? (float) $row['seuil_max'] : null;
+        return $row ? (float) $row['seuil'] : null;
     }
 
-    public static function getSeuilUrgent(
-        int $patientId,
-        string $typeMesure
-    ): ?float {
-        $pdo = Database::getConnection();
 
-        $sql = "
-        SELECT sa.seuil_max
-        FROM seuil_alerte sa
-        JOIN mesures m ON m.id_mesure = sa.id_mesure
-        WHERE sa.statut = 'urgent'
-          AND m.type_mesure = :type
-          AND m.pt_id = :pt_id
-        LIMIT 1
-    ";
-
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([
-            ':type'   => $typeMesure,
-            ':pt_id' => $patientId
-        ]);
-
-        $row = $stmt->fetch();
-
-        return $row ? (float) $row['seuil_max'] : null;
-    }
-
-    public static function getSeuilCritique(
-        int $patientId,
-        string $typeMesure
-    ): ?float {
-        $pdo = Database::getConnection();
-
-        $sql = "
-        SELECT sa.seuil_max
-        FROM seuil_alerte sa
-        JOIN mesures m ON m.id_mesure = sa.id_mesure
-        WHERE sa.statut = 'critique'
-          AND m.type_mesure = :type
-          AND m.pt_id = :pt_id
-        LIMIT 1
-    ";
-
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([
-            ':type'   => $typeMesure,
-            ':pt_id' => $patientId
-        ]);
-
-        $row = $stmt->fetch();
-
-        return $row ? (float) $row['seuil_max'] : null;
-    }
 }

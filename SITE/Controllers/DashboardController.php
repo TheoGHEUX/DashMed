@@ -83,10 +83,9 @@ final class DashboardController
                 'values'    => Patient::prepareChartValues($data['valeurs'], 35.0, 40.0),
                 'lastValue' => end($data['valeurs'])['valeur'],
                 'unit'      => $data['unite'],
-                'seuil_preoccupant' => Patient::getSeuilPreoccupant(
-                    $patientId,
-                    'Température corporelle'
-                )
+                'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, 'Température corporelle', 'préoccupant', true),
+                'seuil_urgent'      => Patient::getSeuilByStatus($patientId, 'Température corporelle', 'urgent', true),
+                'seuil_critique'    => Patient::getSeuilByStatus($patientId, 'Température corporelle', 'critique', true)
             ];
         }
 
@@ -99,10 +98,9 @@ final class DashboardController
                 'values'    => Patient::prepareChartValues($data['valeurs'], 100, 140),
                 'lastValue' => end($data['valeurs'])['valeur'],
                 'unit'      => $data['unite'],
-                'seuil_preoccupant' => Patient::getSeuilPreoccupant(
-                    $patientId,
-                    'Tension artérielle'
-                )
+                'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, 'Tension arterielle', 'préoccupant', true),
+                'seuil_urgent'      => Patient::getSeuilByStatus($patientId, 'Tension arterielle', 'urgent', true),
+                'seuil_critique'    => Patient::getSeuilByStatus($patientId, 'Tension arterielle', 'critique', true)
             ];
         }
 
@@ -112,10 +110,9 @@ final class DashboardController
                 'values' => Patient::prepareChartValues($data['valeurs'], 25, 100),
                 'lastValue' => end($data['valeurs'])['valeur'],
                 'unit' => $data['unite'],
-                'seuil_preoccupant' => Patient::getSeuilPreoccupant(
-                    $patientId,
-                    'Fréquence cardiaque'
-                )
+                'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, 'Fréquence cardiaque', 'préoccupant', true),
+                'seuil_urgent'      => Patient::getSeuilByStatus($patientId, 'Fréquence cardiaque', 'urgent', true),
+                'seuil_critique'    => Patient::getSeuilByStatus($patientId, 'Fréquence cardiaque', 'critique', true)
             ];
         }
 
@@ -125,10 +122,9 @@ final class DashboardController
                 'values'    => Patient::prepareChartValues($data['valeurs'], 0, 20),
                 'lastValue' => end($data['valeurs'])['valeur'],
                 'unit'      => $data['unite'],
-                'seuil_preoccupant' => Patient::getSeuilPreoccupant(
-                $patientId,
-                'Fréquence respiratoire'
-            )
+                'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, 'Fréquence respiratoire', 'préoccupant', true),
+                'seuil_urgent'      => Patient::getSeuilByStatus($patientId, 'Fréquence respiratoire', 'urgent', true),
+                'seuil_critique'    => Patient::getSeuilByStatus($patientId, 'Fréquence respiratoire', 'critique', true)
             ];
         }
 
@@ -138,10 +134,9 @@ final class DashboardController
                 'values'    => Patient::prepareChartValues($data['valeurs'], 3, 7.5),
                 'lastValue' => end($data['valeurs'])['valeur'],
                 'unit'      => $data['unite'],
-                'seuil_preoccupant' => Patient::getSeuilPreoccupant(
-                    $patientId,
-                    'Glycémie'
-                )
+                'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, 'Glycémie', 'préoccupant', true),
+                'seuil_urgent'      => Patient::getSeuilByStatus($patientId, 'Glycémie', 'urgent', true),
+                'seuil_critique'    => Patient::getSeuilByStatus($patientId, 'Glycémie', 'critique', true)
             ];
         }
 
@@ -151,10 +146,9 @@ final class DashboardController
                 'values'    => Patient::prepareChartValues($data['valeurs'], 35, 110),
                 'lastValue' => end($data['valeurs'])['valeur'],
                 'unit'      => $data['unite'],
-                'seuil_preoccupant' => Patient::getSeuilPreoccupant(
-                    $patientId,
-                    'Poids'
-                )
+                'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, 'Poids', 'préoccupant', true),
+                'seuil_urgent'      => Patient::getSeuilByStatus($patientId, 'Poids', 'urgent', true),
+                'seuil_critique'    => Patient::getSeuilByStatus($patientId, 'Poids', 'critique', true)
             ];
         }
 
@@ -164,10 +158,9 @@ final class DashboardController
                 'values'    => Patient::prepareChartValues($data['valeurs'], 90, 100),
                 'lastValue' => end($data['valeurs'])['valeur'],
                 'unit'      => $data['unite'],
-                'seuil_preoccupant' => Patient::getSeuilPreoccupant(
-                    $patientId,
-                    'Saturation en oxygène'
-                )
+                'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, 'Saturation en oxygène', 'préoccupant', true),
+                'seuil_urgent'      => Patient::getSeuilByStatus($patientId, 'Saturation en oxygène', 'urgent', true),
+                'seuil_critique'    => Patient::getSeuilByStatus($patientId, 'Saturation en oxygène', 'critique', true)
             ];
         }
 
