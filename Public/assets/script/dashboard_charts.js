@@ -13,7 +13,10 @@
  * Ou ajoutez `?reset=1` à l'URL du dashboard.
  */
 
+console.log('[DEBUG] dashboard_charts.js chargé - version:', new Date().toISOString());
+
 document.addEventListener('DOMContentLoaded', () => {
+	console.log('[DEBUG] DOMContentLoaded - initialisation du dashboard');
 	const DPR = window.devicePixelRatio || 1;
 
 	// Ajouter la classe initial-load pour les animations de chargement
@@ -811,6 +814,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	// Log action graphique vers le serveur
 	function logGraphiqueAction(action) {
+		console.log('[DEBUG] logGraphiqueAction appelée avec:', action);
+		
 		fetch('/api/log-graph-action', {
 			method: 'POST',
 			headers: {
@@ -819,6 +824,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			body: JSON.stringify({ action: action })
 		})
 		.then(response => {
+			console.log('[DEBUG] Réponse reçue, status:', response.status);
 			if (!response.ok) {
 				return response.json().then(data => {
 					console.error('Erreur serveur lors du log:', data);
