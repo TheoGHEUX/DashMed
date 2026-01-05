@@ -3,7 +3,6 @@
 namespace Controllers;
 
 use Models\Patient;
-use Models\HistoriqueConsole;
 
 /**
  * Contrôleur : Tableau de bord
@@ -23,189 +22,170 @@ final class DashboardController
      */
     public function index(): void
     {
+        // Vérification de l'authentification
         if (empty($_SESSION['user'])) {
             header('Location: /login');
             exit;
         }
 
-        $medId = (int) $_SESSION['user']['id'];
+        // Patients suivis par le médecin
+        $patients = Patient::getPatientsForDoctor(
+            (int) $_SESSION['user']['id']
+        );
 
-        // 🧠 1. Si patient dans l'URL → sauvegarde
+        /// Patient sélectionné via URL
+        $doctorPatients = array_column(Patient::getPatientsForDoctor($_SESSION['user']['id']), 'pt_id');
+
         if (isset($_GET['patient']) && ctype_digit($_GET['patient'])) {
-            $_SESSION['last_patient_id'] = (int) $_GET['patient'];
-        }
+            $requestedId = (int) $_GET['patient'];
 
-        // 🧠 2. Patient actif
-        $patientId = $_SESSION['last_patient_id'] ?? null;
-
-        // 🧠 3. Fallback (premier patient du médecin)
-        if (!$patientId) {
-            $patientId = Patient::getFirstPatientIdForDoctor($_SESSION['user']['id']);
-            $_SESSION['last_patient_id'] = $patientId;
-        }
-
-        // Si aucun patient, afficher le dashboard vide avec message
-        if (!$patientId) {
-            $patient = null;
-            $chartData = [];
-            $noPatient = true;
-            require __DIR__ . '/../Views/dashboard.php';
-            return;
-        }
-
-        // Vérifier que le patient est bien rattaché au médecin connecté
-        $patient = Patient::findByIdForDoctor($patientId, $medId);
-        if (!$patient) {
-            // Patient non autorisé → réinitialiser avec le premier patient du médecin
-            $firstPatientId = Patient::getFirstPatientIdForDoctor($medId);
-            if ($firstPatientId) {
-                $_SESSION['last_patient_id'] = $firstPatientId;
-                header('Location: /dashboard?patient=' . $firstPatientId);
-                exit;
+            // Patient autorisé : on actualise la page sinon on reste sur le patient actuel
+            if (in_array($requestedId, $doctorPatients, true)) {
+                $_SESSION['last_patient_id'] = $requestedId;
             }
-            // Aucun patient disponible → afficher dashboard vide
-            $patient = null;
+        }
+
+        $patientId = $_SESSION['last_patient_id']
+            ?? ($patients[0]['pt_id'] ?? null);
+
+        $patient = $patientId
+            ? Patient::findById($patientId)
+            : null;
+
+        // Affichage d'un patient par défaut : premier patient du médecin
+        if ($patientId === null) {
+            $patientId = Patient::getFirstPatientIdForDoctor((int) $_SESSION['user']['id']);
+
+            if ($patientId !== null) {
+                $_SESSION['last_patient_id'] = $patientId;
+            }
+        }
+
+        // Charger le patient uniquement si un ID existe
+        $patient = null;
+        if ($patientId !== null) {
+            $patient = Patient::findById($patientId);
+        }
+
+        // Aucun patient : dashboard vide
+        if ($patientId === null || $patient === null) {
             $chartData = [];
-            $noPatient = true;
             require __DIR__ . '/../Views/dashboard.php';
             return;
         }
 
-        // Récupérer les données pour chaque type de graphique
+        // Données graphiques (type/intervalles des ordonnées/unité)
         $chartData = [];
-        $noPatient = false;
 
-        // Température corporelle (35-40°C)
-        $tempData = Patient::getChartDataForDoctor($medId, $patientId, 'Température corporelle', 50);
-        if ($tempData) {
+        // Température corporelle (35–40 °C)
+        if ($data = Patient::getChartData($patientId, 'Température corporelle', 50)) {
             $chartData['temperature'] = [
-                'values' => Patient::prepareChartValues($tempData['valeurs'], 35.0, 40.0),
-                'lastValue' => end($tempData['valeurs'])['valeur'],
-                'unit' => $tempData['unite']
+                'values'    => Patient::prepareChartValues($data['valeurs'], 31.0, 42.0),
+                'lastValue' => end($data['valeurs'])['valeur'],
+                'unit'      => $data['unite'],
+                'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, 'Température corporelle', 'préoccupant', true),
+                'seuil_urgent'      => Patient::getSeuilByStatus($patientId, 'Température corporelle', 'urgent', true),
+                'seuil_critique'    => Patient::getSeuilByStatus($patientId, 'Température corporelle', 'critique', true),
+                'seuil_preoccupant_min' => Patient::getSeuilByStatus($patientId, 'Température corporelle', 'préoccupant', false),
+                'seuil_urgent_min'      => Patient::getSeuilByStatus($patientId, 'Température corporelle', 'urgent', false),
+                'seuil_critique_min'    => Patient::getSeuilByStatus($patientId, 'Température corporelle', 'critique', false)
             ];
         }
 
-        // Tension artérielle (100-140 mmHg)
-        $tensionData = Patient::getChartDataForDoctor($medId, $patientId, 'Tension arterielle', 50);
-        if (!$tensionData) {
-            $tensionData = Patient::getChartDataForDoctor($medId, $patientId, 'Tension artérielle', 50);
-        }
-        if ($tensionData) {
+        // Tension artérielle (100–140 mmHg)
+        $data = Patient::getChartData($patientId, 'Tension arterielle', 50)
+            ?: Patient::getChartData($patientId, 'Tension artérielle', 50);
+
+        if ($data) {
             $chartData['blood-pressure'] = [
-                'values' => Patient::prepareChartValues($tensionData['valeurs'], 100, 140),
-                'lastValue' => end($tensionData['valeurs'])['valeur'],
-                'unit' => $tensionData['unite']
+                'values'    => Patient::prepareChartValues($data['valeurs'], 80, 160),
+                'lastValue' => end($data['valeurs'])['valeur'],
+                'unit'      => $data['unite'],
+                'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, 'Tension arterielle', 'préoccupant', true),
+                'seuil_urgent'      => Patient::getSeuilByStatus($patientId, 'Tension arterielle', 'urgent', true),
+                'seuil_critique'    => Patient::getSeuilByStatus($patientId, 'Tension arterielle', 'critique', true),
+                'seuil_preoccupant_min' => Patient::getSeuilByStatus($patientId, 'Tension arterielle', 'préoccupant', false),
+                'seuil_urgent_min'      => Patient::getSeuilByStatus($patientId, 'Tension arterielle', 'urgent', false),
+                'seuil_critique_min'    => Patient::getSeuilByStatus($patientId, 'Tension arterielle', 'critique', false)
             ];
         }
 
-        // Fréquence cardiaque (60-100 bpm)
-        $fcData = Patient::getChartDataForDoctor($medId, $patientId, 'Fréquence cardiaque', 50);
-        if ($fcData) {
+        // Fréquence cardiaque (25–100 bpm)
+        if ($data = Patient::getChartData($patientId, 'Fréquence cardiaque', 50)) {
             $chartData['heart-rate'] = [
-                'values' => Patient::prepareChartValues($fcData['valeurs'], 25, 100),
-                'lastValue' => end($fcData['valeurs'])['valeur'],
-                'unit' => $fcData['unite']
+                'values' => Patient::prepareChartValues($data['valeurs'], 35, 130),
+                'lastValue' => end($data['valeurs'])['valeur'],
+                'unit' => $data['unite'],
+                'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, 'Fréquence cardiaque', 'préoccupant', true),
+                'seuil_urgent'      => Patient::getSeuilByStatus($patientId, 'Fréquence cardiaque', 'urgent', true),
+                'seuil_critique'    => Patient::getSeuilByStatus($patientId, 'Fréquence cardiaque', 'critique', true),
+                'seuil_preoccupant_min' => Patient::getSeuilByStatus($patientId, 'Fréquence cardiaque', 'préoccupant', false),
+                'seuil_urgent_min'      => Patient::getSeuilByStatus($patientId, 'Fréquence cardiaque', 'urgent', false),
+                'seuil_critique_min'    => Patient::getSeuilByStatus($patientId, 'Fréquence cardiaque', 'critique', false)
             ];
         }
 
-        // Fréquence respiratoire (12-20 resp/min)
-        $respData = Patient::getChartDataForDoctor($medId, $patientId, 'Fréquence respiratoire', 50);
-        if ($respData) {
+        // Fréquence respiratoire (0–20 resp/min)
+        if ($data = Patient::getChartData($patientId, 'Fréquence respiratoire', 50)) {
             $chartData['respiration'] = [
-                'values' => Patient::prepareChartValues($respData['valeurs'], 0, 20),
-                'lastValue' => end($respData['valeurs'])['valeur'],
-                'unit' => $respData['unite']
+                'values'    => Patient::prepareChartValues($data['valeurs'], 0, 30),
+                'lastValue' => end($data['valeurs'])['valeur'],
+                'unit'      => $data['unite'],
+                'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, 'Fréquence respiratoire', 'préoccupant', true),
+                'seuil_urgent'      => Patient::getSeuilByStatus($patientId, 'Fréquence respiratoire', 'urgent', true),
+                'seuil_critique'    => Patient::getSeuilByStatus($patientId, 'Fréquence respiratoire', 'critique', true),
+                'seuil_preoccupant_min' => Patient::getSeuilByStatus($patientId, 'Fréquence respiratoire', 'préoccupant', false),
+                'seuil_urgent_min'      => Patient::getSeuilByStatus($patientId, 'Fréquence respiratoire', 'urgent', false),
+                'seuil_critique_min'    => Patient::getSeuilByStatus($patientId, 'Fréquence respiratoire', 'critique', false)
             ];
         }
 
-        // Glycémie (4.0-7.5 mmol/L)
-        $glycemieData = Patient::getChartDataForDoctor($medId, $patientId, 'Glycémie', 50);
-        if ($glycemieData) {
+        // Glycémie (4.0–7.5 mmol/L)
+        if ($data = Patient::getChartData($patientId, 'Glycémie', 50)) {
             $chartData['glucose-trend'] = [
-                'values' => Patient::prepareChartValues($glycemieData['valeurs'], 4.0, 7.5),
-                'lastValue' => end($glycemieData['valeurs'])['valeur'],
-                'unit' => $glycemieData['unite']
+                'values'    => Patient::prepareChartValues($data['valeurs'], 2, 10),
+                'lastValue' => end($data['valeurs'])['valeur'],
+                'unit'      => $data['unite'],
+                'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, 'Glycémie', 'préoccupant', true),
+                'seuil_urgent'      => Patient::getSeuilByStatus($patientId, 'Glycémie', 'urgent', true),
+                'seuil_critique'    => Patient::getSeuilByStatus($patientId, 'Glycémie', 'critique', true),
+                'seuil_preoccupant_min' => Patient::getSeuilByStatus($patientId, 'Glycémie', 'préoccupant', false),
+                'seuil_urgent_min'      => Patient::getSeuilByStatus($patientId, 'Glycémie', 'urgent', false),
+                'seuil_critique_min'    => Patient::getSeuilByStatus($patientId, 'Glycémie', 'critique', false)
             ];
         }
 
-        // Poids (35-110 kg)
-        $poidsData = Patient::getChartDataForDoctor($medId, $patientId, 'Poids', 50);
-        if ($poidsData) {
+        // Poids (35–110 kg)
+        if ($data = Patient::getChartData($patientId, 'Poids', 50)) {
             $chartData['weight'] = [
-                'values' => Patient::prepareChartValues($poidsData['valeurs'], 35, 110),
-                'lastValue' => end($poidsData['valeurs'])['valeur'],
-                'unit' => $poidsData['unite']
+                'values'    => Patient::prepareChartValues($data['valeurs'], 35, 110),
+                'lastValue' => end($data['valeurs'])['valeur'],
+                'unit'      => $data['unite'],
+                'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, 'Poids', 'préoccupant', true),
+                'seuil_urgent'      => Patient::getSeuilByStatus($patientId, 'Poids', 'urgent', true),
+                'seuil_critique'    => Patient::getSeuilByStatus($patientId, 'Poids', 'critique', true),
+                'seuil_preoccupant_min' => Patient::getSeuilByStatus($patientId, 'Poids', 'préoccupant', false),
+                'seuil_urgent_min'      => Patient::getSeuilByStatus($patientId, 'Poids', 'urgent', false),
+                'seuil_critique_min'    => Patient::getSeuilByStatus($patientId, 'Poids', 'critique', false)
             ];
         }
 
-        // Saturation en oxygène (95-100%)
-        $o2Data = Patient::getChartDataForDoctor($medId, $patientId, 'Saturation en oxygène', 50);
-        if ($o2Data) {
+        // Saturation en oxygène (90–100 %)
+        if ($data = Patient::getChartData($patientId, 'Saturation en oxygène', 50)) {
             $chartData['oxygen-saturation'] = [
-                'values' => Patient::prepareChartValues($o2Data['valeurs'], 90, 100),
-                'lastValue' => end($o2Data['valeurs'])['valeur'],
-                'unit' => $o2Data['unite']
+                'values'    => Patient::prepareChartValues($data['valeurs'], 72, 100),
+                'lastValue' => end($data['valeurs'])['valeur'],
+                'unit'      => $data['unite'],
+                'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, 'Saturation en oxygène', 'préoccupant', true),
+                'seuil_urgent'      => Patient::getSeuilByStatus($patientId, 'Saturation en oxygène', 'urgent', true),
+                'seuil_critique'    => Patient::getSeuilByStatus($patientId, 'Saturation en oxygène', 'critique', true),
+                'seuil_preoccupant_min' => Patient::getSeuilByStatus($patientId, 'Saturation en oxygène', 'préoccupant', false),
+                'seuil_urgent_min'      => Patient::getSeuilByStatus($patientId, 'Saturation en oxygène', 'urgent', false),
+                'seuil_critique_min'    => Patient::getSeuilByStatus($patientId, 'Saturation en oxygène', 'critique', false)
             ];
         }
 
+        // Affichage
         require __DIR__ . '/../Views/dashboard.php';
-    }
-
-    /**
-     * API endpoint pour logger les actions sur les graphiques
-     * Attend POST avec JSON: {"action": "ouvrir"|"réduire"}
-     *
-     * @return void
-     */
-    public function logGraphAction(): void
-    {
-        header('Content-Type: application/json; charset=utf-8');
-
-        if (empty($_SESSION['user'])) {
-            http_response_code(401);
-            echo json_encode(['error' => 'Non authentifié']);
-            exit;
-        }
-
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(405);
-            echo json_encode(['error' => 'Méthode non autorisée']);
-            exit;
-        }
-
-        $input = json_decode(file_get_contents('php://input'), true);
-        $action = $input['action'] ?? null;
-
-        if (!in_array($action, ['ouvrir', 'réduire'], true)) {
-            http_response_code(400);
-            echo json_encode(['error' => 'Action invalide']);
-            exit;
-        }
-
-        $medId = (int) $_SESSION['user']['id'];
-        $historiqueConsole = new HistoriqueConsole();
-
-        try {
-            $success = false;
-            if ($action === 'ouvrir') {
-                $success = $historiqueConsole->logGraphiqueOuvrir($medId);
-            } else {
-                $success = $historiqueConsole->logGraphiqueReduire($medId);
-            }
-            
-            if (!$success) {
-                error_log(sprintf('[DASHBOARD] Échec du log pour med_id=%d, action=%s', $medId, $action));
-                http_response_code(500);
-                echo json_encode(['error' => 'Échec de l\'enregistrement', 'debug' => 'Check server logs']);
-                exit;
-            }
-            
-            echo json_encode(['success' => true]);
-        } catch (\Exception $e) {
-            error_log(sprintf('[DASHBOARD] Exception log action: %s', $e->getMessage()));
-            http_response_code(500);
-            echo json_encode(['error' => 'Erreur lors de l\'enregistrement', 'message' => $e->getMessage()]);
-        }
-        exit;
     }
 }
