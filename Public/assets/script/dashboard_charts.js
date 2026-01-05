@@ -566,10 +566,11 @@ document.addEventListener('DOMContentLoaded', () => {
 	// Area avec ligne de seuil (pour température) - Version médicale avec axes
     /**
      * Affiche un graphique area avec plusieurs seuils (préoccupant, urgent, critique)
+     * et des tooltips interactifs au survol
      * @param {string} canvasId ID du canvas
      * @param {number[]} data Tableau des valeurs normalisées entre 0 et 1
      * @param {string} color Couleur principale de la ligne
-     * @param {object} thresholds Objet { preoccupant, urgent, critique } avec valeurs numériques ou null
+     * @param {object} thresholds Objet { preoccupant, urgent, critique, preoccupant_min, urgent_min, critique_min }
      * @param {number} minVal Valeur minimale de l'axe Y
      * @param {number} maxVal Valeur maximale de l'axe Y
      * @param {string} unit Unité à afficher
@@ -586,187 +587,291 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const {ctx, width, height} = setupCanvas(canvas);
         const paddingLeft = 50, paddingRight = 20, paddingTop = 20, paddingBottom = 40;
-        ctx.clearRect(0, 0, width, height);
+        const step = (width - paddingLeft - paddingRight) / (data.length - 1);
 
-        // Axes
-        ctx.strokeStyle = axisColor;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(paddingLeft, paddingTop);
-        ctx.lineTo(paddingLeft, height - paddingBottom);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(paddingLeft, height - paddingBottom);
-        ctx.lineTo(width - paddingRight, height - paddingBottom);
-        ctx.stroke();
-
-        // Grille horizontale avec labels
-        ctx.strokeStyle = gridColor;
-        ctx.lineWidth = 1;
-        ctx.fillStyle = textColor;
-        ctx.font = 'bold 11px sans-serif';
-        ctx.textAlign = 'right';
-        const numHorizontalLines = 5;
-        for (let i = 0; i <= numHorizontalLines; i++) {
-            const ratio = i / numHorizontalLines;
-            const y = paddingTop + (height - paddingTop - paddingBottom) * ratio;
-            const value = maxVal - (maxVal - minVal) * ratio;
-
-            ctx.beginPath();
-            ctx.moveTo(paddingLeft, y);
-            ctx.lineTo(width - paddingRight, y);
-            ctx.stroke();
-
-            ctx.fillStyle = textColor;
-            ctx.fillText(value.toFixed(1), paddingLeft - 8, y + 4);
-        }
-
-        // Dessin des seuils MAJORANTS (lignes pleines)
+        // Couleurs des seuils
         const seuilColors = {
             preoccupant: 'rgba(250,204,21,0.9)',
             urgent: 'rgba(249,115,22,0.9)',
             critique: 'rgba(220,38,38,0.9)'
         };
 
-        for (const [key, val] of Object.entries(thresholds)) {
-            // Seuils majorants uniquement (sans _min)
-            if (!key.endsWith('_min') && typeof val === 'number') {
-                const yThr = paddingTop + (1 - (val - minVal) / (maxVal - minVal)) * (height - paddingTop - paddingBottom);
-                ctx.beginPath();
-                ctx.moveTo(paddingLeft, yThr);
-                ctx.lineTo(width - paddingRight, yThr);
-                ctx.strokeStyle = seuilColors[key] || '#000';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([8, 4]); // Ligne pointillée pour majorants
-                ctx.stroke();
-                ctx.setLineDash([]);
+        // Stocker les données pour le redraw
+        const chartData = {
+            data,
+            color,
+            minVal,
+            maxVal,
+            unit,
+            thresholds,
+            step,
+            paddingLeft,
+            paddingRight,
+            paddingTop,
+            paddingBottom,
+            width,
+            height,
+            axisColor,
+            gridColor,
+            textColor,
+            textColorLight,
+            seuilColors,
+            numHorizontalLines: 5
+        };
 
-                ctx.fillStyle = seuilColors[key];
-                ctx.font = 'bold 10px sans-serif';
-                ctx.textAlign = 'left';
-                ctx.fillText(`Max ${key}`, paddingLeft + 3, yThr - 5);
-            }
+        // Créer un tooltip HTML (partagé entre tous les graphiques)
+        let tooltip = document.querySelector('.chart-tooltip');
+        if (!tooltip) {
+            tooltip = document.createElement('div');
+            tooltip.className = 'chart-tooltip';
+            tooltip.style.cssText = `
+            position: fixed;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            pointer-events: none;
+            display: none;
+            z-index: 10000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        `;
+            document.body.appendChild(tooltip);
         }
 
-        // Dessin des seuils MINORANTS (lignes pointillées plus espacées)
-        for (const [key, val] of Object.entries(thresholds)) {
-            // Seuils minorants uniquement (avec _min)
-            if (key.endsWith('_min') && typeof val === 'number') {
-                const baseKey = key.replace('_min', '');
-                const yThr = paddingTop + (1 - (val - minVal) / (maxVal - minVal)) * (height - paddingTop - paddingBottom);
-                ctx.beginPath();
-                ctx.moveTo(paddingLeft, yThr);
-                ctx.lineTo(width - paddingRight, yThr);
-                ctx.strokeStyle = seuilColors[baseKey] || '#000';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([4, 8]); // Ligne pointillée différente pour minorants
-                ctx.stroke();
-                ctx.setLineDash([]);
+        // Fonction pour dessiner le graphique complet
+        function drawChart(highlightIndex = -1) {
+            ctx.clearRect(0, 0, chartData.width, chartData.height);
 
-                ctx.fillStyle = seuilColors[baseKey];
-                ctx.font = 'bold 10px sans-serif';
-                ctx.textAlign = 'left';
-                ctx.fillText(`Min ${baseKey}`, paddingLeft + 3, yThr + 12);
-            }
-        }
-
-        // Labels axe X
-        ctx.textAlign = 'center';
-        ctx.font = '10px sans-serif';
-        ctx.fillStyle = textColor;
-        const numXLabels = Math.min(data.length, 10);
-        const xLabelStep = Math.floor(data.length / numXLabels) || 1;
-        for (let i = 0; i < data.length; i += xLabelStep) {
-            const x = paddingLeft + ((width - paddingLeft - paddingRight) / (data.length - 1)) * i;
-            const y = height - paddingBottom;
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x, y + 5);
-            ctx.strokeStyle = axisColor;
+            // === AXES ===
+            ctx.strokeStyle = chartData.axisColor;
             ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(chartData.paddingLeft, chartData.paddingTop);
+            ctx.lineTo(chartData.paddingLeft, chartData.height - chartData.paddingBottom);
             ctx.stroke();
-            ctx.fillStyle = textColor;
-            ctx.fillText((i + 1).toString(), x, y + 18);
-        }
+            ctx.beginPath();
+            ctx.moveTo(chartData.paddingLeft, chartData.height - chartData.paddingBottom);
+            ctx.lineTo(chartData.width - chartData.paddingRight, chartData.height - chartData.paddingBottom);
+            ctx.stroke();
 
-        ctx.fillStyle = textColorLight;
-        ctx.font = '11px sans-serif';
-        ctx.fillText('Mesures', width / 2, height - 5);
+            // === GRILLE HORIZONTALE ===
+            ctx.strokeStyle = chartData.gridColor;
+            ctx.lineWidth = 1;
+            ctx.fillStyle = chartData.textColor;
+            ctx.font = 'bold 11px sans-serif';
+            ctx.textAlign = 'right';
 
-        ctx.save();
-        ctx.translate(15, height / 2);
-        ctx.rotate(-Math.PI / 2);
-        ctx.textAlign = 'center';
-        ctx.fillStyle = textColorLight;
-        ctx.fillText(unit || 'Valeur', 0, 0);
-        ctx.restore();
+            for (let i = 0; i <= chartData.numHorizontalLines; i++) {
+                const ratio = i / chartData.numHorizontalLines;
+                const y = chartData.paddingTop + (chartData.height - chartData.paddingTop - chartData.paddingBottom) * ratio;
+                const value = chartData.maxVal - (chartData.maxVal - chartData.minVal) * ratio;
 
-        // Courbe principale
-        ctx.beginPath();
-        const step = (width - paddingLeft - paddingRight) / (data.length - 1);
-        data.forEach((v, i) => {
-            const x = paddingLeft + i * step;
-            const y = paddingTop + (1 - v) * (height - paddingTop - paddingBottom);
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        });
+                ctx.beginPath();
+                ctx.moveTo(chartData.paddingLeft, y);
+                ctx.lineTo(chartData.width - chartData.paddingRight, y);
+                ctx.stroke();
 
-        ctx.lineWidth = 2.5;
-        ctx.strokeStyle = color;
-        ctx.stroke();
+                ctx.fillStyle = chartData.textColor;
+                ctx.fillText(value.toFixed(1), chartData.paddingLeft - 8, y + 4);
+            }
 
-        // Remplissage dégradé
-        const gradient = ctx.createLinearGradient(0, paddingTop, 0, height - paddingBottom);
-        gradient.addColorStop(0, color + '30');
-        gradient.addColorStop(1, color + '05');
-        ctx.lineTo(width - paddingRight, height - paddingBottom);
-        ctx.lineTo(paddingLeft, height - paddingBottom);
-        ctx.closePath();
-        ctx.fillStyle = gradient;
-        ctx.fill();
+            // === SEUILS MAJORANTS (lignes pleines pointillées) ===
+            for (const [key, val] of Object.entries(chartData.thresholds)) {
+                if (!key.endsWith('_min') && typeof val === 'number') {
+                    const yThr = chartData.paddingTop + (1 - (val - chartData.minVal) / (chartData.maxVal - chartData.minVal)) * (chartData.height - chartData.paddingTop - chartData.paddingBottom);
+                    ctx.beginPath();
+                    ctx.moveTo(chartData.paddingLeft, yThr);
+                    ctx.lineTo(chartData.width - chartData.paddingRight, yThr);
+                    ctx.strokeStyle = chartData.seuilColors[key] || '#000';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([8, 4]);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
 
-        // Points
-        data.forEach((v, i) => {
-            const x = paddingLeft + i * step;
-            const y = paddingTop + (1 - v) * (height - paddingTop - paddingBottom);
-
-            // Convertir v normalisé en valeur réelle
-            const valeurReelle = minVal + v * (maxVal - minVal);
-
-            // Déterminer si la valeur dépasse un seuil majorant OU minorant
-            let isOutsideThreshold = false;
-
-            // Vérifier seuils majorants
-            for (const [key, val] of Object.entries(thresholds)) {
-                if (!key.endsWith('_min') && typeof val === 'number' && valeurReelle > val) {
-                    isOutsideThreshold = true;
+                    ctx.fillStyle = chartData.seuilColors[key];
+                    ctx.font = 'bold 10px sans-serif';
+                    ctx.textAlign = 'left';
+                    ctx.fillText(`Max ${key}`, chartData.paddingLeft + 3, yThr - 5);
                 }
             }
 
-            // Vérifier seuils minorants
-            for (const [key, val] of Object.entries(thresholds)) {
-                if (key.endsWith('_min') && typeof val === 'number' && valeurReelle < val) {
-                    isOutsideThreshold = true;
+            // === SEUILS MINORANTS (lignes pointillées espacées) ===
+            for (const [key, val] of Object.entries(chartData.thresholds)) {
+                if (key.endsWith('_min') && typeof val === 'number') {
+                    const baseKey = key.replace('_min', '');
+                    const yThr = chartData.paddingTop + (1 - (val - chartData.minVal) / (chartData.maxVal - chartData.minVal)) * (chartData.height - chartData.paddingTop - chartData.paddingBottom);
+                    ctx.beginPath();
+                    ctx.moveTo(chartData.paddingLeft, yThr);
+                    ctx.lineTo(chartData.width - chartData.paddingRight, yThr);
+                    ctx.strokeStyle = chartData.seuilColors[baseKey] || '#000';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([4, 8]);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    ctx.fillStyle = chartData.seuilColors[baseKey];
+                    ctx.font = 'bold 10px sans-serif';
+                    ctx.textAlign = 'left';
+                    ctx.fillText(`Min ${baseKey}`, chartData.paddingLeft + 3, yThr + 12);
                 }
             }
 
-            const pointColor = isOutsideThreshold ? '#dc2626' : color;
+            // === LABELS AXE X ===
+            ctx.textAlign = 'center';
+            ctx.font = '10px sans-serif';
+            ctx.fillStyle = chartData.textColor;
+            const numXLabels = Math.min(chartData.data.length, 10);
+            const xLabelStep = Math.floor(chartData.data.length / numXLabels) || 1;
 
+            for (let i = 0; i < chartData.data.length; i += xLabelStep) {
+                const x = chartData.paddingLeft + ((chartData.width - chartData.paddingLeft - chartData.paddingRight) / (chartData.data.length - 1)) * i;
+                const y = chartData.height - chartData.paddingBottom;
+
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x, y + 5);
+                ctx.strokeStyle = chartData.axisColor;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.fillStyle = chartData.textColor;
+                ctx.fillText((i + 1).toString(), x, y + 18);
+            }
+
+            // === TITRES AXES ===
+            ctx.fillStyle = chartData.textColorLight;
+            ctx.font = '11px sans-serif';
+            ctx.fillText('Mesures', chartData.width / 2, chartData.height - 5);
+
+            ctx.save();
+            ctx.translate(15, chartData.height / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.textAlign = 'center';
+            ctx.fillText(chartData.unit || 'Valeur', 0, 0);
+            ctx.restore();
+
+            // === COURBE PRINCIPALE ===
             ctx.beginPath();
-            ctx.arc(x, y, 3, 0, Math.PI * 2);
-            ctx.fillStyle = '#ffffff';
-            ctx.fill();
-            ctx.strokeStyle = pointColor;
-            ctx.lineWidth = 2;
+            chartData.data.forEach((v, i) => {
+                const x = chartData.paddingLeft + i * chartData.step;
+                const y = chartData.paddingTop + (1 - v) * (chartData.height - chartData.paddingTop - chartData.paddingBottom);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+
+            ctx.lineWidth = 2.5;
+            ctx.strokeStyle = chartData.color;
             ctx.stroke();
 
-            ctx.beginPath();
-            ctx.arc(x, y, 1.5, 0, Math.PI * 2);
-            ctx.fillStyle = pointColor;
+            // === REMPLISSAGE DÉGRADÉ ===
+            const gradient = ctx.createLinearGradient(0, chartData.paddingTop, 0, chartData.height - chartData.paddingBottom);
+            gradient.addColorStop(0, chartData.color + '30');
+            gradient.addColorStop(1, chartData.color + '05');
+            ctx.lineTo(chartData.width - chartData.paddingRight, chartData.height - chartData.paddingBottom);
+            ctx.lineTo(chartData.paddingLeft, chartData.height - chartData.paddingBottom);
+            ctx.closePath();
+            ctx.fillStyle = gradient;
             ctx.fill();
+
+            // === POINTS ===
+            chartData.data.forEach((v, i) => {
+                const x = chartData.paddingLeft + i * chartData.step;
+                const y = chartData.paddingTop + (1 - v) * (chartData.height - chartData.paddingTop - chartData.paddingBottom);
+                const isHighlighted = i === highlightIndex;
+
+                // Convertir v normalisé en valeur réelle
+                const valeurReelle = chartData.minVal + v * (chartData.maxVal - chartData.minVal);
+
+                // Déterminer si la valeur dépasse un seuil
+                let isOutsideThreshold = false;
+
+                // Vérifier seuils majorants
+                for (const [key, val] of Object.entries(chartData.thresholds)) {
+                    if (!key.endsWith('_min') && typeof val === 'number' && valeurReelle > val) {
+                        isOutsideThreshold = true;
+                    }
+                }
+
+                // Vérifier seuils minorants
+                for (const [key, val] of Object.entries(chartData.thresholds)) {
+                    if (key.endsWith('_min') && typeof val === 'number' && valeurReelle < val) {
+                        isOutsideThreshold = true;
+                    }
+                }
+
+                const pointColor = isOutsideThreshold ? '#dc2626' : chartData.color;
+                const pointRadius = isHighlighted ? 5 : 3;
+
+                ctx.beginPath();
+                ctx.arc(x, y, pointRadius, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+                ctx.strokeStyle = pointColor;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(x, y, 1.5, 0, Math.PI * 2);
+                ctx.fillStyle = pointColor;
+                ctx.fill();
+            });
+        }
+
+        // Dessin initial
+        drawChart();
+
+        // === INTERACTIVITÉ (TOOLTIP) ===
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            let closestIndex = -1;
+            let closestDistance = Infinity;
+
+            // Trouver le point le plus proche
+            chartData.data.forEach((v, i) => {
+                const x = chartData.paddingLeft + i * chartData.step;
+                const y = chartData.paddingTop + (1 - v) * (chartData.height - chartData.paddingTop - chartData.paddingBottom);
+                const distance = Math.sqrt(Math.pow(mouseX - x, 2) + Math.pow(mouseY - y, 2));
+
+                if (distance < 20 && distance < closestDistance) {
+                    closestDistance = distance;
+                    closestIndex = i;
+                }
+            });
+
+            if (closestIndex !== -1) {
+                canvas.style.cursor = 'pointer';
+
+                // Redessiner avec highlight
+                drawChart(closestIndex);
+
+                // Afficher tooltip
+                const v = chartData.data[closestIndex];
+                const realValue = chartData.minVal + v * (chartData.maxVal - chartData.minVal);
+                const x = chartData.paddingLeft + closestIndex * chartData.step;
+                const y = chartData.paddingTop + (1 - v) * (chartData.height - chartData.paddingTop - chartData.paddingBottom);
+
+                tooltip.textContent = `${realValue.toFixed(1)} ${chartData.unit}`;
+                tooltip.style.display = 'block';
+                tooltip.style.left = (rect.left + x) + 'px';
+                tooltip.style.top = (rect.top + y - 35) + 'px';
+            } else {
+                canvas.style.cursor = 'default';
+                tooltip.style.display = 'none';
+                drawChart();
+            }
         });
-    }
-    // Bar chart - Version statique
+
+        canvas.addEventListener('mouseleave', () => {
+            canvas.style.cursor = 'default';
+            tooltip.style.display = 'none';
+            drawChart();
+        });
+    }    // Bar chart - Version statique
 	function animateBarChart(canvasId, data, color) {
 		const canvas = document.getElementById(canvasId); if (!canvas) return;
 		function draw() {
