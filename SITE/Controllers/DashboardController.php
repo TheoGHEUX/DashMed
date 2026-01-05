@@ -85,7 +85,10 @@ final class DashboardController
                 'unit'      => $data['unite'],
                 'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, 'Température corporelle', 'préoccupant', true),
                 'seuil_urgent'      => Patient::getSeuilByStatus($patientId, 'Température corporelle', 'urgent', true),
-                'seuil_critique'    => Patient::getSeuilByStatus($patientId, 'Température corporelle', 'critique', true)
+                'seuil_critique'    => Patient::getSeuilByStatus($patientId, 'Température corporelle', 'critique', true),
+                'seuil_preoccupant_min' => Patient::getSeuilByStatus($patientId, 'Température corporelle', 'préoccupant', false),
+                'seuil_urgent_min'      => Patient::getSeuilByStatus($patientId, 'Température corporelle', 'urgent', false),
+                'seuil_critique_min'    => Patient::getSeuilByStatus($patientId, 'Température corporelle', 'critique', false)
             ];
         }
 
@@ -100,7 +103,10 @@ final class DashboardController
                 'unit'      => $data['unite'],
                 'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, 'Tension arterielle', 'préoccupant', true),
                 'seuil_urgent'      => Patient::getSeuilByStatus($patientId, 'Tension arterielle', 'urgent', true),
-                'seuil_critique'    => Patient::getSeuilByStatus($patientId, 'Tension arterielle', 'critique', true)
+                'seuil_critique'    => Patient::getSeuilByStatus($patientId, 'Tension arterielle', 'critique', true),
+                'seuil_preoccupant_min' => Patient::getSeuilByStatus($patientId, 'Tension arterielle', 'préoccupant', false),
+                'seuil_urgent_min'      => Patient::getSeuilByStatus($patientId, 'Tension arterielle', 'urgent', false),
+                'seuil_critique_min'    => Patient::getSeuilByStatus($patientId, 'Tension arterielle', 'critique', false)
             ];
         }
 
@@ -112,7 +118,10 @@ final class DashboardController
                 'unit' => $data['unite'],
                 'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, 'Fréquence cardiaque', 'préoccupant', true),
                 'seuil_urgent'      => Patient::getSeuilByStatus($patientId, 'Fréquence cardiaque', 'urgent', true),
-                'seuil_critique'    => Patient::getSeuilByStatus($patientId, 'Fréquence cardiaque', 'critique', true)
+                'seuil_critique'    => Patient::getSeuilByStatus($patientId, 'Fréquence cardiaque', 'critique', true),
+                'seuil_preoccupant_min' => Patient::getSeuilByStatus($patientId, 'Fréquence cardiaque', 'préoccupant', false),
+                'seuil_urgent_min'      => Patient::getSeuilByStatus($patientId, 'Fréquence cardiaque', 'urgent', false),
+                'seuil_critique_min'    => Patient::getSeuilByStatus($patientId, 'Fréquence cardiaque', 'critique', false)
             ];
         }
 
@@ -124,7 +133,10 @@ final class DashboardController
                 'unit'      => $data['unite'],
                 'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, 'Fréquence respiratoire', 'préoccupant', true),
                 'seuil_urgent'      => Patient::getSeuilByStatus($patientId, 'Fréquence respiratoire', 'urgent', true),
-                'seuil_critique'    => Patient::getSeuilByStatus($patientId, 'Fréquence respiratoire', 'critique', true)
+                'seuil_critique'    => Patient::getSeuilByStatus($patientId, 'Fréquence respiratoire', 'critique', true),
+                'seuil_preoccupant_min' => Patient::getSeuilByStatus($patientId, 'Fréquence respiratoire', 'préoccupant', false),
+                'seuil_urgent_min'      => Patient::getSeuilByStatus($patientId, 'Fréquence respiratoire', 'urgent', false),
+                'seuil_critique_min'    => Patient::getSeuilByStatus($patientId, 'Fréquence respiratoire', 'critique', false)
             ];
         }
 
@@ -136,7 +148,10 @@ final class DashboardController
                 'unit'      => $data['unite'],
                 'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, 'Glycémie', 'préoccupant', true),
                 'seuil_urgent'      => Patient::getSeuilByStatus($patientId, 'Glycémie', 'urgent', true),
-                'seuil_critique'    => Patient::getSeuilByStatus($patientId, 'Glycémie', 'critique', true)
+                'seuil_critique'    => Patient::getSeuilByStatus($patientId, 'Glycémie', 'critique', true),
+                'seuil_preoccupant_min' => Patient::getSeuilByStatus($patientId, 'Glycémie', 'préoccupant', false),
+                'seuil_urgent_min'      => Patient::getSeuilByStatus($patientId, 'Glycémie', 'urgent', false),
+                'seuil_critique_min'    => Patient::getSeuilByStatus($patientId, 'Glycémie', 'critique', false)
             ];
         }
 
@@ -148,7 +163,10 @@ final class DashboardController
                 'unit'      => $data['unite'],
                 'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, 'Poids', 'préoccupant', true),
                 'seuil_urgent'      => Patient::getSeuilByStatus($patientId, 'Poids', 'urgent', true),
-                'seuil_critique'    => Patient::getSeuilByStatus($patientId, 'Poids', 'critique', true)
+                'seuil_critique'    => Patient::getSeuilByStatus($patientId, 'Poids', 'critique', true),
+                'seuil_preoccupant_min' => Patient::getSeuilByStatus($patientId, 'Poids', 'préoccupant', false),
+                'seuil_urgent_min'      => Patient::getSeuilByStatus($patientId, 'Poids', 'urgent', false),
+                'seuil_critique_min'    => Patient::getSeuilByStatus($patientId, 'Poids', 'critique', false)
             ];
         }
 
@@ -160,7 +178,10 @@ final class DashboardController
                 'unit'      => $data['unite'],
                 'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, 'Saturation en oxygène', 'préoccupant', true),
                 'seuil_urgent'      => Patient::getSeuilByStatus($patientId, 'Saturation en oxygène', 'urgent', true),
-                'seuil_critique'    => Patient::getSeuilByStatus($patientId, 'Saturation en oxygène', 'critique', true)
+                'seuil_critique'    => Patient::getSeuilByStatus($patientId, 'Saturation en oxygène', 'critique', true),
+                'seuil_preoccupant_min' => Patient::getSeuilByStatus($patientId, 'Saturation en oxygène', 'préoccupant', false),
+                'seuil_urgent_min'      => Patient::getSeuilByStatus($patientId, 'Saturation en oxygène', 'urgent', false),
+                'seuil_critique_min'    => Patient::getSeuilByStatus($patientId, 'Saturation en oxygène', 'critique', false)
             ];
         }
 

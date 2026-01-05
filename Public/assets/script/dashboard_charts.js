@@ -54,6 +54,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 preoccupant: patientData['blood-pressure']?.seuil_preoccupant ?? null,
                 urgent: patientData['blood-pressure']?.seuil_urgent ?? null,
                 critique: patientData['blood-pressure']?.seuil_critique ?? null,
+                preoccupant_min: patientData['blood-pressure']?.seuil_preoccupant_min ?? null,
+                urgent_min: patientData['blood-pressure']?.seuil_urgent_min ?? null,
+                critique_min: patientData['blood-pressure']?.seuil_critique_min ?? null,
             },
             valueId: 'value-bp',
 			noteId: 'note-bp',
@@ -73,6 +76,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 preoccupant: patientData['heart-rate']?.seuil_preoccupant ?? null,
                 urgent: patientData['heart-rate']?.seuil_urgent ?? null,
                 critique: patientData['heart-rate']?.seuil_critique ?? null,
+                preoccupant_min: patientData['heart-rate']?.seuil_preoccupant_min ?? null,
+                urgent_min: patientData['heart-rate']?.seuil_urgent_min ?? null,
+                critique_min: patientData['heart-rate']?.seuil_critique_min ?? null,
             },
             valueId: 'value-hr',
 			noteId: 'note-hr',
@@ -92,6 +98,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 preoccupant: patientData['respiration']?.seuil_preoccupant ?? null,
                 urgent: patientData['respiration']?.seuil_urgent ?? null,
                 critique: patientData['respiration']?.seuil_critique ?? null,
+                preoccupant_min: patientData['respiration']?.seuil_preoccupant_min ?? null,
+                urgent_min: patientData['respiration']?.seuil_urgent_min ?? null,
+                critique_min: patientData['respiration']?.seuil_critique_min ?? null,
             },
             valueId: 'value-resp',
 			noteId: 'note-resp',
@@ -111,6 +120,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 preoccupant: patientData['temperature']?.seuil_preoccupant ?? null,
                 urgent: patientData['temperature']?.seuil_urgent ?? null,
                 critique: patientData['temperature']?.seuil_critique ?? null,
+                preoccupant_min: patientData['temperature']?.seuil_preoccupant_min ?? null,
+                urgent_min: patientData['temperature']?.seuil_urgent_min ?? null,
+                critique_min: patientData['temperature']?.seuil_critique_min ?? null,
             },
             valueId: 'value-temp',
 			noteId: 'note-temp',
@@ -130,6 +142,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 preoccupant: patientData['glucose-trend']?.seuil_preoccupant ?? null,
                 urgent: patientData['glucose-trend']?.seuil_urgent ?? null,
                 critique: patientData['glucose-trend']?.seuil_critique ?? null,
+                preoccupant_min: patientData['glucose-trend']?.seuil_preoccupant_min ?? null,
+                urgent_min: patientData['glucose-trend']?.seuil_urgent_min ?? null,
+                critique_min: patientData['glucose-trend']?.seuil_critique_min ?? null,
             },
             valueId: 'value-glucose-trend',
 			noteId: 'note-glucose',
@@ -149,6 +164,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 preoccupant: patientData['weight']?.seuil_preoccupant ?? null,
                 urgent: patientData['weight']?.seuil_urgent ?? null,
                 critique: patientData['weight']?.seuil_critique ?? null,
+                preoccupant_min: patientData['weight']?.seuil_preoccupant_min ?? null,
+                urgent_min: patientData['weight']?.seuil_urgent_min ?? null,
+                critique_min: patientData['weight']?.seuil_critique_min ?? null,
             },
             valueId: 'value-weight',
 			noteId: 'note-weight',
@@ -168,6 +186,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 preoccupant: patientData['oxygen-saturation']?.seuil_preoccupant ?? null,
                 urgent: patientData['oxygen-saturation']?.seuil_urgent ?? null,
                 critique: patientData['oxygen-saturation']?.seuil_critique ?? null,
+                preoccupant_min: patientData['oxygen-saturation']?.seuil_preoccupant_min ?? null,
+                urgent_min: patientData['oxygen-saturation']?.seuil_urgent_min ?? null,
+                critique_min: patientData['oxygen-saturation']?.seuil_critique_min ?? null,
             },
             valueId: 'value-oxygen',
 			noteId: 'note-oxygen',
@@ -600,7 +621,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.fillText(value.toFixed(1), paddingLeft - 8, y + 4);
         }
 
-        // Dessin des seuils
+        // Dessin des seuils MAJORANTS (lignes pleines)
         const seuilColors = {
             preoccupant: 'rgba(250,204,21,0.9)',
             urgent: 'rgba(249,115,22,0.9)',
@@ -608,21 +629,44 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         for (const [key, val] of Object.entries(thresholds)) {
-            if (typeof val === 'number') {
+            // Seuils majorants uniquement (sans _min)
+            if (!key.endsWith('_min') && typeof val === 'number') {
                 const yThr = paddingTop + (1 - (val - minVal) / (maxVal - minVal)) * (height - paddingTop - paddingBottom);
                 ctx.beginPath();
                 ctx.moveTo(paddingLeft, yThr);
                 ctx.lineTo(width - paddingRight, yThr);
                 ctx.strokeStyle = seuilColors[key] || '#000';
                 ctx.lineWidth = 2;
-                ctx.setLineDash([6, 4]);
+                ctx.setLineDash([8, 4]); // Ligne pointillée pour majorants
                 ctx.stroke();
                 ctx.setLineDash([]);
 
                 ctx.fillStyle = seuilColors[key];
-                ctx.font = 'bold 11px sans-serif';
+                ctx.font = 'bold 10px sans-serif';
                 ctx.textAlign = 'left';
-                ctx.fillText(`Seuil ${key}`, paddingLeft + 3, yThr - 5);
+                ctx.fillText(`Max ${key}`, paddingLeft + 3, yThr - 5);
+            }
+        }
+
+        // Dessin des seuils MINORANTS (lignes pointillées plus espacées)
+        for (const [key, val] of Object.entries(thresholds)) {
+            // Seuils minorants uniquement (avec _min)
+            if (key.endsWith('_min') && typeof val === 'number') {
+                const baseKey = key.replace('_min', '');
+                const yThr = paddingTop + (1 - (val - minVal) / (maxVal - minVal)) * (height - paddingTop - paddingBottom);
+                ctx.beginPath();
+                ctx.moveTo(paddingLeft, yThr);
+                ctx.lineTo(width - paddingRight, yThr);
+                ctx.strokeStyle = seuilColors[baseKey] || '#000';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([4, 8]); // Ligne pointillée différente pour minorants
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.fillStyle = seuilColors[baseKey];
+                ctx.font = 'bold 10px sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText(`Min ${baseKey}`, paddingLeft + 3, yThr + 12);
             }
         }
 
@@ -662,7 +706,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const step = (width - paddingLeft - paddingRight) / (data.length - 1);
         data.forEach((v, i) => {
             const x = paddingLeft + i * step;
-            const y = paddingTop + (1 - v) * (height - paddingTop - paddingBottom); // ✓ CORRIGÉ
+            const y = paddingTop + (1 - v) * (height - paddingTop - paddingBottom);
             if (i === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
         });
@@ -671,7 +715,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.strokeStyle = color;
         ctx.stroke();
 
-// Remplissage dégradé
+        // Remplissage dégradé
         const gradient = ctx.createLinearGradient(0, paddingTop, 0, height - paddingBottom);
         gradient.addColorStop(0, color + '30');
         gradient.addColorStop(1, color + '05');
@@ -681,23 +725,32 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.fillStyle = gradient;
         ctx.fill();
 
-// Points
+        // Points
         data.forEach((v, i) => {
             const x = paddingLeft + i * step;
-            const y = paddingTop + (1 - v) * (height - paddingTop - paddingBottom); // ✓ CORRIGÉ
+            const y = paddingTop + (1 - v) * (height - paddingTop - paddingBottom);
 
-            // Déterminer si la valeur dépasse un seuil majorant
-            // Convertir v normalisé en valeur réelle pour comparaison avec seuils
-            const valeurReelle = minVal + v * (maxVal - minVal); // ✓ AJOUTÉ
+            // Convertir v normalisé en valeur réelle
+            const valeurReelle = minVal + v * (maxVal - minVal);
 
-            let isAboveThreshold = false;
-            for (const val of Object.values(thresholds)) {
-                if (typeof val === 'number' && valeurReelle > val) { // ✓ CORRIGÉ (utiliser valeurReelle au lieu de v)
-                    isAboveThreshold = true;
+            // Déterminer si la valeur dépasse un seuil majorant OU minorant
+            let isOutsideThreshold = false;
+
+            // Vérifier seuils majorants
+            for (const [key, val] of Object.entries(thresholds)) {
+                if (!key.endsWith('_min') && typeof val === 'number' && valeurReelle > val) {
+                    isOutsideThreshold = true;
                 }
             }
 
-            const pointColor = isAboveThreshold ? '#dc2626' : color;
+            // Vérifier seuils minorants
+            for (const [key, val] of Object.entries(thresholds)) {
+                if (key.endsWith('_min') && typeof val === 'number' && valeurReelle < val) {
+                    isOutsideThreshold = true;
+                }
+            }
+
+            const pointColor = isOutsideThreshold ? '#dc2626' : color;
 
             ctx.beginPath();
             ctx.arc(x, y, 3, 0, Math.PI * 2);
@@ -713,7 +766,6 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.fill();
         });
     }
-
     // Bar chart - Version statique
 	function animateBarChart(canvasId, data, color) {
 		const canvas = document.getElementById(canvasId); if (!canvas) return;
