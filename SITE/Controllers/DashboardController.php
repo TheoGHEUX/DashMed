@@ -52,7 +52,15 @@ final class DashboardController
         // Vérifier que le patient est bien rattaché au médecin connecté
         $patient = Patient::findByIdForDoctor($patientId, $medId);
         if (!$patient) {
-            http_response_code(403);
+            // Patient non autorisé → réinitialiser avec le premier patient du médecin
+            $firstPatientId = Patient::getFirstPatientIdForDoctor($medId);
+            if ($firstPatientId) {
+                $_SESSION['last_patient_id'] = $firstPatientId;
+                header('Location: /dashboard?patient=' . $firstPatientId);
+                exit;
+            }
+            // Aucun patient disponible
+            http_response_code(404);
             \Core\View::render('errors/404');
             return;
         }
