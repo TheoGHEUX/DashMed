@@ -44,9 +44,12 @@ final class DashboardController
             $_SESSION['last_patient_id'] = $patientId;
         }
 
+        // Si aucun patient, afficher le dashboard vide avec message
         if (!$patientId) {
-            http_response_code(404);
-            \Core\View::render('errors/404');
+            $patient = null;
+            $chartData = [];
+            $noPatient = true;
+            require __DIR__ . '/../Views/dashboard.php';
             return;
         }
 
@@ -60,14 +63,17 @@ final class DashboardController
                 header('Location: /dashboard?patient=' . $firstPatientId);
                 exit;
             }
-            // Aucun patient disponible
-            http_response_code(404);
-            \Core\View::render('errors/404');
+            // Aucun patient disponible → afficher dashboard vide
+            $patient = null;
+            $chartData = [];
+            $noPatient = true;
+            require __DIR__ . '/../Views/dashboard.php';
             return;
         }
 
         // Récupérer les données pour chaque type de graphique
         $chartData = [];
+        $noPatient = false;
 
         // Température corporelle (35-40°C)
         $tempData = Patient::getChartDataForDoctor($medId, $patientId, 'Température corporelle', 50);
@@ -180,15 +186,25 @@ final class DashboardController
         $historiqueConsole = new HistoriqueConsole();
 
         try {
+            $success = false;
             if ($action === 'ouvrir') {
-                $historiqueConsole->logGraphiqueOuvrir($medId);
+                $success = $historiqueConsole->logGraphiqueOuvrir($medId);
             } else {
-                $historiqueConsole->logGraphiqueReduire($medId);
+                $success = $historiqueConsole->logGraphiqueReduire($medId);
             }
+            
+            if (!$success) {
+                error_log(sprintf('[DASHBOARD] Échec du log pour med_id=%d, action=%s', $medId, $action));
+                http_response_code(500);
+                echo json_encode(['error' => 'Échec de l\'enregistrement', 'debug' => 'Check server logs']);
+                exit;
+            }
+            
             echo json_encode(['success' => true]);
         } catch (\Exception $e) {
+            error_log(sprintf('[DASHBOARD] Exception log action: %s', $e->getMessage()));
             http_response_code(500);
-            echo json_encode(['error' => 'Erreur lors de l\'enregistrement']);
+            echo json_encode(['error' => 'Erreur lors de l\'enregistrement', 'message' => $e->getMessage()]);
         }
         exit;
     }

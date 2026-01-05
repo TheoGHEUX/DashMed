@@ -817,8 +817,21 @@ document.addEventListener('DOMContentLoaded', () => {
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({ action: action })
-		}).catch(err => {
-			console.error('Erreur lors du log de l\'action:', err);
+		})
+		.then(response => {
+			if (!response.ok) {
+				return response.json().then(data => {
+					console.error('Erreur serveur lors du log:', data);
+					throw new Error(data.error || 'Erreur serveur');
+				});
+			}
+			return response.json();
+		})
+		.then(data => {
+			console.log('Action loggée avec succès:', action, data);
+		})
+		.catch(err => {
+			console.error('Erreur lors du log de l\'action:', action, err);
 		});
 	}
 
