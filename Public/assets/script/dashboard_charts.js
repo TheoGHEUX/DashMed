@@ -809,6 +809,19 @@ document.addEventListener('DOMContentLoaded', () => {
 		};
 	}
 
+	// Log action graphique vers le serveur
+	function logGraphiqueAction(action) {
+		fetch('/api/log-graph-action', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ action: action })
+		}).catch(err => {
+			console.error('Erreur lors du log de l\'action:', err);
+		});
+	}
+
 	function saveChartConfig() {
 		localStorage.setItem('dashboardChartConfig', JSON.stringify(chartConfig));
 	}
@@ -1217,6 +1230,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	function addChart(chartId) {
 		if (chartConfig.visible.includes(chartId)) return;
 
+		logGraphiqueAction('ouvrir'); // Log l'ajout/restauration du graphique
 		chartConfig.visible.push(chartId);
 		saveChartConfig();
 
@@ -1258,6 +1272,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	function removeChart(chartId) {
 		const index = chartConfig.visible.indexOf(chartId);
 		if (index > -1) {
+			logGraphiqueAction('réduire'); // Log la suppression
 			chartConfig.visible.splice(index, 1);
 			saveChartConfig();
 			applyChartConfig();
@@ -1352,6 +1367,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 				// Save the final size
 				const finalColSpan = parseInt(card.getAttribute('data-col-span')) || 6;
+				
+				// Log l'action selon si on a agrandi ou réduit
+				if (finalColSpan > startColSpan) {
+					logGraphiqueAction('ouvrir');
+				} else if (finalColSpan < startColSpan) {
+					logGraphiqueAction('réduire');
+				}
+				
 				chartConfig.sizes[chartId] = finalColSpan;
 				saveChartConfig();
 

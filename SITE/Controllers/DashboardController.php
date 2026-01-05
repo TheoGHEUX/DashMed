@@ -3,6 +3,7 @@
 namespace Controllers;
 
 use Models\Patient;
+use Models\HistoriqueConsole;
 
 /**
  * Contrôleur : Tableau de bord
@@ -29,15 +30,15 @@ final class DashboardController
 
         $medId = (int) $_SESSION['user']['id'];
 
-// 🧠 1. Si patient dans l’URL → sauvegarde
+        // 🧠 1. Si patient dans l'URL → sauvegarde
         if (isset($_GET['patient']) && ctype_digit($_GET['patient'])) {
             $_SESSION['last_patient_id'] = (int) $_GET['patient'];
         }
 
-// 🧠 2. Patient actif
+        // 🧠 2. Patient actif
         $patientId = $_SESSION['last_patient_id'] ?? null;
 
-// 🧠 3. Fallback (premier patient du médecin)
+        // 🧠 3. Fallback (premier patient du médecin)
         if (!$patientId) {
             $patientId = Patient::getFirstPatientIdForDoctor($_SESSION['user']['id']);
             $_SESSION['last_patient_id'] = $patientId;
@@ -134,5 +135,53 @@ final class DashboardController
         }
 
         require __DIR__ . '/../Views/dashboard.php';
+    }
+
+    /**
+     * API endpoint pour logger les actions sur les graphiques
+     * Attend POST avec JSON: {"action": "ouvrir"|"réduire"}
+     *
+     * @return void
+     */
+    public function logGraphAction(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        if (empty($_SESSION['user'])) {
+            http_response_code(401);
+            echo json_encode(['error' => 'Non authentifié']);
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['error' => 'Méthode non autorisée']);
+            exit;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        $action = $input['action'] ?? null;
+
+        if (!in_array($action, ['ouvrir', 'réduire'], true)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Action invalide']);
+            exit;
+        }
+
+        $medId = (int) $_SESSION['user']['id'];
+        $historiqueConsole = new HistoriqueConsole();
+
+        try {
+            if ($action === 'ouvrir') {
+                $historiqueConsole->logGraphiqueOuvrir($medId);
+            } else {
+                $historiqueConsole->logGraphiqueReduire($medId);
+            }
+            echo json_encode(['success' => true]);
+        } catch (\Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Erreur lors de l\'enregistrement']);
+        }
+        exit;
     }
 }
