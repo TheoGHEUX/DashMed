@@ -591,9 +591,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Couleurs des seuils
         const seuilColors = {
-            preoccupant: 'rgba(250,204,21,0.9)',
-            urgent: 'rgba(249,115,22,0.9)',
-            critique: 'rgba(220,38,38,0.9)'
+            preoccupant: 'rgba(250,204,21,0.5)',
+            urgent: 'rgba(249,115,22,0.5)',
+            critique: 'rgba(220,38,38,0.5)'
         };
 
         // Stocker les données pour le redraw
