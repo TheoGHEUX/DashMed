@@ -691,9 +691,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     ctx.setLineDash([]);
 
                     ctx.fillStyle = chartData.seuilColors[key];
-                    ctx.font = 'bold 10px sans-serif';
-                    ctx.textAlign = 'left';
-                    ctx.fillText(`Max ${key}`, chartData.paddingLeft + 3, yThr - 5);
                 }
             }
 
@@ -712,9 +709,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     ctx.setLineDash([]);
 
                     ctx.fillStyle = chartData.seuilColors[baseKey];
-                    ctx.font = 'bold 10px sans-serif';
-                    ctx.textAlign = 'left';
-                    ctx.fillText(`Min ${baseKey}`, chartData.paddingLeft + 3, yThr + 12);
                 }
             }
 
