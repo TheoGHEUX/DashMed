@@ -100,6 +100,102 @@ final class Patient
     }
 
     /**
+     * Récupère les informations d'un patient en vérifiant qu'il est suivi par le médecin.
+     *
+     * Cette méthode assure que le médecin est autorisé à accéder aux données du patient
+     * en vérifiant la relation dans la table 'suivre'.
+     *
+     * @param int $patientId Identifiant du patient
+     * @param int $medId     Identifiant du médecin
+     * @return array|null Données du patient ou null si non autorisé
+     */
+    public static function findByIdForDoctor(int $patientId, int $medId): ?array
+    {
+        $pdo = Database::getConnection();
+        $st = $pdo->prepare('
+            SELECT 
+                p.pt_id,
+                p.prenom,
+                p.nom,
+                p.email,
+                p.sexe,
+                p.groupe_sanguin,
+                p.date_naissance,
+                p.telephone,
+                p.ville,
+                p.code_postal,
+                p.adresse
+            FROM patient p
+            JOIN suivre s ON s.pt_id = p.pt_id
+            WHERE p.pt_id = ? AND s.med_id = ?
+            LIMIT 1
+        ');
+        $st->execute([$patientId, $medId]);
+        $patient = $st->fetch(PDO::FETCH_ASSOC);
+        return $patient ?: null;
+    }
+
+    /**
+     * Récupère les données pour un graphique en vérifiant l\'autorisation du médecin.
+     *
+     * @param int    $medId      Identifiant du médecin
+     * @param int    $patientId  Identifiant du patient
+     * @param string $typeMesure Type de mesure (ex: "Température corporelle")
+     * @param int    $limit      Nombre de points à récupérer
+     * @return array|null Données du graphique ou null
+     */
+    public static function getChartDataForDoctor(int $medId, int $patientId, string $typeMesure, int $limit = 50): ?array
+    {
+        $pdo = Database::getConnection();
+
+        // Vérifier que le médecin suit ce patient
+        $check = $pdo->prepare('
+            SELECT 1 FROM suivre WHERE med_id = ? AND pt_id = ? LIMIT 1
+        ');
+        $check->execute([$medId, $patientId]);
+        if (!$check->fetch()) {
+            return null; // Non autorisé
+        }
+
+        // Récupérer l\'id_mesure pour ce type
+        $st = $pdo->prepare('
+            SELECT id_mesure, unite
+            FROM mesures
+            WHERE pt_id = ? AND type_mesure = ?
+            LIMIT 1
+        ');
+        $st->execute([$patientId, $typeMesure]);
+        $mesure = $st->fetch(PDO::FETCH_ASSOC);
+
+        if (!$mesure) {
+            return null;
+        }
+
+        // Récupérer les valeurs
+        $st = $pdo->prepare('
+            SELECT 
+                valeur,
+                date_mesure,
+                heure_mesure
+            FROM valeurs_mesures
+            WHERE id_mesure = ?
+            ORDER BY date_mesure DESC, heure_mesure DESC
+            LIMIT ?
+        ');
+        $st->execute([$mesure['id_mesure'], $limit]);
+        $valeurs = $st->fetchAll(PDO::FETCH_ASSOC);
+
+        // Inverser pour avoir les plus anciennes en premier
+        $valeurs = array_reverse($valeurs);
+
+        return [
+            'type_mesure' => $typeMesure,
+            'unite' => $mesure['unite'],
+            'valeurs' => $valeurs
+        ];
+    }
+
+    /**
      * Récupère toutes les mesures associées à un patient donné.
      *
      * Chaque mesure représente un type de donnée médicale collectée pour le patient,

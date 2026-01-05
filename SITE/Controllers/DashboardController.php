@@ -134,6 +134,9 @@ final class DashboardController
             ];
         }
 
+        // Récupérer la liste complète des patients du médecin pour la liste déroulante
+        $patients = Patient::getPatientsForDoctor($medId);
+
         require __DIR__ . '/../Views/dashboard.php';
     }
 
