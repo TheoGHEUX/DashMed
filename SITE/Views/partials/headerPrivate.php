@@ -27,7 +27,10 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
             <a href="/accueil"<?= ($currentPath === '/accueil' ? ' class="current"' : '') ?>>Accueil</a>
             <a href="/dashboard"<?= ($currentPath === '/dashboard' ? ' class="current"' : '') ?>>Tableau de bord</a>
             <a href="/profile"<?= ($currentPath === '/profile' ? ' class="current"' : '') ?>>Profil</a>
-            <a href="/logout" class="nav-login">Déconnexion</a>
+            <form action="/logout" method="POST" style="display:inline;margin:0">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\Core\Csrf::token(), ENT_QUOTES, 'UTF-8'); ?>">
+                <button type="submit" class="nav-login" aria-label="Déconnexion">Déconnexion</button>
+            </form>
         </nav>
 
         <button class="dark-mode-toggle" id="darkModeToggle" aria-label="Activer le mode sombre" title="Mode sombre">
@@ -35,7 +38,10 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
             <span class="icon-moon" aria-hidden="true"></span>
         </button>
 
-        <a href="/logout" class="login-btn">Déconnexion</a>
+        <form action="/logout" method="POST" style="display:inline;margin:0">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\Core\Csrf::token(), ENT_QUOTES, 'UTF-8'); ?>">
+            <button type="submit" class="login-btn" aria-label="Déconnexion">Déconnexion</button>
+        </form>
 
         <button class="burger-menu" aria-label="Menu" aria-expanded="false" aria-controls="mainnav">
             <span aria-hidden="true"></span>
