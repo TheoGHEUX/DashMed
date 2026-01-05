@@ -810,15 +810,40 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	// Log action graphique vers le serveur
+	// Log action graphique vers le serveur
 	function logGraphiqueAction(action) {
-		fetch('/api/log-graph-action', {
+		// Construire l'URL de façon robuste (fonctionne même si l'app n'est pas à la racine)
+		const baseURL = window.location.origin + window.location.pathname.split('/dashboard')[0];
+		const logURL = baseURL + '/api/log-graph-action';
+		
+		console.log('[DEBUG] Tentative de log:', action, 'URL:', logURL);
+		
+		fetch(logURL, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({ action: action })
-		}).catch(err => {
-			console.error('Erreur lors du log de l\'action:', err);
+		})
+		.then(response => {
+			console.log('[DEBUG] Réponse reçue, status:', response.status);
+			
+			if (!response.ok) {
+				return response.json().then(data => {
+					console.error('[ERROR] Erreur serveur:', response.status, data);
+					throw new Error(data.error || 'Erreur serveur ' + response.status);
+				}).catch(e => {
+					console.error('[ERROR] Impossible de parser la réponse:', e);
+					throw e;
+				});
+			}
+			return response.json();
+		})
+		.then(data => {
+			console.log('[SUCCESS] Action loggée:', action, data);
+		})
+		.catch(err => {
+			console.error('[ERROR] Erreur lors du log de l\'action:', action, err.message || err);
 		});
 	}
 

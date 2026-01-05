@@ -162,25 +162,36 @@ final class DashboardController
         $input = json_decode(file_get_contents('php://input'), true);
         $action = $input['action'] ?? null;
 
-        if (!in_array($action, ['ouvrir', 'réduire'], true)) {
+        if (!$action || !in_array($action, ['ouvrir', 'réduire'], true)) {
             http_response_code(400);
+            error_log(sprintf('[LOG] Action invalide reçue: %s', var_export($input, true)));
             echo json_encode(['error' => 'Action invalide']);
             exit;
         }
 
         $medId = (int) $_SESSION['user']['id'];
-        $historiqueConsole = new HistoriqueConsole();
-
+        
         try {
+            $historiqueConsole = new HistoriqueConsole();
+            
             if ($action === 'ouvrir') {
-                $historiqueConsole->logGraphiqueOuvrir($medId);
+                $success = $historiqueConsole->logGraphiqueOuvrir($medId);
             } else {
-                $historiqueConsole->logGraphiqueReduire($medId);
+                $success = $historiqueConsole->logGraphiqueReduire($medId);
             }
-            echo json_encode(['success' => true]);
+            
+            if (!$success) {
+                error_log(sprintf('[LOG] Échec du log: med_id=%d, action=%s', $medId, $action));
+                http_response_code(500);
+                echo json_encode(['error' => 'Échec de l\'enregistrement']);
+                exit;
+            }
+            
+            echo json_encode(['success' => true, 'action' => $action]);
         } catch (\Exception $e) {
+            error_log(sprintf('[LOG] Exception: %s | Trace: %s', $e->getMessage(), $e->getTraceAsString()));
             http_response_code(500);
-            echo json_encode(['error' => 'Erreur lors de l\'enregistrement']);
+            echo json_encode(['error' => 'Erreur serveur', 'message' => $e->getMessage()]);
         }
         exit;
     }
