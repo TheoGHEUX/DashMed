@@ -662,7 +662,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const step = (width - paddingLeft - paddingRight) / (data.length - 1);
         data.forEach((v, i) => {
             const x = paddingLeft + i * step;
-            const y = paddingTop + (1 - (v - minVal) / (maxVal - minVal)) * (height - paddingTop - paddingBottom);
+            const y = paddingTop + (1 - v) * (height - paddingTop - paddingBottom); // ✓ CORRIGÉ
             if (i === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
         });
@@ -671,7 +671,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.strokeStyle = color;
         ctx.stroke();
 
-        // Remplissage dégradé
+// Remplissage dégradé
         const gradient = ctx.createLinearGradient(0, paddingTop, 0, height - paddingBottom);
         gradient.addColorStop(0, color + '30');
         gradient.addColorStop(1, color + '05');
@@ -681,15 +681,20 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.fillStyle = gradient;
         ctx.fill();
 
-        // Points
+// Points
         data.forEach((v, i) => {
             const x = paddingLeft + i * step;
-            const y = paddingTop + (1 - (v - minVal) / (maxVal - minVal)) * (height - paddingTop - paddingBottom);
+            const y = paddingTop + (1 - v) * (height - paddingTop - paddingBottom); // ✓ CORRIGÉ
 
             // Déterminer si la valeur dépasse un seuil majorant
+            // Convertir v normalisé en valeur réelle pour comparaison avec seuils
+            const valeurReelle = minVal + v * (maxVal - minVal); // ✓ AJOUTÉ
+
             let isAboveThreshold = false;
             for (const val of Object.values(thresholds)) {
-                if (typeof val === 'number' && v > val) isAboveThreshold = true;
+                if (typeof val === 'number' && valeurReelle > val) { // ✓ CORRIGÉ (utiliser valeurReelle au lieu de v)
+                    isAboveThreshold = true;
+                }
             }
 
             const pointColor = isAboveThreshold ? '#dc2626' : color;
