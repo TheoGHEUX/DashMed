@@ -31,7 +31,6 @@ include __DIR__ . '/../partials/head.php';
 
             <?php if (!empty($success)) : ?>
                 <div class="alert alert-success" role="status" aria-live="polite">
-                    <span class="alert-icon" aria-hidden="true">✅</span>
                     <?= htmlspecialchars($success, ENT_QUOTES, 'UTF-8') ?>
                 </div>
 
@@ -47,7 +46,6 @@ include __DIR__ . '/../partials/head.php';
 
             <?php if (!empty($errors)) : ?>
                 <div class="alert alert-error" role="alert">
-                    <span class="alert-icon" aria-hidden="true">❌</span>
                     <ul style="margin: 0; padding-left: 20px;">
                         <?php foreach ($errors as $error) : ?>
                             <li><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></li>

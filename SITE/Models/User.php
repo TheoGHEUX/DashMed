@@ -193,13 +193,13 @@ final class User
 
         // Recherche du token valide (non expiré)
         $st = $pdo->prepare('
-            SELECT med_id 
-            FROM medecin 
-            WHERE email_verification_token = ? 
-            AND email_verification_expires > NOW()
-            AND email_verified = 0
-            LIMIT 1
-        ');
+        SELECT med_id 
+        FROM medecin 
+        WHERE email_verification_token = ? 
+        AND email_verification_expires > NOW()
+        AND (email_verified = 0 OR email_verified IS NULL)  -- ← Correction ici
+        LIMIT 1
+    ');
         $st->execute([$token]);
         $user = $st->fetch(PDO::FETCH_ASSOC);
 
@@ -209,14 +209,14 @@ final class User
 
         // Activation du compte et suppression du token
         $st = $pdo->prepare('
-            UPDATE medecin 
-            SET email_verified = 1,
-                email_verification_token = NULL,
-                email_verification_expires = NULL,
-                date_activation = NOW(),
-                date_derniere_maj = NOW()
-            WHERE med_id = ?
-        ');
+        UPDATE medecin 
+        SET email_verified = 1,
+            email_verification_token = NULL,
+            email_verification_expires = NULL,
+            date_activation = NOW(),
+            date_derniere_maj = NOW()
+        WHERE med_id = ?
+    ');
 
         return $st->execute([$user['med_id']]);
     }

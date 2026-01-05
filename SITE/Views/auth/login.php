@@ -65,7 +65,6 @@ include __DIR__ . '/../partials/head.php';
                    value="<?= htmlspecialchars($csrf_token ?? '', ENT_QUOTES, 'UTF-8') ?>" />
 
             <div class="field">
-                <label for="email" class="sr-only">Adresse email</label>
                 <input
                         id="email"
                         type="email"
@@ -78,7 +77,6 @@ include __DIR__ . '/../partials/head.php';
             </div>
 
             <div class="field">
-                <label for="password" class="sr-only">Mot de passe</label>
                 <input
                         id="password"
                         type="password"

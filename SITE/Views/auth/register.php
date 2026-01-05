@@ -84,7 +84,6 @@ include __DIR__ . '/../partials/head.php';
             </div>
 
             <div class="field">
-                <label for="sexe" class="sr-only">Sexe</label>
                 <select id="sexe" name="sexe" required>
                     <option value="" disabled <?= empty($old['sexe']) ? 'selected' : '' ?>>Sexe</option>
                     <option value="M" <?= ($old['sexe'] ?? '') === 'M' ? 'selected' : '' ?>>Homme</option>
@@ -93,7 +92,6 @@ include __DIR__ . '/../partials/head.php';
             </div>
 
             <div class="field">
-                <label for="specialite" class="sr-only">Spécialité</label>
                 <select id="specialite" name="specialite" required>
                     <option value="" disabled <?= empty($old['specialite']) ? 'selected' : '' ?>>Spécialité</option>
                     <?php
