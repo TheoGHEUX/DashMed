@@ -64,6 +64,7 @@ final class Router
             '/changer-mot-de-passe' => [ChangePasswordController::class, 'submit', 'showForm'],
             '/change-mail' => [ChangeMailController::class, 'submit', 'showForm'],
             '/changer-mail' => [ChangeMailController::class, 'submit', 'showForm'],
+            '/api/log-graph-action' => [DashboardController::class, 'logGraphAction'],
         ],
     ];
 
