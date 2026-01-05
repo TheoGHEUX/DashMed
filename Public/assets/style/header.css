@@ -94,6 +94,25 @@
     transition: color 0.3s ease;
 }
 
+/* Harmoniser les boutons de déconnexion (qui sont des <button>) avec les liens */
+button.login-btn,
+button.nav-login {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    line-height: inherit;
+    vertical-align: baseline;
+}
+
+button.login-btn:hover,
+button.nav-login:hover {
+    color: var(--accent-primary, #0b6e4f);
+}
+
 .nav-login {
     display: none;
 }
@@ -197,7 +216,10 @@
 /* Accessibilité : styles de focus pour les utilisateurs au clavier */
 .mainnav a:focus,
 .burger-menu:focus,
-.login-btn:focus {
+.login-btn:focus,
+button.login-btn:focus,
+button.nav-login:focus,
+.nav-login:focus {
     outline: 3px solid rgba(18,201,212,0.18);
     outline-offset: 2px;
 }

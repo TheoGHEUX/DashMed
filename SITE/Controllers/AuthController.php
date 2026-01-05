@@ -251,6 +251,7 @@ final class AuthController
                         'last_name'  => $user['last_name'],
                         'sexe'       => $user['sexe'],
                         'specialite' => $user['specialite'],
+                        'email_verified' => (bool) $user['email_verified'],
                     ];
 
                     header('Location: /accueil');
@@ -274,6 +275,13 @@ final class AuthController
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
+        }
+
+        $csrf = (string)($_POST['csrf_token'] ?? '');
+        if (!\Core\Csrf::validate($csrf)) {
+            http_response_code(405);
+            header('Location: /login');
+            exit;
         }
 
         $_SESSION = [];

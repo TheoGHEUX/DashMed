@@ -3,6 +3,7 @@
 namespace Controllers;
 
 use Core\Csrf;
+use Core\Mailer;
 use Models\User;
 
 /**
@@ -84,16 +85,22 @@ final class ChangeMailController
                     // Email déjà utilisé
                     $errors[] = 'Cette adresse email est déjà utilisée par un autre compte.';
                 } else {
-                    // Mise à jour de l'email
-                    if (User::updateEmail($userId, $newEmail)) {
-                        // Mise à jour de la session
-                        $_SESSION['user']['email'] = $newEmail;
+                    // Mise à jour de l'email + nouvelle vérification obligatoire
+                    $token = User::updateEmailWithVerification($userId, $newEmail);
 
-                        // Envoi des emails de notification
+                    if ($token) {
+                        // Mise à jour de la session et forcer la revérification
+                        $_SESSION['user']['email'] = $newEmail;
+                        $_SESSION['user']['email_verified'] = false;
+
+                        $mailSent = Mailer::sendEmailVerification($newEmail, $user['name'], $token);
                         $this->sendEmailNotifications($oldEmail, $newEmail, $user['name']);
 
-                        $success = 'Votre adresse email a été mise à jour avec succès. '
-                            . 'Des emails de confirmation ont été envoyés à votre ancienne et nouvelle adresse.';
+                        if ($mailSent) {
+                            $success = 'Adresse mise à jour. Vérifiez le mail envoyé pour réactiver votre compte.';
+                        } else {
+                            $errors[] = 'Adresse mise à jour, mais l\'email de vérification n\'a pas pu être envoyé.';
+                        }
                     } else {
                         $errors[] = 'Impossible de mettre à jour l\'adresse email pour le moment.';
                     }
