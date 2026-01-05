@@ -47,8 +47,8 @@ document.addEventListener('DOMContentLoaded', () => {
 			// Utiliser les vraies données si disponibles, sinon placeholder
 			data: patientData['blood-pressure']?.values || [0.68,0.70,0.72,0.71,0.73,0.72,0.71,0.74,0.75,0.73],
 			color: '#ef4444',
-			minVal: 100,
-			maxVal: 140,
+			minVal: 80,
+			maxVal: 160,
 			unit: 'mmHg',
             thresholds: {
                 preoccupant: patientData['blood-pressure']?.seuil_preoccupant ?? null,
@@ -69,8 +69,8 @@ document.addEventListener('DOMContentLoaded', () => {
 			// Utiliser les vraies données si disponibles
 			data: patientData['heart-rate']?.values || [0.48,0.52,0.50,0.55,0.58,0.54,0.56,0.60,0.55,0.53],
 			color: '#be185d',
-			minVal: 25,
-			maxVal: 100,
+			minVal: 35,
+			maxVal: 130,
 			unit: 'bpm',
             thresholds: {
                 preoccupant: patientData['heart-rate']?.seuil_preoccupant ?? null,
@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			data: patientData['respiration']?.values || [0.40,0.42,0.44,0.43,0.45,0.46,0.44,0.43,0.42,0.44],
 			color: '#0ea5e9',
 			minVal: 0,
-			maxVal: 20,
+			maxVal: 30,
 			unit: 'resp/min',
             thresholds: {
                 preoccupant: patientData['respiration']?.seuil_preoccupant ?? null,
@@ -113,8 +113,8 @@ document.addEventListener('DOMContentLoaded', () => {
 			// Utiliser les vraies données si disponibles
 			data: patientData['temperature']?.values || [0.46,0.47,0.48,0.49,0.50,0.51,0.50,0.49,0.48,0.49],
 			color: '#f97316',
-			minVal: 35.0,
-			maxVal: 40.0,
+			minVal: 31.0,
+			maxVal: 42.0,
 			unit: '°C',
             thresholds: {
                 preoccupant: patientData['temperature']?.seuil_preoccupant ?? null,
@@ -135,8 +135,8 @@ document.addEventListener('DOMContentLoaded', () => {
 			// Utiliser les vraies données si disponibles
 			data: patientData['glucose-trend']?.values || [0.52,0.50,0.54,0.58,0.62,0.60,0.56,0.54,0.52,0.55],
 			color: '#7c3aed',
-			minVal: 3.0,
-			maxVal: 7.5,
+			minVal: 2.0,
+			maxVal: 10,
 			unit: 'mmol/L',
             thresholds: {
                 preoccupant: patientData['glucose-trend']?.seuil_preoccupant ?? null,
@@ -179,8 +179,8 @@ document.addEventListener('DOMContentLoaded', () => {
 			// Utiliser les avraies données si disponibles
 			data: patientData['oxygen-saturation']?.values || [0.96,0.97,0.98,0.97,0.98,0.99,0.98,0.97,0.98,0.98],
 			color: '#06b6d4',
-			minVal: 90,
-			maxVal: 100,
+			minVal: 72,
+			maxVal:100,
 			unit: '%',
             thresholds: {
                 preoccupant: patientData['oxygen-saturation']?.seuil_preoccupant ?? null,

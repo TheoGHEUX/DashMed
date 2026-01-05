@@ -80,7 +80,7 @@ final class DashboardController
         // Température corporelle (35–40 °C)
         if ($data = Patient::getChartData($patientId, 'Température corporelle', 50)) {
             $chartData['temperature'] = [
-                'values'    => Patient::prepareChartValues($data['valeurs'], 35.0, 40.0),
+                'values'    => Patient::prepareChartValues($data['valeurs'], 31.0, 42.0),
                 'lastValue' => end($data['valeurs'])['valeur'],
                 'unit'      => $data['unite'],
                 'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, 'Température corporelle', 'préoccupant', true),
@@ -98,7 +98,7 @@ final class DashboardController
 
         if ($data) {
             $chartData['blood-pressure'] = [
-                'values'    => Patient::prepareChartValues($data['valeurs'], 100, 140),
+                'values'    => Patient::prepareChartValues($data['valeurs'], 80, 160),
                 'lastValue' => end($data['valeurs'])['valeur'],
                 'unit'      => $data['unite'],
                 'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, 'Tension arterielle', 'préoccupant', true),
@@ -113,7 +113,7 @@ final class DashboardController
         // Fréquence cardiaque (25–100 bpm)
         if ($data = Patient::getChartData($patientId, 'Fréquence cardiaque', 50)) {
             $chartData['heart-rate'] = [
-                'values' => Patient::prepareChartValues($data['valeurs'], 25, 100),
+                'values' => Patient::prepareChartValues($data['valeurs'], 35, 130),
                 'lastValue' => end($data['valeurs'])['valeur'],
                 'unit' => $data['unite'],
                 'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, 'Fréquence cardiaque', 'préoccupant', true),
@@ -128,7 +128,7 @@ final class DashboardController
         // Fréquence respiratoire (0–20 resp/min)
         if ($data = Patient::getChartData($patientId, 'Fréquence respiratoire', 50)) {
             $chartData['respiration'] = [
-                'values'    => Patient::prepareChartValues($data['valeurs'], 0, 20),
+                'values'    => Patient::prepareChartValues($data['valeurs'], 0, 30),
                 'lastValue' => end($data['valeurs'])['valeur'],
                 'unit'      => $data['unite'],
                 'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, 'Fréquence respiratoire', 'préoccupant', true),
@@ -143,7 +143,7 @@ final class DashboardController
         // Glycémie (4.0–7.5 mmol/L)
         if ($data = Patient::getChartData($patientId, 'Glycémie', 50)) {
             $chartData['glucose-trend'] = [
-                'values'    => Patient::prepareChartValues($data['valeurs'], 3, 7.5),
+                'values'    => Patient::prepareChartValues($data['valeurs'], 2, 10),
                 'lastValue' => end($data['valeurs'])['valeur'],
                 'unit'      => $data['unite'],
                 'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, 'Glycémie', 'préoccupant', true),
@@ -173,7 +173,7 @@ final class DashboardController
         // Saturation en oxygène (90–100 %)
         if ($data = Patient::getChartData($patientId, 'Saturation en oxygène', 50)) {
             $chartData['oxygen-saturation'] = [
-                'values'    => Patient::prepareChartValues($data['valeurs'], 90, 100),
+                'values'    => Patient::prepareChartValues($data['valeurs'], 72, 100),
                 'lastValue' => end($data['valeurs'])['valeur'],
                 'unit'      => $data['unite'],
                 'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, 'Saturation en oxygène', 'préoccupant', true),
