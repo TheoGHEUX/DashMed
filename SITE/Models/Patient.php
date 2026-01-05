@@ -48,6 +48,35 @@ final class Patient
     }
 
     /**
+     * Récupère un patient appartenant au médecin donné (jointure suivre).
+     */
+    public static function findByIdForDoctor(int $patientId, int $medId): ?array
+    {
+        $pdo = Database::getConnection();
+        $st = $pdo->prepare('
+            SELECT 
+                p.pt_id,
+                p.prenom,
+                p.nom,
+                p.email,
+                p.sexe,
+                p.groupe_sanguin,
+                p.date_naissance,
+                p.telephone,
+                p.ville,
+                p.code_postal,
+                p.adresse
+            FROM patient p
+            INNER JOIN suivre s ON s.pt_id = p.pt_id AND s.med_id = ?
+            WHERE p.pt_id = ?
+            LIMIT 1
+        ');
+        $st->execute([$medId, $patientId]);
+        $patient = $st->fetch(PDO::FETCH_ASSOC);
+        return $patient ?: null;
+    }
+
+    /**
      * Récupère toutes les mesures d'un patient.
      *
      * @param int $patientId Identifiant du patient (pt_id)
@@ -174,6 +203,58 @@ final class Patient
         $valeurs = $st->fetchAll(PDO::FETCH_ASSOC);
 
         // Inverser pour avoir les plus anciennes en premier (ordre chronologique)
+        $valeurs = array_reverse($valeurs);
+
+        return [
+            'type_mesure' => $typeMesure,
+            'unite' => $mesure['unite'],
+            'valeurs' => $valeurs
+        ];
+    }
+
+    /**
+     * Récupère les données pour un graphique en validant l'appartenance patient/médecin.
+     */
+    public static function getChartDataForDoctor(
+        int $medId,
+        int $patientId,
+        string $typeMesure,
+        int $limit = 50
+    ): ?array {
+        $pdo = Database::getConnection();
+
+        // Récupérer l'id_mesure pour ce type en vérifiant le lien au médecin
+        $st = $pdo->prepare('
+            SELECT m.id_mesure, m.unite
+            FROM mesures m
+            INNER JOIN suivre s ON s.pt_id = m.pt_id AND s.med_id = ?
+            WHERE m.pt_id = ? AND m.type_mesure = ?
+            LIMIT 1
+        ');
+        $st->execute([$medId, $patientId, $typeMesure]);
+        $mesure = $st->fetch(PDO::FETCH_ASSOC);
+
+        if (!$mesure) {
+            return null;
+        }
+
+        $st = $pdo->prepare('
+            SELECT 
+                vm.valeur,
+                vm.date_mesure,
+                vm.heure_mesure
+            FROM valeurs_mesures vm
+            INNER JOIN mesures m ON m.id_mesure = vm.id_mesure
+            INNER JOIN suivre s ON s.pt_id = m.pt_id AND s.med_id = ?
+            WHERE vm.id_mesure = ?
+            ORDER BY vm.date_mesure DESC, vm.heure_mesure DESC
+            LIMIT ?
+        ');
+        $st->bindValue(1, $medId, PDO::PARAM_INT);
+        $st->bindValue(2, $mesure['id_mesure'], PDO::PARAM_INT);
+        $st->bindValue(3, $limit, PDO::PARAM_INT);
+        $st->execute();
+        $valeurs = $st->fetchAll(PDO::FETCH_ASSOC);
         $valeurs = array_reverse($valeurs);
 
         return [

@@ -27,6 +27,12 @@ final class Router
     private string $path;
     private string $method;
 
+    /** @var array<string,bool> */
+    private const POST_ONLY = [
+        '/logout' => true,
+        '/deconnexion' => true,
+    ];
+
     private const ROUTES = [
         'public' => [
             '/' => [HomeController::class, 'index'],
@@ -123,7 +129,12 @@ final class Router
 
             $debug = ($env['APP_DEBUG'] ?? '') === '1';
             $keyOk = isset($_GET['key']) && ($_GET['key'] === ($env['HEALTH_KEY'] ?? ''));
-            if (!$debug && !$keyOk) {
+            // Ne pas exposer en production : seulement si APP_DEBUG=1 ET clé correcte
+            if (!$debug) {
+                http_response_code(404);
+                exit;
+            }
+            if (!$keyOk) {
                 http_response_code(403);
                 header('Content-Type: text/plain; charset=utf-8');
                 echo 'Forbidden';
@@ -210,6 +221,9 @@ final class Router
 
         // Route avec une seule méthode (ex: logout, show)
         if ($getMethod === null) {
+            if (isset(self::POST_ONLY[$this->path]) && $this->method !== 'POST') {
+                $this->methodNotAllowed(['POST']);
+            }
             $controller->$postMethod();
             exit;
         }
@@ -230,7 +244,8 @@ final class Router
      */
     private function isAuthenticated(): bool
     {
-        return !empty($_SESSION['user']);
+        return !empty($_SESSION['user'])
+            && !empty($_SESSION['user']['email_verified']);
     }
 
     /**
@@ -258,6 +273,19 @@ final class Router
         } else {
             echo '404 - Page non trouvée';
         }
+        exit;
+    }
+
+    /**
+     * Répond 405 Method Not Allowed et arrête l'exécution.
+     *
+     * @param array<int,string> $allowed Liste des méthodes acceptées
+     * @return void
+     */
+    private function methodNotAllowed(array $allowed): void
+    {
+        http_response_code(405);
+        header('Allow: ' . implode(', ', $allowed));
         exit;
     }
 }

@@ -153,6 +153,44 @@ final class User
     }
 
     /**
+     * Met à jour l'email en forçant une nouvelle vérification.
+     * Retourne le token à envoyer ou null en cas d'échec.
+     */
+    public static function updateEmailWithVerification(int $id, string $newEmail): ?string
+    {
+        $pdo = Database::getConnection();
+        $token = bin2hex(random_bytes(32));
+        $expires = date('Y-m-d H:i:s', strtotime('+24 hours'));
+
+        try {
+            $pdo->beginTransaction();
+            $st = $pdo->prepare('
+                UPDATE medecin
+                SET email = ?,
+                    email_verified = 0,
+                    email_verification_token = ?,
+                    email_verification_expires = ?,
+                    date_derniere_maj = NOW()
+                WHERE med_id = ?
+            ');
+
+            if (!$st->execute([strtolower(trim($newEmail)), $token, $expires, $id])) {
+                $pdo->rollBack();
+                return null;
+            }
+
+            $pdo->commit();
+            return $token;
+        } catch (\Throwable $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            error_log(sprintf('[USER][EMAIL_CHANGE] %s in %s:%d', $e->getMessage(), $e->getFile(), $e->getLine()));
+            return null;
+        }
+    }
+
+    /**
      * Génère et stocke un token de vérification d'email (valide 24h).
      *
      * @param string $email Email de l'utilisateur
