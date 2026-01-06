@@ -77,6 +77,32 @@ final class Patient
     }
 
     /**
+     * Récupère tous les patients suivis par un médecin.
+     *
+     * @param int $medId Identifiant du médecin
+     * @return array Liste des patients avec leurs informations de base
+     */
+    public static function getPatientsForDoctor(int $medId): array
+    {
+        $pdo = Database::getConnection();
+        $st = $pdo->prepare('
+            SELECT 
+                p.pt_id,
+                p.prenom,
+                p.nom,
+                p.email,
+                p.sexe,
+                p.date_naissance
+            FROM patient p
+            INNER JOIN suivre s ON p.pt_id = s.pt_id
+            WHERE s.med_id = ?
+            ORDER BY p.nom, p.prenom
+        ');
+        $st->execute([$medId]);
+        return $st->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
      * Récupère toutes les mesures d'un patient.
      *
      * @param int $patientId Identifiant du patient (pt_id)
