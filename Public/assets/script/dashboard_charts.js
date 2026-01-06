@@ -30,14 +30,12 @@ document.addEventListener('DOMContentLoaded', () => {
 	const urlParams = new URLSearchParams(window.location.search);
 	if (urlParams.get('reset') === '1') {
 		localStorage.removeItem('dashboardChartConfig');
-		console.log('Configuration réinitialisée');
 		// Remove the reset parameter from URL
 		window.history.replaceState({}, '', window.location.pathname);
 	}
 
 	// Récupérer les données réelles du patient injectées par PHP
 	const patientData = window.patientChartData || {};
-	console.log('Données patient chargées:', patientData);
 
 	// Gestion de la configuration des graphiques
 	const CHART_DEFINITIONS = {
@@ -978,17 +976,16 @@ document.addEventListener('DOMContentLoaded', () => {
 		.then(response => {
 			if (!response.ok) {
 				return response.json().then(data => {
-					console.error('Erreur serveur lors du log:', data);
 					throw new Error(data.error || 'Erreur serveur');
 				});
 			}
 			return response.json();
 		})
 		.then(data => {
-			console.log('Action loggée avec succès:', action, data);
+			// Action loggée avec succès
 		})
 		.catch(err => {
-			console.error('Erreur lors du log de l\'action:', action, err);
+			// Erreur lors du log de l'action - ignorer silencieusement
 		});
 	}
 

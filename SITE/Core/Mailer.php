@@ -33,10 +33,11 @@ final class Mailer
             'Content-Type: text/html; charset=UTF-8',
         ];
 
-        // Construction de l'URL de vérification
+        // Construction de l'URL de vérification (éviter l'utilisation de HTTP_HOST contrôlable)
         $protocol = (! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        $host = $_SERVER['HTTP_HOST'] ?? 'dashmed-site.alwaysdata.net';
-        $verificationUrl = $protocol . '://' . $host . '/verify-email? token=' . urlencode($verificationToken);
+        $serverName = $_SERVER['SERVER_NAME'] ?? '';
+        $host = $serverName !== '' ? $serverName : 'dashmed-site.alwaysdata.net';
+        $verificationUrl = $protocol . '://' . $host . '/verify-email?token=' . urlencode($verificationToken);
 
         $safeName = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
         $safeUrl = htmlspecialchars($verificationUrl, ENT_QUOTES, 'UTF-8');

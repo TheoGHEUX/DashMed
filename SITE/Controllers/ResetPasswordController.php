@@ -172,8 +172,9 @@ final class ResetPasswordController
                 if ($pdo->inTransaction()) {
                     $pdo->rollBack();
                 }
-                error_log(sprintf('[RESET] %s in %s:%d', $e->getMessage(), $e->getFile(), $e->getLine()));
-                $errors[] = 'Erreur base:  ' . $e->getMessage();  // Affiche le message d'erreur
+                // Log interne détaillé, message neutre côté utilisateur
+                error_log(sprintf('[RESET] DB error: %s in %s:%d', $e->getMessage(), $e->getFile(), $e->getLine()));
+                $errors[] = 'Une erreur est survenue lors de la réinitialisation. Veuillez réessayer.';
             }
         }
 

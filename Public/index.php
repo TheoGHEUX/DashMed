@@ -27,8 +27,8 @@ header('Permissions-Policy: geolocation=(), microphone=()');
 if ($isHttps) {
     header('Strict-Transport-Security: max-age=31536000; includeSubDomains; preload');
 }
-// Basic CSP - keep permissive enough for Google Fonts and data URIs used in images
-header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data:;");
+// Basic CSP - tightened with base-uri, form-action, and object-src
+header("Content-Security-Policy: default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data:;");
 // Remove PHP version header
 header('X-Powered-By:');
 // Chargement de l'autoloader

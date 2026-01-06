@@ -39,16 +39,6 @@ function initBurger(burgerMenu, mainNav) {
         document.body.style.overflow = expanded ? 'hidden' : '';
     };
 
-    // DEBUG : logs limités à la page d'accueil pour diagnostic
-    try {
-        const p = window.location.pathname || '/';
-        if (p === '/' || p === '/index.php' || p === '/home') {
-            console.debug('[header_responsive] initBurger detected elements:', { burgerMenu, mainNav });
-        }
-    } catch (err) {
-        // ignorer les erreurs non critiques
-    }
-
     // Toggle via click direct sur le bouton (support touch)
     burgerMenu.addEventListener('click', (e) => {
         e.stopPropagation();

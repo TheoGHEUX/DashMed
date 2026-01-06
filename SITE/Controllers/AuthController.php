@@ -218,6 +218,24 @@ final class AuthController
         $password = (string)($_POST['password'] ?? '');
         $csrf     = (string)($_POST['csrf_token'] ?? '');
 
+        // Limitation basique des tentatives de connexion par IP (5 essais / 5 minutes)
+        $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+        if (!isset($_SESSION['login_attempts'])) {
+            $_SESSION['login_attempts'] = [];
+        }
+        $now = time();
+        $windowSeconds = 300; // 5 minutes
+        $maxAttempts   = 5;
+        // Purge des anciennes tentatives hors fenêtre
+        $attempts = array_filter((array)($_SESSION['login_attempts'][$ip] ?? []), function ($ts) use ($now, $windowSeconds) {
+            return ($now - (int)$ts) <= $windowSeconds;
+        });
+        $_SESSION['login_attempts'][$ip] = $attempts;
+        if (count($attempts) >= $maxAttempts) {
+            http_response_code(429);
+            $errors[] = 'Trop de tentatives. Réessayez dans quelques minutes.';
+        }
+
         // Validation du jeton CSRF
         if (!Csrf::validate($csrf)) {
             $errors[] = 'Session expirée ou jeton CSRF invalide.';
@@ -235,9 +253,13 @@ final class AuthController
 
                 if (!$user || !password_verify($password, $user['password'])) {
                     $errors[] = 'Identifiants incorrects.';
+                    // Enregistrer la tentative échouée
+                    $_SESSION['login_attempts'][$ip][] = $now;
                 } elseif (!$user['email_verified']) {
                     $errors[] = 'Adresse email non vérifiée. '
                         . 'Consultez votre boîte de réception et cliquez sur le lien de vérification.';
+                    // Enregistrer la tentative échouée
+                    $_SESSION['login_attempts'][$ip][] = $now;
                 } else {
                     if (session_status() !== PHP_SESSION_ACTIVE) {
                         session_start();
@@ -265,6 +287,8 @@ final class AuthController
                     $e->getLine()
                 ));
                 $errors[] = 'Erreur lors de la connexion. Veuillez réessayer.';
+                // Enregistrer la tentative échouée
+                $_SESSION['login_attempts'][$ip][] = $now;
             }
         }
 
