@@ -17,10 +17,27 @@ use PDO;
 final class Patient
 {
     /**
-     * Récupère un patient par son ID.
+     * Récupère les informations complètes d'un patient à partir de son identifiant.
      *
-     * @param int $id Identifiant du patient (pt_id)
-     * @return array|null Tableau associatif du patient ou null si non trouvé
+     * Cette méthode retourne un tableau associatif contenant toutes les données
+     * pertinentes du patient pour l'affichage dans le dashboard ou d'autres interfaces :
+     * prénom, nom, email, sexe, groupe sanguin, date de naissance, téléphone, adresse et ville.
+     *
+     * @param int $id Identifiant unique du patient (`pt_id`).
+     *
+     * @return array|null Tableau associatif du patient avec les clés suivantes :
+     *                     - 'pt_id' => int Identifiant du patient
+     *                     - 'prenom' => string Prénom du patient
+     *                     - 'nom' => string Nom du patient
+     *                     - 'email' => string Adresse e-mail
+     *                     - 'sexe' => string Sexe du patient ('M' ou 'F')
+     *                     - 'groupe_sanguin' => string Groupe sanguin
+     *                     - 'date_naissance' => string Date de naissance au format YYYY-MM-DD
+     *                     - 'telephone' => string Numéro de téléphone
+     *                     - 'ville' => string Ville de résidence
+     *                     - 'code_postal' => string Code postal
+     *                     - 'adresse' => string Adresse complète
+     *                   Retourne `null` si aucun patient correspondant n'est trouvé.
      */
     public static function findById(int $id): ?array
     {
@@ -48,65 +65,52 @@ final class Patient
     }
 
     /**
-     * Récupère un patient appartenant au médecin donné (jointure suivre).
+     * Récupère la liste des patients suivis par un médecin.
+     *
+     * Cette méthode retourne un tableau associatif contenant uniquement les informations
+     * nécessaires pour lister les patients : l'identifiant ('pt_id'), le nom et le prénom.
+     * L'identifiant du patient est essentiel pour créer les liens vers le tableau de bord
+     * ou d'autres actions côté frontend, même si toutes les données ne sont pas affichées.
+     *
+     * @param int $doctorId L'identifiant du médecin dont on souhaite récupérer les patients.
+     *
+     * @return array Un tableau de patients. Chaque élément est un tableau associatif avec les clés :
+     *               - 'pt_id' => int Identifiant unique du patient
+     *               - 'nom' => string Nom du patient
+     *               - 'prenom' => string Prénom du patient
      */
-    public static function findByIdForDoctor(int $patientId, int $medId): ?array
+    public static function getPatientsForDoctor(int $doctorId): array
     {
         $pdo = Database::getConnection();
-        $st = $pdo->prepare('
-            SELECT 
-                p.pt_id,
-                p.prenom,
-                p.nom,
-                p.email,
-                p.sexe,
-                p.groupe_sanguin,
-                p.date_naissance,
-                p.telephone,
-                p.ville,
-                p.code_postal,
-                p.adresse
-            FROM patient p
-            INNER JOIN suivre s ON s.pt_id = p.pt_id AND s.med_id = ?
-            WHERE p.pt_id = ?
-            LIMIT 1
-        ');
-        $st->execute([$medId, $patientId]);
-        $patient = $st->fetch(PDO::FETCH_ASSOC);
-        return $patient ?: null;
+
+        $stmt = $pdo->prepare("
+        SELECT 
+            p.pt_id,
+            p.nom,
+            p.prenom
+        FROM suivre s
+        JOIN patient p ON p.pt_id = s.pt_id
+        WHERE s.med_id = :med_id
+        ORDER BY p.nom, p.prenom
+    ");
+
+        $stmt->execute([':med_id' => $doctorId]);
+
+        return $stmt->fetchAll();
     }
 
     /**
-     * Récupère tous les patients suivis par un médecin.
+     * Récupère toutes les mesures associées à un patient donné.
      *
-     * @param int $medId Identifiant du médecin
-     * @return array Liste des patients avec leurs informations de base
-     */
-    public static function getPatientsForDoctor(int $medId): array
-    {
-        $pdo = Database::getConnection();
-        $st = $pdo->prepare('
-            SELECT 
-                p.pt_id,
-                p.prenom,
-                p.nom,
-                p.email,
-                p.sexe,
-                p.date_naissance
-            FROM patient p
-            INNER JOIN suivre s ON p.pt_id = s.pt_id
-            WHERE s.med_id = ?
-            ORDER BY p.nom, p.prenom
-        ');
-        $st->execute([$medId]);
-        return $st->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    /**
-     * Récupère toutes les mesures d'un patient.
+     * Chaque mesure représente un type de donnée médicale collectée pour le patient,
+     * comme la fréquence cardiaque, la tension artérielle, la température, etc.
      *
-     * @param int $patientId Identifiant du patient (pt_id)
-     * @return array Liste des mesures (id_mesure, type_mesure, unite)
+     * @param int $patientId Identifiant unique du patient (`pt_id`).
+     *
+     * @return array Liste de mesures, chaque élément étant un tableau associatif contenant :
+     *               - 'id_mesure' => int Identifiant unique de la mesure
+     *               - 'type_mesure' => string Type de mesure (ex. 'Fréquence cardiaque')
+     *               - 'unite' => string Unité de la mesure (ex. 'BPM', 'mmHg', '°C')
      */
     public static function getMesures(int $patientId): array
     {
@@ -239,58 +243,6 @@ final class Patient
     }
 
     /**
-     * Récupère les données pour un graphique en validant l'appartenance patient/médecin.
-     */
-    public static function getChartDataForDoctor(
-        int $medId,
-        int $patientId,
-        string $typeMesure,
-        int $limit = 50
-    ): ?array {
-        $pdo = Database::getConnection();
-
-        // Récupérer l'id_mesure pour ce type en vérifiant le lien au médecin
-        $st = $pdo->prepare('
-            SELECT m.id_mesure, m.unite
-            FROM mesures m
-            INNER JOIN suivre s ON s.pt_id = m.pt_id AND s.med_id = ?
-            WHERE m.pt_id = ? AND m.type_mesure = ?
-            LIMIT 1
-        ');
-        $st->execute([$medId, $patientId, $typeMesure]);
-        $mesure = $st->fetch(PDO::FETCH_ASSOC);
-
-        if (!$mesure) {
-            return null;
-        }
-
-        $st = $pdo->prepare('
-            SELECT 
-                vm.valeur,
-                vm.date_mesure,
-                vm.heure_mesure
-            FROM valeurs_mesures vm
-            INNER JOIN mesures m ON m.id_mesure = vm.id_mesure
-            INNER JOIN suivre s ON s.pt_id = m.pt_id AND s.med_id = ?
-            WHERE vm.id_mesure = ?
-            ORDER BY vm.date_mesure DESC, vm.heure_mesure DESC
-            LIMIT ?
-        ');
-        $st->bindValue(1, $medId, PDO::PARAM_INT);
-        $st->bindValue(2, $mesure['id_mesure'], PDO::PARAM_INT);
-        $st->bindValue(3, $limit, PDO::PARAM_INT);
-        $st->execute();
-        $valeurs = $st->fetchAll(PDO::FETCH_ASSOC);
-        $valeurs = array_reverse($valeurs);
-
-        return [
-            'type_mesure' => $typeMesure,
-            'unite' => $mesure['unite'],
-            'valeurs' => $valeurs
-        ];
-    }
-
-    /**
      * Normalise une valeur entre 0 et 1 selon un min/max.
      *
      * @param float $value Valeur à normaliser
@@ -321,6 +273,17 @@ final class Patient
         }, $valeurs);
     }
 
+    /**
+     * Récupère l'identifiant du premier patient associé à un médecin donné.
+     *
+     * Cette méthode retourne le pt_id du patient suivi par le médecin avec l'ID
+     * '$medId', selon l'ordre croissant des identifiants. Utile comme valeur
+     * par défaut lorsque aucun patient n'est sélectionné.
+     *
+     * @param int $medId L'identifiant du médecin (med_id)
+     * @return int|null L'identifiant du premier patient suivi par le médecin,
+     *                  ou null si aucun patient n'est associé
+     */
     public static function getFirstPatientIdForDoctor(int $medId): ?int
     {
         $pdo = Database::getConnection();
@@ -338,4 +301,43 @@ final class Patient
 
         return $row ? (int) $row['pt_id'] : null;
     }
+
+    /**
+     * Récupère la valeur seuil pour un patient et une mesure donnée selon le statut.
+     *
+     * @param int $patientId
+     * @param string $typeMesure
+     * @param string $statut 'préoccupant', 'urgent' ou 'critique'
+     * @param bool|null $majorant true = seuil max, false = seuil min, null = indifférent
+     * @return float|null
+     */
+    public static function getSeuilByStatus(int $patientId, string $typeMesure, string $statut, bool $majorant): ?float
+    {
+        $pdo = Database::getConnection();
+
+        $sql = "
+        SELECT seuil
+        FROM seuil_alerte sa
+        JOIN mesures m ON m.id_mesure = sa.id_mesure
+        WHERE sa.statut = :statut
+          AND m.type_mesure = :type
+          AND m.pt_id = :pt_id
+          AND sa.majorant = :majorant
+        LIMIT 1
+    ";
+
+        $stmt = $pdo->prepare($sql);
+
+        $stmt->execute([
+            ':statut' => $statut,
+            ':type' => $typeMesure,
+            ':pt_id' => $patientId,
+            ':majorant' => $majorant ? 1 : 0
+        ]);
+
+        $row = $stmt->fetch();
+        return $row ? (float) $row['seuil'] : null;
+    }
+
+
 }

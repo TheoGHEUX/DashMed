@@ -24,49 +24,6 @@ if (empty($_SESSION['user'])) {
 
 use Core\Database;
 
-$patients = [];
-$patient   = null; // Patient actif
-
-try {
-    $pdo = Database::getConnection();
-
-    // Récupération de tous les patients suivis par le médecin
-    $stmt = $pdo->prepare("
-        SELECT 
-            p.pt_id,
-            p.nom,
-            p.prenom,
-            p.date_naissance,
-            p.sexe,
-            p.groupe_sanguin,
-            p.telephone
-        FROM suivre s
-        JOIN patient p ON p.pt_id = s.pt_id
-        WHERE s.med_id = :med_id
-        ORDER BY p.nom, p.prenom
-    ");
-    $stmt->execute([':med_id' => $_SESSION['user']['id']]);
-    $patients = $stmt->fetchAll();
-
-    // Déterminer le patient sélectionné :
-    // 1) depuis l'URL ?patient=ID
-    // 2) sinon depuis la session (dernier patient consulté)
-    // 3) sinon le premier de la liste
-    $selectedPtId = $_GET['patient'] ?? $_SESSION['lastPatientId'] ?? ($patients[0]['pt_id'] ?? null);
-
-    if ($selectedPtId) {
-        foreach ($patients as $p) {
-            if ($p['pt_id'] == $selectedPtId) {
-                $patient = $p;
-                $_SESSION['lastPatientId'] = $selectedPtId; // Sauvegarde pour la prochaine visite
-                break;
-            }
-        }
-    }
-} catch (PDOException $e) {
-    error_log($e->getMessage());
-}
-
 $pageTitle       = $pageTitle ?? "Dashboard";
 $pageDescription = $pageDescription ?? "Tableau de bord - Suivi médical";
 $pageStyles      = $pageStyles ?? ['/assets/style/dashboard.css'];
@@ -111,10 +68,12 @@ include __DIR__ . '/partials/head.php';
                 <?= htmlspecialchars($patient['prenom']) ?> <?= htmlspecialchars($patient['nom']) ?>
             </p>
             <ul class="patient-meta">
-                <li><strong>Sexe :</strong> <?= htmlspecialchars($patient['sexe']) ?></li>
-                <li><strong>Date de naissance :</strong> <?= htmlspecialchars($patient['date_naissance']) ?></li>
-                <li><strong>Groupe sanguin :</strong> <?= htmlspecialchars($patient['groupe_sanguin'] ?? '—') ?></li>
-                <li><strong>Téléphone :</strong> <?= htmlspecialchars($patient['telephone'] ?? '—') ?></li>
+                <li><strong>Sexe :</strong> <?= htmlspecialchars($patient['sexe'] ?? '-') ?></li>
+                <li><strong>Date de naissance :</strong> <?= htmlspecialchars($patient['date_naissance'] ?? '-') ?></li>
+                <li><strong>Groupe sanguin :</strong> <?= htmlspecialchars($patient['groupe_sanguin'] ?? '-') ?></li>
+                <li><strong>Téléphone :</strong> <?= htmlspecialchars($patient['telephone'] ?? '-') ?></li>
+                <li><strong>Adresse:</strong> <?= htmlspecialchars($patient['adresse'] ?? '-') ?>, <?= htmlspecialchars($patient['code_postal'] ?? '-') ?> <?= htmlspecialchars($patient['ville'] ?? '-') ?></li>
+                <li><strong>E-mail :</strong> <?= htmlspecialchars($patient['email'] ?? '-') ?></li>
             </ul>
         </div>
     <?php else : ?>
@@ -132,11 +91,8 @@ include __DIR__ . '/partials/head.php';
             <ul>
                 <?php foreach ($patients as $p) : ?>
                     <li class="patient-item"
-                        data-pt-id="<?= htmlspecialchars($p['pt_id']) ?>"
                         data-nom="<?= htmlspecialchars($p['nom']) ?>"
-                        data-prenom="<?= htmlspecialchars($p['prenom']) ?>"
-                        data-date-naissance="<?= htmlspecialchars($p['date_naissance']) ?>"
-                        data-sexe="<?= htmlspecialchars($p['sexe']) ?>">
+                        data-prenom="<?= htmlspecialchars($p['prenom']) ?>">
                         <a href="/dashboard?patient=<?= urlencode($p['pt_id']) ?>">
                             <?= htmlspecialchars($p['prenom']) ?> <?= htmlspecialchars($p['nom']) ?>
                         </a>
@@ -148,6 +104,7 @@ include __DIR__ . '/partials/head.php';
 </section>
 
 
+<?php if (!empty($patient)) : ?>
 <main class="dashboard-main container">
     <div class="dashboard-header">
         <h1 class="page-title"><?= htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8') ?></h1>
@@ -255,6 +212,7 @@ include __DIR__ . '/partials/head.php';
             actualisez la page ou videz le cache du navigateur.</em></p>
     </section>
 </main>
+<?php endif; ?>
 
 <?php include __DIR__ . '/partials/footer.php'; ?>
 
