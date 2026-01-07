@@ -190,8 +190,6 @@ final class AuthController
             ];
         } elseif (!$errors) {
             $errors[] = 'L\'insertion en base de données a échoué.';
-        } elseif (!$errors) {
-            // Rien: bloc laissé pour clarté éventuelle
         }
 
         $specialites = self::SPECIALITES_VALIDES;

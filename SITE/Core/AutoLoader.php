@@ -28,7 +28,7 @@ final class AutoLoader
             }
         }
         $file = Constant::coreDirectory() . str_replace('\\', DIRECTORY_SEPARATOR, $className) . '.php';
-        return static::load($file);
+        static::load($file);
     }
 
     /**
@@ -47,7 +47,7 @@ final class AutoLoader
             }
         }
         $file = Constant::modelDirectory() . str_replace('\\', DIRECTORY_SEPARATOR, $className) . '.php';
-        return static::load($file);
+        static::load($file);
     }
 
     /**
@@ -59,7 +59,7 @@ final class AutoLoader
     public static function loadView($className)
     {
         $file = Constant::viewDirectory() . "$className.php";
-        return static::load($file);
+        static::load($file);
     }
 
     /**
@@ -78,7 +78,7 @@ final class AutoLoader
             }
         }
         $file = Constant::controllerDirectory() . str_replace('\\', DIRECTORY_SEPARATOR, $className) . '.php';
-        return static::load($file);
+        static::load($file);
     }
 
     /**

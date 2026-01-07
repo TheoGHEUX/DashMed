@@ -145,13 +145,13 @@ final class DashboardController
     private function getMetricChartData(int $patientId, string $metricLabel, ?string $labelAlt, float $minValue, float $maxValue): ?array
     {
         $data = Patient::getChartData($patientId, $metricLabel, 50);
-        
+
         // Fallback pour label alternatif (ex: Tension arterielle vs Tension artérielle)
         if (!$data && $labelAlt) {
             $data = Patient::getChartData($patientId, $labelAlt, 50);
             $metricLabel = $labelAlt; // Utiliser le label alternatif pour les seuils
         }
-        
+
         if (!$data) {
             return null;
         }

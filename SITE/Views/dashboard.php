@@ -27,8 +27,6 @@ use Core\Database;
 $pageTitle       = $pageTitle ?? "Dashboard";
 $pageDescription = $pageDescription ?? "Tableau de bord - Suivi médical";
 $pageStyles      = $pageStyles ?? ['/assets/style/dashboard.css'];
-
-// ⚡ Chargement des scripts : chart + dashboard.js
 $pageScripts     = $pageScripts ?? [
         '/assets/script/dashboard_charts.js',
         '/assets/script/dashboard.js'
@@ -47,7 +45,7 @@ include __DIR__ . '/partials/head.php';
     window.activePatient = <?= json_encode($patient ?? [], JSON_UNESCAPED_UNICODE) ?>;
 </script>
 
-<?php if (!isset($noPatient) || $noPatient === false): ?>
+<?php if (!isset($noPatient) || $noPatient === false) : ?>
 <div class="dashboard-actions">
     <button class="btn-patients" id="togglePatients"
             aria-expanded="false"
@@ -58,7 +56,7 @@ include __DIR__ . '/partials/head.php';
 </div>
 <?php endif; ?>
 
-<?php if (!isset($noPatient) || $noPatient === false): ?>
+<?php if (!isset($noPatient) || $noPatient === false) : ?>
 <section class="patient-active">
     <h2>Patient sélectionné</h2>
 
@@ -72,7 +70,11 @@ include __DIR__ . '/partials/head.php';
                 <li><strong>Date de naissance :</strong> <?= htmlspecialchars($patient['date_naissance'] ?? '-') ?></li>
                 <li><strong>Groupe sanguin :</strong> <?= htmlspecialchars($patient['groupe_sanguin'] ?? '-') ?></li>
                 <li><strong>Téléphone :</strong> <?= htmlspecialchars($patient['telephone'] ?? '-') ?></li>
-                <li><strong>Adresse:</strong> <?= htmlspecialchars($patient['adresse'] ?? '-') ?>, <?= htmlspecialchars($patient['code_postal'] ?? '-') ?> <?= htmlspecialchars($patient['ville'] ?? '-') ?></li>
+                <li><strong>Adresse :</strong>
+                    <?= htmlspecialchars($patient['adresse'] ?? '-') ?>,
+                    <?= htmlspecialchars($patient['code_postal'] ?? '-') ?>
+                    <?= htmlspecialchars($patient['ville'] ?? '-') ?>
+                </li>
                 <li><strong>E-mail :</strong> <?= htmlspecialchars($patient['email'] ?? '-') ?></li>
             </ul>
         </div>
@@ -105,7 +107,7 @@ include __DIR__ . '/partials/head.php';
 
 
 <main class="dashboard-main container">
-    <?php if (!isset($noPatient) || $noPatient === false): ?>
+    <?php if (!isset($noPatient) || $noPatient === false) : ?>
     <div class="dashboard-header">
         <h1 class="page-title"><?= htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8') ?></h1>
         <button class="btn-edit-mode" id="toggleEditMode" aria-pressed="false" aria-label="Activer le mode édition">
@@ -115,16 +117,11 @@ include __DIR__ . '/partials/head.php';
     </div>
     <?php endif; ?>
 
-    <?php if (isset($noPatient) && $noPatient === true): ?>
+    <?php if (isset($noPatient) && $noPatient === true) : ?>
         <!-- Message quand aucun patient n'est associé au médecin -->
         <section class="dashboard-empty-state" role="status" aria-label="Aucun patient">
             <div class="empty-state-content">
-                <div class="empty-state-icon" aria-hidden="true">
-                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
-                              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                </div>
+                <div class="empty-state-icon" aria-hidden="true">👥</div>
                 <h2 class="empty-state-title">Aucun patient associé</h2>
                 <p class="empty-state-description">
                     Vous n'avez actuellement aucun patient associé à votre compte.
@@ -132,8 +129,7 @@ include __DIR__ . '/partials/head.php';
                 </p>
             </div>
         </section>
-    <?php else: ?>
-
+    <?php else : ?>
     <section class="dashboard-grid" id="dashboardGrid" aria-label="Statistiques de santé">
         <?php if (!empty($patient)) : ?>
         <article class="card chart-card" data-chart-id="blood-pressure">

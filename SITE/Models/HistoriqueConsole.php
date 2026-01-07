@@ -38,30 +38,37 @@ final class HistoriqueConsole
     public static function log(int $medId, string $typeAction, ?int $ptId = null, ?int $idMesure = null): bool
     {
         $pdo = Database::getConnection();
-        
+
         // Valider le type d'action
         if (!in_array($typeAction, self::VALID_ACTIONS, true)) {
             error_log(sprintf('[HISTORIQUE] Type d\'action invalide: %s', $typeAction));
             return false;
         }
-        
+
         $dateAction = date('Y-m-d');
         $heureAction = date('H:i:s');
         // Générer un log_id unique basé sur timestamp + random
         $logId = (int)(microtime(true) * 10000) + random_int(1, 999);
-        
+
         try {
             $st = $pdo->prepare('
-                INSERT INTO historique_console (log_id, med_id, type_action, pt_id, id_mesure, date_action, heure_action)
+                INSERT INTO historique_console 
+                    (log_id, med_id, type_action, pt_id, id_mesure, date_action, heure_action)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             ');
-            
+
             $result = $st->execute([$logId, $medId, $typeAction, $ptId, $idMesure, $dateAction, $heureAction]);
-            
+
             if (!$result) {
-                error_log(sprintf('[HISTORIQUE] Erreur INSERT: med_id=%d type=%s pt_id=%s id_mesure=%s', $medId, $typeAction, $ptId ?? 'null', $idMesure ?? 'null'));
+                error_log(sprintf(
+                    '[HISTORIQUE] Erreur INSERT: med_id=%d type=%s pt_id=%s id_mesure=%s',
+                    $medId,
+                    $typeAction,
+                    $ptId ?? 'null',
+                    $idMesure ?? 'null'
+                ));
             }
-            
+
             return $result;
         } catch (\Throwable $e) {
             error_log(sprintf('[HISTORIQUE] Exception: %s', $e->getMessage()));
@@ -131,7 +138,7 @@ final class HistoriqueConsole
     public static function getHistoryByMedId(int $medId, int $limit = 100): array
     {
         $pdo = Database::getConnection();
-        
+
         $st = $pdo->prepare('
             SELECT 
                 log_id,
@@ -146,11 +153,11 @@ final class HistoriqueConsole
             ORDER BY date_action DESC, heure_action DESC
             LIMIT ?
         ');
-        
+
         $st->bindValue(1, $medId, PDO::PARAM_INT);
         $st->bindValue(2, $limit, PDO::PARAM_INT);
         $st->execute();
-        
+
         return $st->fetchAll(PDO::FETCH_ASSOC);
     }
 }

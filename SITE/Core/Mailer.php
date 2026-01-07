@@ -176,7 +176,9 @@ final class Mailer
         array $headers,
         string $body
     ): bool {
-        $dir = __DIR__ . '/../../var/mail';
+        $dir = \Core\Constant::rootDirectory()
+            . DIRECTORY_SEPARATOR . 'storage'
+            . DIRECTORY_SEPARATOR . 'mails';
         if (!is_dir($dir)) {
             @mkdir($dir, 0755, true);
         }
