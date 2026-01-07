@@ -17,127 +17,167 @@ use Models\HistoriqueConsole;
 final class DashboardController
 {
     /**
+     * Configuration des métriques médicales avec leurs plages de valeurs
+     */
+    private const METRICS_CONFIG = [
+        'temperature' => [
+            'label' => 'Température corporelle',
+            'min' => 31.0,
+            'max' => 42.0
+        ],
+        'blood-pressure' => [
+            'label' => 'Tension artérielle',
+            'labelAlt' => 'Tension arterielle',
+            'min' => 80,
+            'max' => 160
+        ],
+        'heart-rate' => [
+            'label' => 'Fréquence cardiaque',
+            'min' => 35,
+            'max' => 130
+        ],
+        'respiration' => [
+            'label' => 'Fréquence respiratoire',
+            'min' => 0,
+            'max' => 30
+        ],
+        'glucose-trend' => [
+            'label' => 'Glycémie',
+            'min' => 2,
+            'max' => 10
+        ],
+        'weight' => [
+            'label' => 'Poids',
+            'min' => 35,
+            'max' => 110
+        ],
+        'oxygen-saturation' => [
+            'label' => 'Saturation en oxygène',
+            'min' => 72,
+            'max' => 100
+        ]
+    ];
+
+    /**
      * Affiche la page du tableau de bord avec graphiques et infos patients.
      *
      * @return void
      */
     public function index(): void
     {
+        // Vérification de l'authentification
         if (empty($_SESSION['user'])) {
             header('Location: /login');
             exit;
         }
 
-        $medId = (int) $_SESSION['user']['id'];
+        // Patients suivis par le médecin
+        $patients = Patient::getPatientsForDoctor(
+            (int) $_SESSION['user']['id']
+        );
 
-        // 🧠 1. Si patient dans l'URL → sauvegarde
-        if (isset($_GET['patient']) && ctype_digit($_GET['patient'])) {
-            $_SESSION['last_patient_id'] = (int) $_GET['patient'];
+        // Si aucun patient associé, afficher le message avec icône
+        if (empty($patients)) {
+            error_log("DEBUG: Aucun patient - affichage icône SVG");
+            $noPatient = true;
+            $chartData = [];
+            require __DIR__ . '/../Views/dashboard.php';
+            return;
         }
 
-        // 🧠 2. Patient actif
-        $patientId = $_SESSION['last_patient_id'] ?? null;
+        error_log("DEBUG: Patients trouvés: " . count($patients));
 
-        // 🧠 3. Fallback (premier patient du médecin)
-        if (!$patientId) {
-            $patientId = Patient::getFirstPatientIdForDoctor($_SESSION['user']['id']);
+        /// Patient sélectionné via URL
+        $doctorPatients = array_column($patients, 'pt_id');
+
+        if (isset($_GET['patient']) && ctype_digit($_GET['patient'])) {
+            $requestedId = (int) $_GET['patient'];
+
+            // Patient autorisé : on actualise la page sinon on reste sur le patient actuel
+            if (in_array($requestedId, $doctorPatients, true)) {
+                $_SESSION['last_patient_id'] = $requestedId;
+            }
+        }
+
+        $patientId = $_SESSION['last_patient_id']
+            ?? $patients[0]['pt_id'];
+
+        $patient = Patient::findById($patientId);
+
+        // Sécurité : si le patient n'existe plus ou n'est pas autorisé
+        if ($patient === null || !in_array($patientId, $doctorPatients, true)) {
+            $patientId = $patients[0]['pt_id'];
+            $patient = Patient::findById($patientId);
             $_SESSION['last_patient_id'] = $patientId;
         }
 
-        if (!$patientId) {
-            http_response_code(404);
-            \Core\View::render('errors/404');
-            return;
-        }
-
-        // Vérifier que le patient est bien rattaché au médecin connecté
-        $patient = Patient::findByIdForDoctor($patientId, $medId);
-        if (!$patient) {
-            http_response_code(403);
-            \Core\View::render('errors/404');
-            return;
-        }
-
-        // Récupérer les données pour chaque type de graphique
+        // Données graphiques (type/intervalles des ordonnées/unité)
         $chartData = [];
+        $noPatient = false;
 
-        // Température corporelle (35-40°C)
-        $tempData = Patient::getChartDataForDoctor($medId, $patientId, 'Température corporelle', 50);
-        if ($tempData) {
-            $chartData['temperature'] = [
-                'values' => Patient::prepareChartValues($tempData['valeurs'], 35.0, 40.0),
-                'lastValue' => end($tempData['valeurs'])['valeur'],
-                'unit' => $tempData['unite']
-            ];
+        foreach (self::METRICS_CONFIG as $key => $config) {
+            $metricData = $this->getMetricChartData(
+                $patientId,
+                $config['label'],
+                $config['labelAlt'] ?? null,
+                $config['min'],
+                $config['max']
+            );
+            if ($metricData !== null) {
+                $chartData[$key] = $metricData;
+            }
         }
 
-        // Tension artérielle (100-140 mmHg)
-        $tensionData = Patient::getChartDataForDoctor($medId, $patientId, 'Tension arterielle', 50);
-        if (!$tensionData) {
-            $tensionData = Patient::getChartDataForDoctor($medId, $patientId, 'Tension artérielle', 50);
-        }
-        if ($tensionData) {
-            $chartData['blood-pressure'] = [
-                'values' => Patient::prepareChartValues($tensionData['valeurs'], 100, 140),
-                'lastValue' => end($tensionData['valeurs'])['valeur'],
-                'unit' => $tensionData['unite']
-            ];
-        }
-
-        // Fréquence cardiaque (60-100 bpm)
-        $fcData = Patient::getChartDataForDoctor($medId, $patientId, 'Fréquence cardiaque', 50);
-        if ($fcData) {
-            $chartData['heart-rate'] = [
-                'values' => Patient::prepareChartValues($fcData['valeurs'], 25, 100),
-                'lastValue' => end($fcData['valeurs'])['valeur'],
-                'unit' => $fcData['unite']
-            ];
-        }
-
-        // Fréquence respiratoire (12-20 resp/min)
-        $respData = Patient::getChartDataForDoctor($medId, $patientId, 'Fréquence respiratoire', 50);
-        if ($respData) {
-            $chartData['respiration'] = [
-                'values' => Patient::prepareChartValues($respData['valeurs'], 0, 20),
-                'lastValue' => end($respData['valeurs'])['valeur'],
-                'unit' => $respData['unite']
-            ];
-        }
-
-        // Glycémie (4.0-7.5 mmol/L)
-        $glycemieData = Patient::getChartDataForDoctor($medId, $patientId, 'Glycémie', 50);
-        if ($glycemieData) {
-            $chartData['glucose-trend'] = [
-                'values' => Patient::prepareChartValues($glycemieData['valeurs'], 4.0, 7.5),
-                'lastValue' => end($glycemieData['valeurs'])['valeur'],
-                'unit' => $glycemieData['unite']
-            ];
-        }
-
-        // Poids (35-110 kg)
-        $poidsData = Patient::getChartDataForDoctor($medId, $patientId, 'Poids', 50);
-        if ($poidsData) {
-            $chartData['weight'] = [
-                'values' => Patient::prepareChartValues($poidsData['valeurs'], 35, 110),
-                'lastValue' => end($poidsData['valeurs'])['valeur'],
-                'unit' => $poidsData['unite']
-            ];
-        }
-
-        // Saturation en oxygène (95-100%)
-        $o2Data = Patient::getChartDataForDoctor($medId, $patientId, 'Saturation en oxygène', 50);
-        if ($o2Data) {
-            $chartData['oxygen-saturation'] = [
-                'values' => Patient::prepareChartValues($o2Data['valeurs'], 90, 100),
-                'lastValue' => end($o2Data['valeurs'])['valeur'],
-                'unit' => $o2Data['unite']
-            ];
-        }
-
-        // Récupérer la liste complète des patients du médecin pour la liste déroulante
-        $patients = Patient::getPatientsForDoctor($medId);
-
+        // Affichage
         require __DIR__ . '/../Views/dashboard.php';
+    }
+
+    /**
+     * Récupère les données d'une métrique avec ses seuils
+     *
+     * @param int $patientId ID du patient
+     * @param string $metricLabel Nom de la métrique
+     * @param string|null $labelAlt Nom alternatif de la métrique (fallback)
+     * @param float $minValue Valeur minimale pour le graphique
+     * @param float $maxValue Valeur maximale pour le graphique
+     * @return array|null Données formatées ou null si pas de données
+     */
+    private function getMetricChartData(int $patientId, string $metricLabel, ?string $labelAlt, float $minValue, float $maxValue): ?array
+    {
+        $data = Patient::getChartData($patientId, $metricLabel, 50);
+        
+        // Fallback pour label alternatif (ex: Tension arterielle vs Tension artérielle)
+        if (!$data && $labelAlt) {
+            $data = Patient::getChartData($patientId, $labelAlt, 50);
+            $metricLabel = $labelAlt; // Utiliser le label alternatif pour les seuils
+        }
+        
+        if (!$data) {
+            return null;
+        }
+
+        // Créer une copie pour ne pas modifier le tableau original avec end()
+        $valeurs = $data['valeurs'];
+        $lastValue = end($valeurs)['valeur'];
+
+        $result = [
+            'values' => Patient::prepareChartValues($data['valeurs'], $minValue, $maxValue),
+            'lastValue' => $lastValue,
+            'unit' => $data['unite'],
+            'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, $metricLabel, 'préoccupant', true),
+            'seuil_urgent' => Patient::getSeuilByStatus($patientId, $metricLabel, 'urgent', true),
+            'seuil_critique' => Patient::getSeuilByStatus($patientId, $metricLabel, 'critique', true),
+            'seuil_preoccupant_min' => Patient::getSeuilByStatus($patientId, $metricLabel, 'préoccupant', false),
+            'seuil_urgent_min' => Patient::getSeuilByStatus($patientId, $metricLabel, 'urgent', false),
+            'seuil_critique_min' => Patient::getSeuilByStatus($patientId, $metricLabel, 'critique', false)
+        ];
+
+        // Log de debug pour vérifier les seuils
+        if ($metricLabel === 'Température corporelle' || $metricLabel === 'Température corporelle') {
+            error_log("DEBUG SEUILS TEMP: " . json_encode($result));
+        }
+
+        return $result;
     }
 
     /**
@@ -167,34 +207,34 @@ final class DashboardController
 
         if (!$action || !in_array($action, ['ouvrir', 'réduire'], true)) {
             http_response_code(400);
-            error_log(sprintf('[LOG] Action invalide reçue: %s', var_export($input, true)));
+            error_log('[LOG] Action invalide reçue');
             echo json_encode(['error' => 'Action invalide']);
             exit;
         }
 
         $medId = (int) $_SESSION['user']['id'];
-        
+
         try {
             $historiqueConsole = new HistoriqueConsole();
-            
+
             if ($action === 'ouvrir') {
                 $success = $historiqueConsole->logGraphiqueOuvrir($medId);
             } else {
                 $success = $historiqueConsole->logGraphiqueReduire($medId);
             }
-            
+
             if (!$success) {
                 error_log(sprintf('[LOG] Échec du log: med_id=%d, action=%s', $medId, $action));
                 http_response_code(500);
                 echo json_encode(['error' => 'Échec de l\'enregistrement']);
                 exit;
             }
-            
+
             echo json_encode(['success' => true, 'action' => $action]);
         } catch (\Exception $e) {
-            error_log(sprintf('[LOG] Exception: %s | Trace: %s', $e->getMessage(), $e->getTraceAsString()));
+            error_log(sprintf('[LOG] Exception: %s', $e->getMessage()));
             http_response_code(500);
-            echo json_encode(['error' => 'Erreur serveur', 'message' => $e->getMessage()]);
+            echo json_encode(['error' => 'Erreur serveur']);
         }
         exit;
     }

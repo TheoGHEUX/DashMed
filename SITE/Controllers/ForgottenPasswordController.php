@@ -99,7 +99,9 @@ final class ForgottenPasswordController
                     // Construit l'URL reset
                     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
                         ? 'https' : 'http';
-                    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+                    // Éviter HTTP_HOST contrôlable par l'utilisateur, préférer SERVER_NAME (config serveur)
+                    $serverName = $_SERVER['SERVER_NAME'] ?? '';
+                    $host = $serverName !== '' ? $serverName : 'localhost';
                     $resetUrl = $scheme . '://' . $host . '/reset-password?token='
                         . urlencode($token) . '&email=' . urlencode($old['email']);
 

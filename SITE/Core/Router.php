@@ -98,7 +98,7 @@ final class Router
             exit;
         }
 
-        // Diagnostic DB restreint
+        // Diagnostic DB restreint (réduit l'exposition en debug)
         if ($this->path === '/health/db') {
             // Lecture minimale de .env pour APP_DEBUG/HEALTH_KEY
             $root = dirname(__DIR__, 2);
@@ -146,32 +146,13 @@ final class Router
             try {
                 $pdo = Database::getConnection();
                 $dbName = $pdo->query('SELECT DATABASE()')->fetchColumn() ?: null;
-                $tables = [];
-                $q = $pdo->query('SHOW TABLES');
-                if ($q) {
-                    $tables = $q->fetchAll(\PDO::FETCH_COLUMN) ?: [];
-                }
-
-                $columns = [];
-                foreach (['medecin', 'users'] as $t) {
-                    try {
-                        $st = $pdo->query('SHOW COLUMNS FROM `' . $t . '`');
-                        if ($st) {
-                            $columns[$t] = $st->fetchAll(\PDO::FETCH_COLUMN) ?: [];
-                        }
-                    } catch (\Throwable $e) {
-/* ignore */
-                    }
-                }
-
                 echo json_encode([
+                    'status'   => 'ok',
                     'database' => $dbName,
-                    'tables'   => $tables,
-                    'columns'  => $columns,
                 ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
             } catch (\Throwable $e) {
                 http_response_code(500);
-                echo json_encode(['error' => $e->getMessage()]);
+                echo json_encode(['error' => 'db_unavailable']);
             }
             exit;
         }

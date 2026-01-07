@@ -104,29 +104,38 @@ include __DIR__ . '/partials/head.php';
 </section>
 
 
-<?php if (!empty($patient)) : ?>
 <main class="dashboard-main container">
+    <?php if (!isset($noPatient) || $noPatient === false): ?>
     <div class="dashboard-header">
         <h1 class="page-title"><?= htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8') ?></h1>
-        <?php if (!isset($noPatient) || $noPatient === false): ?>
         <button class="btn-edit-mode" id="toggleEditMode" aria-pressed="false" aria-label="Activer le mode édition">
             <span class="icon-edit" aria-hidden="true">✎</span>
             <span class="text-edit">Modifier</span>
         </button>
-        <?php endif; ?>
     </div>
+    <?php endif; ?>
+
+    <?php if (isset($noPatient) && $noPatient === true): ?>
+        <!-- Message quand aucun patient n'est associé au médecin -->
+        <section class="dashboard-empty-state" role="status" aria-label="Aucun patient">
+            <div class="empty-state-content">
+                <div class="empty-state-icon" aria-hidden="true">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
+                              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </div>
+                <h2 class="empty-state-title">Aucun patient associé</h2>
+                <p class="empty-state-description">
+                    Vous n'avez actuellement aucun patient associé à votre compte.
+                    <br>Les patients vous seront assignés par l'administration.
+                </p>
+            </div>
+        </section>
+    <?php else: ?>
 
     <section class="dashboard-grid" id="dashboardGrid" aria-label="Statistiques de santé">
-        <?php if (isset($noPatient) && $noPatient === true): ?>
-            <!-- Message quand aucun patient n'est associé au médecin -->
-            <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; background: var(--card-bg, white); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                <svg style="width: 80px; height: 80px; margin-bottom: 20px; opacity: 0.5; stroke: var(--text-color, #333);" fill="none" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                <h2 style="font-size: 24px; color: var(--text-color, #333); margin-bottom: 10px;">Aucun patient associé</h2>
-                <p style="font-size: 16px; color: var(--text-muted, #666);">Aucun patient n'est actuellement associé à ce médecin.</p>
-            </div>
-        <?php else: ?>
+        <?php if (!empty($patient)) : ?>
         <article class="card chart-card" data-chart-id="blood-pressure">
             <div class="resize-handle" style="display: none;" aria-hidden="true"></div>
             <h2 class="card-title">Tendance de la tension (mmHg)</h2>
@@ -200,11 +209,11 @@ include __DIR__ . '/partials/head.php';
         <?php endif; ?>
     </section>
 
-    <?php if (!isset($noPatient) || $noPatient === false): ?>
     <div class="add-chart-panel" id="addChartPanel" style="display: none;" aria-hidden="true">
         <h3>Glissez un graphique ici pour le supprimer, ou glissez-le sur la grille pour l'ajouter</h3>
         <div class="available-charts" id="availableCharts" aria-hidden="true"></div>
     </div>
+
     <?php endif; ?>
 
     <section class="dashboard-legend">
@@ -212,8 +221,8 @@ include __DIR__ . '/partials/head.php';
             actualisez la page ou videz le cache du navigateur.</em></p>
     </section>
 </main>
-<?php endif; ?>
 
 <?php include __DIR__ . '/partials/footer.php'; ?>
 
 </body>
+</html>
