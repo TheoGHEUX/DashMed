@@ -236,6 +236,7 @@ final class Patient
         $valeurs = array_reverse($valeurs);
 
         return [
+            'id_mesure' => $mesure['id_mesure'],
             'type_mesure' => $typeMesure,
             'unite' => $mesure['unite'],
             'valeurs' => $valeurs

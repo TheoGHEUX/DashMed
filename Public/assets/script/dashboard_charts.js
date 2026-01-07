@@ -965,13 +965,26 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	// Log action graphique vers le serveur
-	function logGraphiqueAction(action) {
+	function logGraphiqueAction(action, chartId = null) {
+		// Récupérer pt_id depuis window.activePatient
+		const ptId = window.activePatient?.pt_id || null;
+		
+		// Récupérer id_mesure depuis les données du graphique si chartId est fourni
+		let idMesure = null;
+		if (chartId && window.patientChartData && window.patientChartData[chartId]) {
+			idMesure = window.patientChartData[chartId].id_mesure || null;
+		}
+
 		fetch('/api/log-graph-action', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
 			},
-			body: JSON.stringify({ action: action })
+			body: JSON.stringify({ 
+				action: action,
+				ptId: ptId,
+				idMesure: idMesure
+			})
 		})
 		.then(response => {
 			if (!response.ok) {
@@ -1397,7 +1410,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	function addChart(chartId) {
 		if (chartConfig.visible.includes(chartId)) return;
 
-		logGraphiqueAction('ouvrir'); // Log l'ajout/restauration du graphique
+		logGraphiqueAction('ajouter', chartId); // Log l'ajout/restauration du graphique
 		chartConfig.visible.push(chartId);
 		saveChartConfig();
 
@@ -1439,7 +1452,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	function removeChart(chartId) {
 		const index = chartConfig.visible.indexOf(chartId);
 		if (index > -1) {
-			logGraphiqueAction('réduire'); // Log la suppression
+			logGraphiqueAction('supprimer', chartId); // Log la suppression
 			chartConfig.visible.splice(index, 1);
 			saveChartConfig();
 			applyChartConfig();
@@ -1537,9 +1550,9 @@ document.addEventListener('DOMContentLoaded', () => {
 				
 				// Log l'action selon si on a agrandi ou réduit
 				if (finalColSpan > startColSpan) {
-					logGraphiqueAction('ouvrir');
+					logGraphiqueAction('agrandir', chartId);
 				} else if (finalColSpan < startColSpan) {
-					logGraphiqueAction('réduire');
+					logGraphiqueAction('réduire', chartId);
 				}
 				
 				chartConfig.sizes[chartId] = finalColSpan;

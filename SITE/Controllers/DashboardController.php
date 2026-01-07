@@ -161,6 +161,7 @@ final class DashboardController
         $lastValue = end($valeurs)['valeur'];
 
         $result = [
+            'id_mesure' => $data['id_mesure'],
             'values' => Patient::prepareChartValues($data['valeurs'], $minValue, $maxValue),
             'lastValue' => $lastValue,
             'unit' => $data['unite'],
@@ -182,7 +183,7 @@ final class DashboardController
 
     /**
      * API endpoint pour logger les actions sur les graphiques
-     * Attend POST avec JSON: {"action": "ouvrir"|"réduire"}
+     * Attend POST avec JSON: {"action": "ajouter"|"supprimer"|"réduire"|"agrandir", "ptId": int, "idMesure": int}
      *
      * @return void
      */
@@ -204,8 +205,10 @@ final class DashboardController
 
         $input = json_decode(file_get_contents('php://input'), true);
         $action = $input['action'] ?? null;
+        $ptId = isset($input['ptId']) ? (int)$input['ptId'] : null;
+        $idMesure = isset($input['idMesure']) ? (int)$input['idMesure'] : null;
 
-        if (!$action || !in_array($action, ['ouvrir', 'réduire'], true)) {
+        if (!$action || !in_array($action, ['ajouter', 'supprimer', 'réduire', 'agrandir'], true)) {
             http_response_code(400);
             error_log('[LOG] Action invalide reçue');
             echo json_encode(['error' => 'Action invalide']);
@@ -217,14 +220,25 @@ final class DashboardController
         try {
             $historiqueConsole = new HistoriqueConsole();
 
-            if ($action === 'ouvrir') {
-                $success = $historiqueConsole->logGraphiqueOuvrir($medId);
-            } else {
-                $success = $historiqueConsole->logGraphiqueReduire($medId);
+            switch ($action) {
+                case 'ajouter':
+                    $success = $historiqueConsole->logGraphiqueAjouter($medId, $ptId, $idMesure);
+                    break;
+                case 'supprimer':
+                    $success = $historiqueConsole->logGraphiqueSupprimer($medId, $ptId, $idMesure);
+                    break;
+                case 'réduire':
+                    $success = $historiqueConsole->logGraphiqueReduire($medId, $ptId, $idMesure);
+                    break;
+                case 'agrandir':
+                    $success = $historiqueConsole->logGraphiqueAgrandir($medId, $ptId, $idMesure);
+                    break;
+                default:
+                    $success = false;
             }
 
             if (!$success) {
-                error_log(sprintf('[LOG] Échec du log: med_id=%d, action=%s', $medId, $action));
+                error_log(sprintf('[LOG] Échec du log: med_id=%d, action=%s, pt_id=%s, id_mesure=%s', $medId, $action, $ptId ?? 'null', $idMesure ?? 'null'));
                 http_response_code(500);
                 echo json_encode(['error' => 'Échec de l\'enregistrement']);
                 exit;
