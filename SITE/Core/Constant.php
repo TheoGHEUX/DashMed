@@ -97,6 +97,6 @@ final class Constant
      */
     public static function controllerDirectory(): string
     {
-        return self::rootDirectory() . self::CORE_DIRECTORY;
+        return self::rootDirectory() . self::CONTROLLER_DIRECTORY;
     }
 }
