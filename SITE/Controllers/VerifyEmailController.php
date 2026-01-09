@@ -40,7 +40,7 @@ final class VerifyEmailController
             $errors[] = 'Token de vérification manquant.';
         } else {
             // Recherche de l'utilisateur par token
-            $user = User:: findByVerificationToken($token);
+            $user = User::findByVerificationToken($token);
 
             if (!$user) {
                 $errors[] = 'Token de vérification invalide ou expiré.';
@@ -115,6 +115,6 @@ final class VerifyEmailController
             }
         }
 
-        require __DIR__ .  '/../Views/auth/resend-verification.php';
+        require __DIR__ . '/../Views/auth/resend-verification.php';
     }
 }

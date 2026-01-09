@@ -48,7 +48,7 @@ final class Patient
             LIMIT 1
         ');
         $st->execute([$id]);
-        $patient = $st->fetch(PDO:: FETCH_ASSOC);
+        $patient = $st->fetch(PDO::FETCH_ASSOC);
         return $patient ?: null;
     }
 
@@ -72,8 +72,8 @@ final class Patient
             p.prenom
         FROM suivre s
         JOIN patient p ON p.pt_id = s.pt_id
-        WHERE s.med_id = : med_id
-        ORDER BY p. nom, p.prenom
+        WHERE s.med_id = :med_id
+        ORDER BY p.nom, p.prenom
     ");
 
         $stmt->execute([':med_id' => $doctorId]);
@@ -99,7 +99,7 @@ final class Patient
             SELECT 
                 p.pt_id,
                 p.prenom,
-                p. nom,
+                p.nom,
                 p.email,
                 p.sexe,
                 p.groupe_sanguin,
@@ -132,7 +132,7 @@ final class Patient
      */
     public static function getChartDataForDoctor(int $medId, int $patientId, string $typeMesure, int $limit = 50): ?array
     {
-        $pdo = Database:: getConnection();
+        $pdo = Database::getConnection();
 
         // Vérifier que le médecin suit ce patient
         $check = $pdo->prepare('
@@ -151,7 +151,7 @@ final class Patient
             LIMIT 1
         ');
         $st->execute([$patientId, $typeMesure]);
-        $mesure = $st->fetch(PDO:: FETCH_ASSOC);
+        $mesure = $st->fetch(PDO::FETCH_ASSOC);
 
         if (!$mesure) {
             return null;
@@ -203,7 +203,7 @@ final class Patient
             ORDER BY id_mesure
         ');
         $st->execute([$patientId]);
-        return $st->fetchAll(PDO:: FETCH_ASSOC);
+        return $st->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
@@ -260,9 +260,9 @@ final class Patient
                 m.unite,
                 vm.valeur as derniere_valeur,
                 vm.date_mesure as derniere_date,
-                vm. heure_mesure as derniere_heure
+                vm.heure_mesure as derniere_heure
             FROM mesures m
-            INNER JOIN valeurs_mesures vm ON m.id_mesure = vm. id_mesure
+            INNER JOIN valeurs_mesures vm ON m.id_mesure = vm.id_mesure
             WHERE m.pt_id = ?
             AND (vm.date_mesure, vm.heure_mesure) = (
                 SELECT date_mesure, heure_mesure
@@ -319,7 +319,7 @@ final class Patient
             LIMIT ?
         ');
         $st->execute([$mesure['id_mesure'], $limit]);
-        $valeurs = $st->fetchAll(PDO:: FETCH_ASSOC);
+        $valeurs = $st->fetchAll(PDO::FETCH_ASSOC);
 
         // Inverser pour avoir les plus anciennes en premier (ordre chronologique)
         $valeurs = array_reverse($valeurs);
@@ -403,7 +403,7 @@ final class Patient
      *
      * @param int $patientId Identifiant du patient
      * @param string $typeMesure Type de mesure concerné
-     * @param string $statut Statut du seuil ('préoccupant', 'urgent', 'critique')
+     * @param string $statut Statut du seuil ('Préoccupant', 'Urgent', 'Critique')
      * @param bool $majorant True pour seuil maximum, false pour seuil minimum
      * @return float|null Valeur du seuil ou null si non défini
      */
@@ -411,14 +411,16 @@ final class Patient
     {
         $pdo = Database::getConnection();
 
+        // Sélectionner seuil_max pour les majorants (true) ou seuil_min pour les minorants (false)
+        $seuilColumn = $majorant ? 'sa.seuil_max' : 'sa.seuil_min';
+
         $sql = "
-        SELECT seuil
+        SELECT $seuilColumn as seuil
         FROM seuil_alerte sa
-        JOIN mesures m ON m.id_mesure = sa. id_mesure
-        WHERE sa.statut = : statut
+        JOIN mesures m ON m.id_mesure = sa.id_mesure
+        WHERE sa.statut = :statut
           AND m.type_mesure = :type
           AND m.pt_id = :pt_id
-          AND sa.majorant = :majorant
         LIMIT 1
     ";
 
@@ -427,8 +429,7 @@ final class Patient
         $stmt->execute([
             ':statut' => $statut,
             ':type' => $typeMesure,
-            ': pt_id' => $patientId,
-            ':majorant' => $majorant ?  1 : 0
+            ':pt_id' => $patientId
         ]);
 
         $row = $stmt->fetch();

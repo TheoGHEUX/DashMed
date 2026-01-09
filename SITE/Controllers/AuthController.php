@@ -125,7 +125,7 @@ final class AuthController
         $csrf             = (string)($_POST['csrf_token'] ?? '');
 
         // Validation du jeton CSRF
-        if (!Csrf:: validate($csrf)) {
+        if (!Csrf::validate($csrf)) {
             $errors[] = 'Session expirée ou jeton CSRF invalide.';
         }
 
@@ -222,7 +222,7 @@ final class AuthController
         }
 
         $specialites = self::SPECIALITES_VALIDES;
-        require __DIR__ .  '/../Views/auth/register. php';
+        require __DIR__ . '/../Views/auth/register.php';
     }
 
     /**
@@ -240,7 +240,7 @@ final class AuthController
             ? 'Votre mot de passe a été réinitialisé. Vous pouvez vous connecter.'
             : '';
         $old = ['email' => ''];
-        require __DIR__ .  '/../Views/auth/login. php';
+        require __DIR__ . '/../Views/auth/login.php';
     }
 
     /**

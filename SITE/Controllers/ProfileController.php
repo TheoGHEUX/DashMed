@@ -33,6 +33,6 @@ final class ProfileController
         $parts = preg_split('/\s+/', trim($user['name'] ?? ''), 2);
         $first = $parts[0] ?? '';
         $last  = $parts[1] ?? '';
-        require __DIR__ . '/../Views/profile. php';
+        require __DIR__ . '/../Views/profile.php';
     }
 }

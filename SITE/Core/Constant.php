@@ -62,7 +62,7 @@ final class Constant
      */
     public static function coreDirectory(): string
     {
-        return self:: rootDirectory() . self::CORE_DIRECTORY;
+        return self::rootDirectory() . self::CORE_DIRECTORY;
     }
 
     /**
@@ -77,7 +77,7 @@ final class Constant
      */
     public static function viewDirectory(): string
     {
-        return self:: rootDirectory() . self::VIEW_DIRECTORY;
+        return self::rootDirectory() . self::VIEW_DIRECTORY;
     }
 
     /**
@@ -97,6 +97,6 @@ final class Constant
      */
     public static function controllerDirectory(): string
     {
-        return self::rootDirectory() . self::CORE_DIRECTORY;
+        return self::rootDirectory() . self::CONTROLLER_DIRECTORY;
     }
 }

@@ -145,7 +145,7 @@ final class ResetPasswordController
                     ));
                     $errors[] = 'Une erreur technique est survenue lors de la réinitialisation.  '
                         . 'Veuillez réessayer.';
-                    \Core\View:: render('auth/reset-password', [
+                    \Core\View::render('auth/reset-password', [
                         'errors'  => $errors,
                         'success' => $success,
                         'email'   => $emailPosted,

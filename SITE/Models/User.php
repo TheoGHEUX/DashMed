@@ -95,7 +95,7 @@ final class User
             LIMIT 1
         ');
         $st->execute([strtolower(trim($email))]);
-        $user = $st->fetch(PDO:: FETCH_ASSOC);
+        $user = $st->fetch(PDO::FETCH_ASSOC);
         return $user ?: null;
     }
 
@@ -131,7 +131,7 @@ final class User
         ');
         $st->execute([$id]);
         $user = $st->fetch(PDO::FETCH_ASSOC);
-        return $user ?:  null;
+        return $user ?: null;
     }
 
     /**
@@ -274,7 +274,7 @@ final class User
         LIMIT 1
     ');
         $st->execute([$token]);
-        $user = $st->fetch(PDO:: FETCH_ASSOC);
+        $user = $st->fetch(PDO::FETCH_ASSOC);
 
         if (!$user) {
             return false;

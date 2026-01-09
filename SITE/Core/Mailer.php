@@ -91,7 +91,7 @@ final class Mailer
      */
     public static function sendPasswordResetEmail(string $to, string $displayName, string $resetUrl): bool
     {
-        $from = 'dashmed-site@alwaysdata. net';
+        $from = 'dashmed-site@alwaysdata.net';
         $subject = 'Réinitialisation de votre mot de passe - DashMed';
 
         $headers = [

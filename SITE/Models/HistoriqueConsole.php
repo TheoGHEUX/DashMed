@@ -46,7 +46,7 @@ final class HistoriqueConsole
         $pdo = Database::getConnection();
 
         // Valider le type d'action
-        if (!in_array($typeAction, self:: VALID_ACTIONS, true)) {
+        if (!in_array($typeAction, self::VALID_ACTIONS, true)) {
             error_log(sprintf('[HISTORIQUE] Type d\'action invalide: %s', $typeAction));
             return false;
         }
@@ -164,9 +164,9 @@ final class HistoriqueConsole
         ');
 
         $st->bindValue(1, $medId, PDO::PARAM_INT);
-        $st->bindValue(2, $limit, PDO:: PARAM_INT);
+        $st->bindValue(2, $limit, PDO::PARAM_INT);
         $st->execute();
 
-        return $st->fetchAll(PDO:: FETCH_ASSOC);
+        return $st->fetchAll(PDO::FETCH_ASSOC);
     }
 }

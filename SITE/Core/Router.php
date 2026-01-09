@@ -89,7 +89,7 @@ final class Router
             '/resend-verification' => [\Controllers\VerifyEmailController::class, 'resend', 'resend'],
         ],
         'protected' => [
-            '/accueil' => [AccueilController:: class, 'index'],
+            '/accueil' => [AccueilController::class, 'index'],
             '/dashboard' => [DashboardController::class, 'index'],
             '/tableau-de-bord' => [DashboardController::class, 'index'],
             '/profile' => [ProfileController::class, 'show'],
@@ -97,7 +97,7 @@ final class Router
             '/change-password' => [ChangePasswordController::class, 'submit', 'showForm'],
             '/changer-mot-de-passe' => [ChangePasswordController::class, 'submit', 'showForm'],
             '/change-mail' => [ChangeMailController::class, 'submit', 'showForm'],
-            '/changer-mail' => [ChangeMailController:: class, 'submit', 'showForm'],
+            '/changer-mail' => [ChangeMailController::class, 'submit', 'showForm'],
             '/api/log-graph-action' => [DashboardController::class, 'logGraphAction'],
         ],
     ];

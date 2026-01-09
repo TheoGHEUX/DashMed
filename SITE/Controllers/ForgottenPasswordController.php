@@ -104,9 +104,9 @@ final class ForgottenPasswordController
         if (!$errors) {
             try {
                 // Vérifie si l'email est inscrit
-                $user = User:: findByEmail($old['email']);
+                $user = User::findByEmail($old['email']);
                 if ($user) {
-                    $pdo = Database:: getConnection();
+                    $pdo = Database::getConnection();
 
                     // Nettoyage des anciens tokens pour le mail associer au mdp réunitialiser
                     $del = $pdo->prepare('DELETE FROM password_resets WHERE email = ? OR expires_at < NOW()');

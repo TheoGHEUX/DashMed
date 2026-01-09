@@ -85,7 +85,7 @@ final class AutoLoader
      */
     public static function loadView($className): void
     {
-        $file = Constant:: viewDirectory() . "$className.php";
+        $file = Constant::viewDirectory() . "$className.php";
         static::load($file);
     }
 
@@ -112,7 +112,7 @@ final class AutoLoader
                 return; // pas dans Controllers
             }
         }
-        $file = Constant:: controllerDirectory() . str_replace('\\', DIRECTORY_SEPARATOR, $className) . '.php';
+        $file = Constant::controllerDirectory() . str_replace('\\', DIRECTORY_SEPARATOR, $className) . '.php';
         static::load($file);
     }
 

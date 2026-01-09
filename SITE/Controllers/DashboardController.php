@@ -175,7 +175,7 @@ final class DashboardController
      */
     private function getMetricChartData(int $patientId, string $metricLabel, ?string $labelAlt, float $minValue, float $maxValue): ?array
     {
-        $data = Patient:: getChartData($patientId, $metricLabel, 50);
+        $data = Patient::getChartData($patientId, $metricLabel, 50);
 
         // Fallback pour label alternatif (ex:  Tension arterielle vs Tension artérielle)
         if (!$data && $labelAlt) {
@@ -196,12 +196,12 @@ final class DashboardController
             'values' => Patient::prepareChartValues($data['valeurs'], $minValue, $maxValue),
             'lastValue' => $lastValue,
             'unit' => $data['unite'],
-            'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, $metricLabel, 'préoccupant', true),
-            'seuil_urgent' => Patient::getSeuilByStatus($patientId, $metricLabel, 'urgent', true),
-            'seuil_critique' => Patient::getSeuilByStatus($patientId, $metricLabel, 'critique', true),
-            'seuil_preoccupant_min' => Patient::getSeuilByStatus($patientId, $metricLabel, 'préoccupant', false),
-            'seuil_urgent_min' => Patient::getSeuilByStatus($patientId, $metricLabel, 'urgent', false),
-            'seuil_critique_min' => Patient::getSeuilByStatus($patientId, $metricLabel, 'critique', false)
+            'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, $metricLabel, 'Préoccupant', true),
+            'seuil_urgent' => Patient::getSeuilByStatus($patientId, $metricLabel, 'Urgent', true),
+            'seuil_critique' => Patient::getSeuilByStatus($patientId, $metricLabel, 'Critique', true),
+            'seuil_preoccupant_min' => Patient::getSeuilByStatus($patientId, $metricLabel, 'Préoccupant', false),
+            'seuil_urgent_min' => Patient::getSeuilByStatus($patientId, $metricLabel, 'Urgent', false),
+            'seuil_critique_min' => Patient::getSeuilByStatus($patientId, $metricLabel, 'Critique', false)
         ];
 
         // Log de debug pour vérifier les seuils
