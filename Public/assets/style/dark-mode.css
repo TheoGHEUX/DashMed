@@ -291,3 +291,62 @@ footer a,
         color: #ffffff;
     }
 }
+
+/* Mode sombre pour la liste des patients */
+
+[data-theme="dark"] .patients-list-overlay .patients-list-content {
+    background: var(--bg-card);
+    color: var(--text-primary);
+}
+
+/* Mode sombre pour l'empty state */
+[data-theme="dark"] .empty-state-content {
+    background: var(--bg-card, #1e293b);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .empty-state-icon {
+    color: var(--text-muted, #64748b);
+}
+
+[data-theme="dark"] .empty-state-title {
+    color: var(--text-primary, #f1f5f9);
+}
+
+[data-theme="dark"] .empty-state-description {
+    color: var(--text-secondary, #94a3b8);
+}
+
+/* Légende des seuils */
+
+[data-theme="dark"] .thresholds-legend {
+    background: var(--card-bg-dark, #1d2833);
+}
+
+[data-theme="dark"] .thresholds-legend h2 {
+    color: var(--text-primary-dark, #f9fafb);
+}
+
+[data-theme="dark"] .legend-intro,
+[data-theme="dark"] .legend-text span,
+[data-theme="dark"] .legend-note {
+    color: var(--text-secondary-dark, #d1d5db);
+}
+
+[data-theme="dark"] .legend-item {
+    background: var(--bg-secondary-dark, #374151);
+}
+
+[data-theme="dark"] .legend-item:hover {
+    background: var(--bg-hover-dark, #4b5563);
+}
+
+[data-theme="dark"] .legend-text strong,
+[data-theme="dark"] .legend-note strong {
+    color: var(--text-primary-dark, #f9fafb);
+}
+
+[data-theme="dark"] .legend-note {
+    background: var(--bg-info-dark, #1e3a5f);
+    border-left-color: var(--color-info-dark, #60a5fa);
+}
