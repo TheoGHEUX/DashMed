@@ -152,19 +152,27 @@ final class DashboardController
             $metricLabel = $labelAlt; // Utiliser le label alternatif pour les seuils
         }
 
-        if (!$data) {
+        // Vérifier que les données existent ET contiennent un tableau de valeurs
+        if (!$data || !isset($data['valeurs']) || !is_array($data['valeurs']) || empty($data['valeurs'])) {
             return null;
         }
 
         // Créer une copie pour ne pas modifier le tableau original avec end()
         $valeurs = $data['valeurs'];
-        $lastValue = end($valeurs)['valeur'];
+        $lastValueRow = end($valeurs);
+
+        // Vérifier que lastValueRow est bien un tableau avec la clé 'valeur'
+        if (!is_array($lastValueRow) || !isset($lastValueRow['valeur'])) {
+            return null;
+        }
+
+        $lastValue = $lastValueRow['valeur'];
 
         $result = [
-            'id_mesure' => $data['id_mesure'],
+            'id_mesure' => $data['id_mesure'] ?? null,
             'values' => Patient::prepareChartValues($data['valeurs'], $minValue, $maxValue),
             'lastValue' => $lastValue,
-            'unit' => $data['unite'],
+            'unit' => $data['unite'] ?? '',
             'seuil_preoccupant' => Patient::getSeuilByStatus($patientId, $metricLabel, 'préoccupant', true),
             'seuil_urgent' => Patient::getSeuilByStatus($patientId, $metricLabel, 'urgent', true),
             'seuil_critique' => Patient::getSeuilByStatus($patientId, $metricLabel, 'critique', true),
@@ -174,7 +182,7 @@ final class DashboardController
         ];
 
         // Log de debug pour vérifier les seuils
-        if ($metricLabel === 'Température corporelle' || $metricLabel === 'Température corporelle') {
+        if ($metricLabel === 'Température corporelle') {
             error_log("DEBUG SEUILS TEMP: " . json_encode($result));
         }
 
