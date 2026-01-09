@@ -201,6 +201,8 @@ include __DIR__ . '/partials/head.php';
                 <div class="small-note" id="note-oxygen">%, dernière mesure</div>
             </div>
         </article>
+
+
         <?php endif; ?>
     </section>
 
@@ -217,10 +219,10 @@ include __DIR__ . '/partials/head.php';
     </section>
 </main>
 
-
-
-
 <!-- Légende des seuils d'alerte -->
+
+<?php if (isset($noPatient) && $noPatient === true) : ?>
+<?php else : ?>
 <section class="thresholds-legend">
     <h2>Légende des seuils d'alerte</h2>
     <div class="legend-content">
@@ -263,6 +265,8 @@ include __DIR__ . '/partials/head.php';
         </p>
     </div>
 </section>
+
+<?php endif; ?>
 
 <?php include __DIR__ . '/partials/footer.php'; ?>
 
