@@ -1,17 +1,13 @@
 <?php
 
+
 /**
- * Vue : Vérification d'email
+ * Vue :  Vérification d'email
  *
- * Affiche le résultat de la vérification d'adresse email (succès, erreurs ou en cours).
+ * Affiche le résultat de la vérification d'adresse email après clic sur le lien
+ * envoyé par email (succès, token expiré, erreur).
  *
- * Variables attendues :
- *  - $pageTitle (string)       Titre de la page
- *  - $pageDescription (string) Meta description
- *  - $pageStyles (array)       Styles spécifiques
- *  - $pageScripts (array)      Scripts spécifiques
- *  - $success (string|null)    Message de succès (optionnel)
- *  - $errors (array|null)      Liste d'erreurs (optionnel)
+ * @package Views
  */
 
 $pageTitle = $pageTitle ?? "Vérification d'email";

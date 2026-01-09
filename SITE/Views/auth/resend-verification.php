@@ -1,12 +1,12 @@
 <?php
 
 /**
- * Vue : Renvoyer l'email de vérification
+ * Vue : Renvoi de l'email de vérification
  *
- * Page publique pour demander le renvoi d'un email de vérification.
- * Variables optionnelles : $success (string), $errors (array), $email (string)
+ * Formulaire public pour demander le renvoi d'un email de vérification en cas
+ * d'expiration ou de perte du lien initial.
  *
- * @package DashMed
+ * @package Views
  */
 
 $csrf_token = '';

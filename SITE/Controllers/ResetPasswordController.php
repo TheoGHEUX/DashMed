@@ -1,30 +1,5 @@
 <?php
 
-/**
- * Contrôleur : Réinitialisation du mot de passe
- *
- * Gère l'affichage du formulaire de réinitialisation (showForm) et le traitement
- * du nouveau mot de passe (submit). Utilise un token stocké dans la table
- * password_resets et protège les soumissions avec CSRF.
- *
- * Méthodes principales :
- *  - showForm(): affiche la vue de reset (email + token en GET)
- *  - submit():   valide CSRF, vérifie token, met à jour le mot de passe et invalide le token
- *
- * Variables passées aux vues :
- *  - $errors  (array)   Liste d'erreurs à afficher
- *  - $success (string)  Message de succès
- *  - $email   (string)  Email affiché dans le formulaire
- *  - $token   (string)  Token (hidden)
- *
- * Remarques de sécurité :
- *  - Vérification stricte du token (hash SHA-256) et usage en transaction
- *  - Validation côté serveur de la complexité du mot de passe
- *  - Invalidation du token après usage (used_at)
- *
- * @package Controllers
- */
-
 namespace Controllers;
 
 use Core\Csrf;
@@ -32,13 +7,20 @@ use Core\Database;
 use PDO;
 
 /**
- * Contrôleur de la réinitialisation de mot de passe : affichage du formulaire
- * et traitement du reset sécurisé via token.
+ * Contrôleur de réinitialisation de mot de passe.
+ *
+ * Gère le processus de réinitialisation via token sécurisé : validation du lien,
+ * affichage du formulaire et mise à jour du mot de passe avec invalidation du token.
+ *
+ * @package Controllers
  */
 final class ResetPasswordController
 {
     /**
-     * Affiche le formulaire de réinitialisation si le token est valide.
+     * Affiche le formulaire de réinitialisation.
+     *
+     * Vérifie la validité du token (non expiré, non utilisé) avant d'afficher
+     * le formulaire. Affiche une erreur si le lien est invalide ou expiré.
      *
      * @return void
      */
@@ -59,8 +41,23 @@ final class ResetPasswordController
     }
 
     /**
-     * Traite la soumission du formulaire de réinitialisation : validations
-     * et mise à jour du mot de passe si le token est valide.
+     * Traite la soumission du formulaire de réinitialisation.
+     *
+     * Validations :
+     * - Token CSRF valide
+     * - Token de réinitialisation présent
+     * - Mots de passe identiques
+     * - Complexité du mot de passe (12+ caractères, maj, min, chiffre, spécial)
+     *
+     * Processus en transaction :
+     * 1. Verrouille la ligne du token (FOR UPDATE, évite race conditions)
+     * 2. Récupère l'email associé au token
+     * 3. Met à jour le mot de passe de l'utilisateur
+     * 4. Invalide le token (used_at = NOW())
+     * 5. Redirige vers /login avec message de succès
+     *
+     * Le token est hashé en SHA-256 côté serveur.  L'email utilisé pour la mise
+     * à jour provient du token (pas du POST) pour éviter toute manipulation.
      *
      * @return void
      */
@@ -107,7 +104,7 @@ final class ResetPasswordController
                 $sel = $pdo->prepare('
                     SELECT email
                     FROM password_resets
-                    WHERE token_hash = ?
+                    WHERE token_hash = ? 
                       AND expires_at > NOW()
                       AND used_at IS NULL
                     LIMIT 1
@@ -122,7 +119,7 @@ final class ResetPasswordController
                     \Core\View::render('auth/reset-password', [
                         'errors'  => $errors,
                         'success' => $success,
-                        // on garde ce qui était dans le formulaire pour ne pas "perdre" l’utilisateur
+                        // on garde ce qui était dans le formulaire pour ne pas "perdre" l'utilisateur
                         'email'   => $emailPosted,
                         'token'   => $token,
                     ]);
@@ -146,9 +143,9 @@ final class ResetPasswordController
                         '[RESET] No user row updated for email=%s (from token)',
                         $emailFromToken
                     ));
-                    $errors[] = 'Une erreur technique est survenue lors de la réinitialisation. '
+                    $errors[] = 'Une erreur technique est survenue lors de la réinitialisation.  '
                         . 'Veuillez réessayer.';
-                    \Core\View::render('auth/reset-password', [
+                    \Core\View:: render('auth/reset-password', [
                         'errors'  => $errors,
                         'success' => $success,
                         'email'   => $emailPosted,
@@ -187,11 +184,14 @@ final class ResetPasswordController
     }
 
     /**
-     * Vérifie si le token est valide pour l'email donné.
+     * Vérifie la validité d'un token de réinitialisation.
      *
-     * @param string $email
-     * @param string $token
-     * @return bool
+     * Un token est valide s'il existe en base, n'est pas expiré et n'a pas
+     * encore été utilisé.  Le token est hashé en SHA-256 avant vérification.
+     *
+     * @param string $email Adresse email associée au token
+     * @param string $token Token de réinitialisation (64 hex chars)
+     * @return bool True si le token est valide, false sinon
      */
     private function isValidToken(string $email, string $token): bool
     {

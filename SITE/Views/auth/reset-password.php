@@ -1,20 +1,17 @@
 <?php
+
 /**
- * Vue : Réinitialisation du mot de passe
+ * Vue :  Réinitialisation du mot de passe
  *
- * Page publique permettant à un utilisateur de définir un nouveau mot de passe
- * après avoir cliqué sur le lien de réinitialisation reçu par email.
+ * Formulaire public pour définir un nouveau mot de passe après avoir cliqué sur
+ * le lien de réinitialisation reçu par email.  Le token et l'email sont transmis
+ * en paramètres GET puis passés en hidden dans le formulaire.
  *
  * Variables attendues :
- * @var string $csrf_token        Token CSRF (généré via \Core\Csrf::token())
- * @var string $email             Email de l'utilisateur (hidden)
- * @var string $token             Token de réinitialisation (hidden)
- * @var array  $errors            Tableau d'erreurs de validation (optionnel)
- * @var string $success           Message de succès (optionnel)
- * @var string $pageTitle         Titre de la page (optionnel)
- * @var string $pageDescription   Meta description (optionnel)
- * @var array  $pageStyles        Styles spécifiques (optionnel)
- * @var array  $pageScripts       Scripts spécifiques (optionnel)
+ * @var string $email Email de l'utilisateur (depuis GET)
+ * @var string $token Token de réinitialisation (depuis GET)
+ *
+ * @package Views
  */
 
 $csrf_token = (class_exists('\Core\Csrf') && method_exists('\Core\Csrf', 'token'))

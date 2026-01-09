@@ -3,13 +3,14 @@
 /**
  * Vue : Changement de mot de passe
  *
- * Formulaire pour que l'utilisateur connecté modifie son mot de passe.
+ * Formulaire sécurisé pour modifier le mot de passe d'un utilisateur connecté.
+ * Nécessite la saisie de l'ancien mot de passe pour validation.
  *
- * Variables optionnelles :
- *  - $errors  (array)   Erreurs de validation à afficher
- *  - $success (string)  Message de succès
+ * Variables attendues :
+ * @var array<int,string> $errors Liste des erreurs de validation
+ * @var string $success Message de succès après mise à jour
  *
- * @package DashMed
+ * @package Views
  */
 
 $csrf_token = \Core\Csrf::token();

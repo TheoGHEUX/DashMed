@@ -1,18 +1,16 @@
 <?php
+
 /**
  * Vue : Mot de passe oublié
  *
- * Page publique pour demander l'envoi d'un lien de réinitialisation par email.
- * Affiche le formulaire sécurisé par CSRF et les messages d'état (success / errors).
+ * Formulaire public pour demander l'envoi d'un lien de réinitialisation par email.
+ * Affiche une réponse neutre pour éviter l'énumération des comptes.
  *
- * Variables attendues (optionnelles) :
- * @var string|null $csrf_token Token CSRF
- * @var array|null  $errors     Liste d'erreurs de validation
- * @var string|null $success    Message de confirmation
- * @var array|null  $old        Anciennes valeurs du formulaire
+ * Variables attendues :
+ * @var array<int,string> $errors Liste des erreurs de validation
+ * @var string $success Message de confirmation
  *
- * @package DashMed
- * @version 1.1
+ * @package Views
  */
 
 $csrf_token = '';

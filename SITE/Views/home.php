@@ -1,25 +1,11 @@
 <?php
 /**
- * Vue : Page d'accueil publique (Home)
+ * Vue : Page d'accueil publique
  *
- * Vitrine publique de l'application DashMed. Présente le hero, les CTA et les
- * principales fonctionnalités pour inviter à l'inscription ou la connexion.
+ * Landing page présentant DashMed avec hero, CTA et fonctionnalités principales
+ * afin d'inciter à l'inscription ou la connexion.
  *
- * @package    DashMed
- * @subpackage Views
- * @category   Frontend
- * @version    1.1
- * @since      1.0
- *
- * Variables attendues :
- * @var string $pageTitle               Titre de la page (défaut : "Accueil")
- * @var string $pageDescription         Meta description
- * @var array<int,string> $pageStyles   Styles spécifiques (["/assets/style/index.css"])
- * @var array<int,string> $pageScripts  Scripts spécifiques (["/assets/script/header_responsive.js"])
- *
- * @see \SITE\Views\partials\head.php
- * @see \SITE\Views\partials\headerPublic.php
- * @see \SITE\Views\partials\footer.php
+ * @package Views
  */
 
 $pageTitle       = $pageTitle ?? "Accueil";

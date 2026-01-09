@@ -1,14 +1,11 @@
 <?php
 /**
- * Vue : Page d'erreur 404 (Page non trouvée)
+ * Vue : Page d'erreur 404
  *
- * Page simple affichant le code 404, un message et deux actions (accueil, dashboard).
+ * Page affichée lorsqu'une route n'existe pas.  Propose deux actions : retour à
+ * l'accueil ou vers le tableau de bord (si connecté).
  *
- * Variables optionnelles (définies par le contrôleur) :
- * @var string $pageTitle
- * @var string $pageDescription
- * @var array  $pageStyles
- * @var array  $pageScripts
+ * @package Views
  */
 
 http_response_code(404);

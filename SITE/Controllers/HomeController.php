@@ -3,19 +3,21 @@
 namespace Controllers;
 
 /**
- * Contrôleur : Page d'accueil
+ * Contrôleur de la page d'accueil publique.
  *
- * Affiche la page d'accueil du site.
- * Méthode unique :
- *  - index(): rend la vue 'home'
+ * Affiche la page d'accueil du site (landing page).
  *
  * @package Controllers
  */
 final class HomeController
 {
+    /**
+     * Affiche la page d'accueil.
+     *
+     * @return void
+     */
     public function index(): void
     {
-        // Page d'accueil (ex-index.html) rendue via View::render('home') -> fichier Views/home.php
         \Core\View::render('home');
     }
 }

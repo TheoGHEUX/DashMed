@@ -1,18 +1,15 @@
 <?php
 
 /**
- * Partial : Header privé (navigation pour utilisateurs authentifiés)
+ * Partial : Header privé
  *
- * En-tête affiché pour les utilisateurs connectés : logo, navigation privée
- * (Accueil, Tableau de bord, Profil), toggle mode sombre, et bouton Déconnexion.
- *
- * @package    DashMed
- * @subpackage Views\Partials
- * @category   Frontend
- * @version    1.0
+ * Navigation pour utilisateurs authentifiés (Accueil, Tableau de bord, Profil,
+ * Déconnexion). Inclut le toggle mode sombre, le menu burger et détecte la page active.
  *
  * Variables attendues :
- * @var string $currentPath Chemin extrait de la requête
+ * @var string $currentPath Chemin de la requête pour détecter la page active
+ *
+ * @package Views
  */
 $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 ?>

@@ -6,27 +6,23 @@ use Core\Database;
 use PDO;
 
 /**
- * Class User
+ * Modèle de gestion des utilisateurs (médecins).
  *
- * Représente les opérations basiques liées aux utilisateurs (table medecin).
- * Fournit des méthodes pour la création, la recherche, la mise à jour et la gestion
- * des tokens de vérification d'email.
- *
- * Notes :
- * - Toutes les méthodes utilisent Database::getConnection() pour obtenir un PDO.
- * - Les retours utilisent des types scalaires simples (bool, string|null, array|null).
+ * Fournit les opérations CRUD et la gestion des tokens de vérification d'email
+ * pour les comptes médecins. Tous les emails sont normalisés (trim + minuscules)
+ * pour garantir l'unicité  et donc l'insensibilité à la casse.
  *
  * @package Models
- * @author  DashMed
- * @version 1.0
  */
 final class User
 {
     /**
-     * Vérifie si une adresse email existe déjà (insensible à la casse).
+     * Vérifie si une adresse email existe déjà dans la base.
      *
-     * @param string $email Email à tester
-     * @return bool True si l'email existe, false sinon
+     * La comparaison est insensible à la casse pour éviter les doublons.
+     *
+     * @param string $email Adresse email à vérifier
+     * @return bool True si l'email existe déjà, false sinon
      */
     public static function emailExists(string $email): bool
     {
@@ -37,15 +33,18 @@ final class User
     }
 
     /**
-     * Crée un nouvel utilisateur (médecin).
+     * Crée un nouveau compte médecin.
      *
-     * @param string $name      Prénom
-     * @param string $lastName  Nom
-     * @param string $email     Email (sera trim + strtolower)
-     * @param string $hash      Hash du mot de passe
-     * @param string $sexe      Sexe (ex: 'M'/'F')
-     * @param string $specialite Spécialité
-     * @return bool True si l'insertion a réussi, false sinon
+     * L'email est automatiquement normalisé (trim + minuscules).  Le compte est
+     * créé actif par défaut (compte_actif=1) mais l'email n'est pas vérifié.
+     *
+     * @param string $name Prénom du médecin
+     * @param string $lastName Nom du médecin
+     * @param string $email Adresse email (sera normalisée)
+     * @param string $hash Hash bcrypt du mot de passe
+     * @param string $sexe Sexe ('M' ou 'F')
+     * @param string $specialite Spécialité médicale
+     * @return bool True si la création a réussi, false sinon
      */
     public static function create(
         string $name,
@@ -67,8 +66,14 @@ final class User
     /**
      * Récupère un utilisateur par son adresse email.
      *
-     * @param string $email Email recherché
-     * @return array|null Tableau associatif de l'utilisateur ou null si non trouvé
+     * Les colonnes de la base sont renommées pour correspondre à la convention
+     * de l'application (med_id → user_id, prenom → name, etc.).
+     * La recherche est insensible à la casse.
+     *
+     * @param string $email Adresse email recherchée
+     * @return array|null Tableau associatif contenant user_id, name, last_name, email,
+     *                    password, sexe, specialite, email_verified, email_verification_token,
+     *                    email_verification_expires ou null si non trouvé
      */
     public static function findByEmail(string $email): ?array
     {
@@ -90,15 +95,20 @@ final class User
             LIMIT 1
         ');
         $st->execute([strtolower(trim($email))]);
-        $user = $st->fetch(PDO::FETCH_ASSOC);
+        $user = $st->fetch(PDO:: FETCH_ASSOC);
         return $user ?: null;
     }
 
     /**
      * Récupère un utilisateur par son identifiant.
      *
-     * @param int $id Identifiant utilisateur
-     * @return array|null Tableau associatif de l'utilisateur ou null si non trouvé
+     * Les colonnes de la base sont renommées pour correspondre à la convention
+     * de l'application.
+     *
+     * @param int $id Identifiant du médecin (med_id)
+     * @return array|null Tableau associatif contenant user_id, name, last_name, email,
+     *                    password, sexe, specialite, email_verified, email_verification_token,
+     *                    email_verification_expires ou null si non trouvé
      */
     public static function findById(int $id): ?array
     {
@@ -121,14 +131,16 @@ final class User
         ');
         $st->execute([$id]);
         $user = $st->fetch(PDO::FETCH_ASSOC);
-        return $user ?: null;
+        return $user ?:  null;
     }
 
     /**
      * Met à jour le mot de passe d'un utilisateur.
      *
-     * @param int    $id   Identifiant utilisateur
-     * @param string $hash Nouveau hash du mot de passe
+     * Met également à jour la date de dernière modification.
+     *
+     * @param int $id Identifiant du médecin
+     * @param string $hash Nouveau hash bcrypt du mot de passe
      * @return bool True si la mise à jour a réussi, false sinon
      */
     public static function updatePassword(int $id, string $hash): bool
@@ -139,10 +151,13 @@ final class User
     }
 
     /**
-     * Met à jour l'adresse email d'un utilisateur.
+     * Met à jour l'adresse email d'un utilisateur sans forcer une nouvelle vérification.
      *
-     * @param int    $id       Identifiant utilisateur
-     * @param string $newEmail Nouvelle adresse email (sera trim + strtolower)
+     * L'email est automatiquement normalisé. Cette méthode NE REMET PAS A 0
+     * le statut de vérification d'email.
+     *
+     * @param int $id Identifiant du médecin
+     * @param string $newEmail Nouvelle adresse email (sera normalisée)
      * @return bool True si la mise à jour a réussi, false sinon
      */
     public static function updateEmail(int $id, string $newEmail): bool
@@ -154,7 +169,18 @@ final class User
 
     /**
      * Met à jour l'email en forçant une nouvelle vérification.
-     * Retourne le token à envoyer ou null en cas d'échec.
+     *
+     * Effectue une transaction pour garantir la cohérence des opérations :
+     * - Change l'adresse email
+     * - Marque l'email comme non vérifié (email_verified=0)
+     * - Génère un nouveau token de vérification (64 caractères hex)
+     * - Définit une expiration à 24 heures
+     *
+     * En cas d'erreur, la transaction est annulée et null est renvoyé.
+     *
+     * @param int $id Identifiant du médecin
+     * @param string $newEmail Nouvelle adresse email (sera normalisée)
+     * @return string|null Token de vérification généré (à envoyer par email) ou null si échec
      */
     public static function updateEmailWithVerification(int $id, string $newEmail): ?string
     {
@@ -191,10 +217,13 @@ final class User
     }
 
     /**
-     * Génère et stocke un token de vérification d'email (valide 24h).
+     * Génère et stocke un token de vérification d'email.
      *
-     * @param string $email Email de l'utilisateur
-     * @return string|null Token généré (64 hex chars) ou null si l'opération échoue
+     * Le token est valide pendant 24 heures et composé de 64 caractères hexadécimaux.
+     * Utilisé lors de l'inscription ou de la demande de renvoi du lien de vérification.
+     *
+     * @param string $email Adresse email du médecin
+     * @return string|null Token généré (64 caractères hex) ou null si l'opération échoue
      */
     public static function generateEmailVerificationToken(string $email): ?string
     {
@@ -202,7 +231,7 @@ final class User
 
         // Génération d'un token sécurisé
         $token = bin2hex(random_bytes(32)); // 64 caractères hexadécimaux
-        $expires = date('Y-m-d H:i:s', strtotime('+24 hours'));
+        $expires = date('Y-m-d H: i:s', strtotime('+24 hours'));
 
         $st = $pdo->prepare('
             UPDATE medecin 
@@ -222,7 +251,13 @@ final class User
     /**
      * Vérifie un token de vérification d'email et active le compte.
      *
-     * @param string $token Token de vérification
+     * Vérifie que le token existe, n'est pas expiré, et que l'email n'est pas
+     * déjà vérifié. En cas de succès :
+     * - Marque l'email comme vérifié (email_verified=1)
+     * - Supprime le token et sa date d'expiration
+     * - Enregistre la date d'activation
+     *
+     * @param string $token Token de vérification (64 caractères hex)
      * @return bool True si le token est valide et l'activation réussie, false sinon
      */
     public static function verifyEmailToken(string $token): bool
@@ -233,13 +268,13 @@ final class User
         $st = $pdo->prepare('
         SELECT med_id 
         FROM medecin 
-        WHERE email_verification_token = ? 
+        WHERE email_verification_token = ?  
         AND email_verification_expires > NOW()
-        AND (email_verified = 0 OR email_verified IS NULL)  -- ← Correction ici
+        AND (email_verified = 0 OR email_verified IS NULL)
         LIMIT 1
     ');
         $st->execute([$token]);
-        $user = $st->fetch(PDO::FETCH_ASSOC);
+        $user = $st->fetch(PDO:: FETCH_ASSOC);
 
         if (!$user) {
             return false;
@@ -260,10 +295,14 @@ final class User
     }
 
     /**
-     * Trouve un utilisateur par son token de vérification.
+     * Récupère un utilisateur par son token de vérification d'email.
+     *
+     * Utilisé pour afficher des informations sur l'utilisateur avant validation
+     * du token (page de vérification, renvoi du lien, etc.).
      *
      * @param string $token Token de vérification
-     * @return array|null Tableau associatif de l'utilisateur ou null si non trouvé
+     * @return array|null Tableau associatif contenant user_id, name, last_name, email,
+     *                    email_verified, email_verification_expires ou null si non trouvé
      */
     public static function findByVerificationToken(string $token): ?array
     {

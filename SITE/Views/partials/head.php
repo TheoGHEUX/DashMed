@@ -1,6 +1,14 @@
 <?php
 /**
- * Partial : head commun
+ * Partial : Header privé
+ *
+ * Navigation pour utilisateurs authentifiés (Accueil, Tableau de bord, Profil,
+ * Déconnexion). Inclut le toggle mode sombre et détecte la page active.
+ *
+ * Variables attendues :
+ * @var string $currentPath Chemin de la requête pour détecter la page active
+ *
+ * @package Views
  */
 ?>
 <!DOCTYPE html>

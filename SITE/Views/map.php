@@ -1,25 +1,12 @@
 <?php
+
 /**
- * Vue : Plan du site (Sitemap)
+ * Vue : Plan du site
  *
- * Page listant les pages publiques de l'application DashMed de façon hiérarchique
- * pour faciliter la navigation et l'indexation.
+ * Page listant l'arborescence des pages publiques de DashMed pour faciliter
+ * la navigation.
  *
- * @package    DashMed
- * @subpackage Views
- * @category   Frontend
- * @version    1.1
- * @since      1.0
- *
- * Variables attendues :
- * @var string $pageTitle               Titre de la page ( "Plan du site")
- * @var string $pageDescription         Meta description
- * @var array<int,string> $pageStyles   Styles spécifiques (["/assets/style/map.css"])
- * @var array<int,string> $pageScripts  Scripts spécifiques ( ["/assets/script/header_responsive.js"])
- *
- * @see \SITE\Views\partials\head.php
- * @see \SITE\Views\partials\headerPublic.php
- * @see \SITE\Views\partials\footer.php
+ * @package Views
  */
 
 // Configuration des variables de template (valeurs par défaut)

@@ -3,13 +3,14 @@
 /**
  * Vue : Changement d'adresse email
  *
- * Formulaire accessible aux utilisateurs connectés pour modifier leur adresse email.
+ * * Formulaire sécurisé pour modifier l'adresse email d'un utilisateur connecté.
+ * * Nécessite la saisie du mot de passe actuel pour validation.
  *
  * Variables optionnelles :
  *  - $errors  (array)   Erreurs de validation à afficher
  *  - $success (string)  Message de succès
  *
- * @package DashMed
+ * @package Views
  */
 
 $csrf_token = \Core\Csrf::token();

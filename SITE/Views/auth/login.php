@@ -1,18 +1,16 @@
 <?php
 
 /**
- * Vue : Connexion utilisateur
+ * Vue :  Connexion utilisateur
  *
- * Page de connexion publique. Affiche le formulaire sécurisé par CSRF,
- * messages d'erreur/succès et liens utiles (inscription, mot de passe oublié).
+ * Formulaire public de connexion avec protection CSRF et limitation des tentatives.
+ * Inclut les liens vers l'inscription et la récupération de mot de passe.
  *
- * Variables optionnelles :
- *  - $csrf_token (string)
- *  - $errors     (array)
- *  - $success    (string)
- *  - $old        (array)  Valeurs précédentes
+ * Variables attendues :
+ * @var array<int,string> $errors Liste des erreurs de validation
+ * @var string $success Message de succès
  *
- * @package DashMed
+ * @package Views
  */
 
 $csrf_token = '';

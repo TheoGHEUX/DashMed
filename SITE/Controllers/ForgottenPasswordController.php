@@ -9,20 +9,24 @@ use Models\User;
 use PDO;
 
 /**
- * Contrôleur : Mot de passe oublié
+ * Contrôleur de demande de réinitialisation de mot de passe.
  *
- * Gère l'affichage du formulaire de demande de réinitialisation de mot de passe
- * et l'envoi du lien de réinitialisation par email. La réponse côté UI est
- * neutre pour ne pas révéler l'existence d'un compte.
- *
- * Méthodes :
- *  - showForm(): affiche la vue 'auth/forgotten-password'
- *  - submit():   traite la demande, crée un token et envoie l'email (si le compte existe)
+ * Gère le processus de mot de passe oublié :  affichage du formulaire, validation,
+ * génération d'un token sécurisé et envoi d'email.  Implémente une protection
+ * rate-limiting et une réponse neutre pour ne pas révéler l'existence de comptes.
  *
  * @package Controllers
  */
 final class ForgottenPasswordController
 {
+    /**
+     * Affiche le formulaire de demande de réinitialisation.
+     *
+     * Récupère les messages d'erreur, de succès et les anciennes valeurs depuis
+     * la session (pattern PRG), puis les supprime avant affichage.
+     *
+     * @return void
+     */
     public function showForm(): void
     {
         $errors = $_SESSION['errors'] ?? null;
@@ -38,6 +42,28 @@ final class ForgottenPasswordController
         ]);
     }
 
+    /**
+     * Traite la soumission du formulaire de réinitialisation.
+     *
+     * Protection rate-limiting : 5 tentatives maximum par session sur 1 heure.
+     * Au-delà, affiche un message et redirige.
+     *
+     * Validations :
+     * - Token CSRF valide
+     * - Format d'email valide
+     *
+     * Processus si l'email existe :
+     * - Nettoie les anciens tokens expirés
+     * - Génère un token sécurisé (64 hex chars, hashé en SHA-256)
+     * - Stocke le hash en base avec expiration 60 minutes
+     * - Envoie l'email avec lien de réinitialisation
+     *
+     * Réponse neutre :  affiche toujours le même message de succès, que le compte
+     * existe ou non, pour éviter l'énumération des comptes. Les cas d'échec sont
+     * loggés côté serveur pour le debug.
+     *
+     * @return void
+     */
     public function submit(): void
     {
         $errors = [];
@@ -57,7 +83,7 @@ final class ForgottenPasswordController
             // Keep UI neutral, set success message and redirect
             $success = "Si un compte existe à cette adresse mail, "
                 . "un lien de réinitialisation a été envoyé.\n"
-                . "Veuillez attendre avant de refaire une demande.";
+                . "Veuillez attendre avant de refaire une demande. ";
             $_SESSION['success'] = $success;
             header('Location: /forgotten-password');
             exit;
@@ -78,9 +104,9 @@ final class ForgottenPasswordController
         if (!$errors) {
             try {
                 // Vérifie si l'email est inscrit
-                $user = User::findByEmail($old['email']);
+                $user = User:: findByEmail($old['email']);
                 if ($user) {
-                    $pdo = Database::getConnection();
+                    $pdo = Database:: getConnection();
 
                     // Nettoyage des anciens tokens pour le mail associer au mdp réunitialiser
                     $del = $pdo->prepare('DELETE FROM password_resets WHERE email = ? OR expires_at < NOW()');
@@ -97,7 +123,7 @@ final class ForgottenPasswordController
                     $ins->execute([$old['email'], $tokenHash, $expiresAt]);
 
                     // Construit l'URL reset
-                    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+                    $scheme = (! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
                         ? 'https' : 'http';
                     // Éviter HTTP_HOST contrôlable par l'utilisateur, préférer SERVER_NAME (config serveur)
                     $serverName = $_SERVER['SERVER_NAME'] ?? '';
@@ -105,7 +131,7 @@ final class ForgottenPasswordController
                     $resetUrl = $scheme . '://' . $host . '/reset-password?token='
                         . urlencode($token) . '&email=' . urlencode($old['email']);
 
-                    // Nom d’affichage
+                    // Nom d'affichage
                     $displayName = trim(($user['name'] ?? '') . ' ' . ($user['last_name'] ?? ''));
                     Mailer::sendPasswordResetEmail($old['email'], $displayName ?: 'Utilisateur', $resetUrl);
                 } else {
@@ -119,7 +145,7 @@ final class ForgottenPasswordController
                 // Réponse neutre (utilise une vraie nouvelle ligne avec "\n")
                 $success = "Si un compte existe à cette adresse mail, "
                     . "un lien de réinitialisation a été envoyé.\n"
-                    . "N'oubliez pas de vérifier votre courrier indésirable.";
+                    . "N'oubliez pas de vérifier votre courrier indésirable. ";
                 $old = ['email' => ''];
             } catch (\Throwable $e) {
                 error_log(sprintf(

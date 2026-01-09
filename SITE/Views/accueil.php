@@ -1,26 +1,14 @@
 <?php
 /**
- * Vue : Page d'accueil utilisateur (Accueil)
+ * Vue : Page d'accueil authentifiée
  *
- * Page d'accueil pour les utilisateurs authentifiés. Affiche une bannière de
- * bienvenue et un lien vers le tableau de bord.
+ * Page d'accueil pour utilisateurs connectés avec bannière de bienvenue et
+ * lien vers le tableau de bord.
  *
- * @package    DashMed
- * @subpackage Views
- * @category   Frontend
- * @version    1.1
- * @since      1.0
- *
- * Variables attendues :
- * @var string $pageTitle               Titre de la page (défaut : "Accueil")
- * @var string $pageDescription         Meta description
- * @var array<int,string> $pageStyles   Styles spécifiques ( ["/assets/style/accueil.css"])
- * @var array<int,string> $pageScripts  Scripts spécifiques ( ["/assets/script/header_responsive.js"])
+ * @package Views
  */
 
-// ============================================================================
 // SÉCURITÉ : session & CSRF
-// ============================================================================
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
@@ -34,9 +22,7 @@ if (empty($_SESSION['user'])) {
     exit;
 }
 
-// ============================================================================
 // CONFIGURATION : variables du template
-// ============================================================================
 $pageTitle       = $pageTitle ?? "Accueil";
 $pageDescription = $pageDescription ?? "Page d'accueil accessible une fois connecté";
 $pageStyles      = $pageStyles ?? ["/assets/style/accueil.css"];

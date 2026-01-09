@@ -1,19 +1,15 @@
 <?php
 
 /**
- * Partial : Header public (navigation pour visiteurs non authentifiés)
+ * Partial : Header public
  *
- * En-tête simple et réutilisable affichant le logo, la navigation publique,
- * le toggle mode sombre et le menu burger. Détecte la page active via REQUEST_URI.
+ * Navigation pour visiteurs non authentifiés (Accueil, Connexion, Inscription).
+ * Inclut le toggle mode sombre, menu burger et détecte la page active.
  *
  * Variables attendues :
- * @var string $currentPath Chemin extrait de la requête
+ * @var string $currentPath Chemin de la requête pour détecter la page active
  *
- * @package    DashMed
- * @subpackage Views\Partials
- * @category   Frontend
- * @version    1.0
- * @since      1.0
+ * @package Views
  */
 $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 ?>

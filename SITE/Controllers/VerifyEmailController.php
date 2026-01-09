@@ -5,29 +5,30 @@ namespace Controllers;
 use Models\User;
 
 /**
- * Contrôleur : Vérification d'email
+ * Contrôleur de vérification d'adresse email.
  *
- * Gère l'activation du compte via token de vérification et le renvoi
- * d'un nouvel email de vérification.
- *
- * Méthodes :
- *  - verify() : vérifie le token passé en GET et affiche la vue correspondante
- *  - resend() : génère/renvoie un token de vérification par email (POST)
- *
- * Les vues utilisées :
- *  - Views/auth/verify-email.php
- *  - Views/auth/resend-verification.php
+ * Gère l'activation de compte via token de vérification et le renvoi d'email
+ * de vérification en cas d'expiration ou de perte du lien initial.
  *
  * @package Controllers
  */
 final class VerifyEmailController
 {
     /**
-     * Affiche la page de vérification d'email
+     * Vérifie le token et active le compte si valide.
      *
-     * Variables passées à la vue :
-     *  - $success (string)
-     *  - $errors  (array)
+     * Processus :
+     * - Récupère le token depuis l'URL (GET)
+     * - Vérifie l'existence et la validité du token (non expiré, non déjà utilisé)
+     * - Active le compte (email_verified=1) et supprime le token
+     * - Affiche un message de succès ou d'erreur selon le cas
+     *
+     * Cas gérés :
+     * - Token manquant, invalide ou expiré
+     * - Email déjà vérifié (message de confirmation)
+     * - Vérification réussie (redirection possible vers login)
+     *
+     * @return void
      */
     public function verify(): void
     {
@@ -39,7 +40,7 @@ final class VerifyEmailController
             $errors[] = 'Token de vérification manquant.';
         } else {
             // Recherche de l'utilisateur par token
-            $user = User::findByVerificationToken($token);
+            $user = User:: findByVerificationToken($token);
 
             if (!$user) {
                 $errors[] = 'Token de vérification invalide ou expiré.';
@@ -51,14 +52,14 @@ final class VerifyEmailController
                 $expires = new \DateTime($user['email_verification_expires']);
 
                 if ($now > $expires) {
-                    $errors[] = 'Le lien de vérification a expiré. Veuillez demander un nouveau lien.';
+                    $errors[] = 'Le lien de vérification a expiré. Veuillez demander un nouveau lien. ';
                 } else {
                     // Validation du token et activation du compte
                     if (User::verifyEmailToken($token)) {
                         $success = 'Votre adresse email a été vérifiée avec succès ! '
                             . 'Vous pouvez maintenant vous connecter.';
                     } else {
-                        $errors[] = 'Une erreur est survenue lors de la vérification. Veuillez réessayer.';
+                        $errors[] = 'Une erreur est survenue lors de la vérification.  Veuillez réessayer. ';
                     }
                 }
             }
@@ -68,11 +69,16 @@ final class VerifyEmailController
     }
 
     /**
-     * Renvoie un email de vérification
+     * Renvoie un email de vérification.
      *
-     * Variables passées à la vue :
-     *  - $success (string)
-     *  - $errors  (array)
+     * Génère un nouveau token de vérification (valide 24h) et renvoie l'email
+     * si l'adresse existe et n'est pas encore vérifiée.
+     *
+     * Réponse neutre : affiche un message de succès même si l'email n'existe pas,
+     * pour éviter l'énumération des comptes.  Seul le cas "déjà vérifié" retourne
+     * une erreur explicite (information publique).
+     *
+     * @return void
      */
     public function resend(): void
     {
@@ -101,14 +107,14 @@ final class VerifyEmailController
                     if ($mailSent) {
                         $success = 'Un nouvel email de vérification a été envoyé à votre adresse.';
                     } else {
-                        $errors[] = 'Erreur lors de l\'envoi de l\'email. Veuillez réessayer plus tard.';
+                        $errors[] = 'Erreur lors de l\'envoi de l\'email.  Veuillez réessayer plus tard.';
                     }
                 } else {
-                    $errors[] = 'Erreur lors de la génération du token. Veuillez réessayer.';
+                    $errors[] = 'Erreur lors de la génération du token.  Veuillez réessayer.';
                 }
             }
         }
 
-        require __DIR__ . '/../Views/auth/resend-verification.php';
+        require __DIR__ .  '/../Views/auth/resend-verification.php';
     }
 }

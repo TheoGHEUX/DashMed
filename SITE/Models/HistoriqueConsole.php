@@ -6,18 +6,19 @@ use Core\Database;
 use PDO;
 
 /**
- * Class HistoriqueConsole
+ * Modèle de gestion de l'historique des actions médecin.
  *
- * Gère l'enregistrement des actions des médecins dans l'historique.
- * Table : historique_console
- * Colonnes : log_id, med_id, type_action, pt_id, id_mesure, date_action, heure_action
+ * Enregistre les interactions des médecins avec les graphiques et données patients
+ * dans la table historique_console pour audit et traçabilité.
  *
  * @package Models
  */
 final class HistoriqueConsole
 {
     /**
-     * Types d'action valides
+     * Types d'action autorisés pour l'historique.
+     *
+     * @var array<int,string>
      */
     private const VALID_ACTIONS = [
         'ajouter',
@@ -29,18 +30,23 @@ final class HistoriqueConsole
     /**
      * Enregistre une action du médecin dans l'historique.
      *
-     * @param int $medId ID du médecin
+     * Génère automatiquement un identifiant unique de log basé sur le timestamp
+     * et la date/heure courante.  Valide le type d'action avant insertion.
+     *
+     * En cas d'erreur, enregistre un message dans les logs et retourne false.
+     *
+     * @param int $medId ID du médecin effectuant l'action
      * @param string $typeAction Type d'action ('ajouter', 'supprimer', 'réduire', 'agrandir')
-     * @param int|null $ptId ID du patient (optionnel)
-     * @param int|null $idMesure ID de la mesure/graphique (optionnel)
-     * @return bool True si l'insertion a réussi, false sinon
+     * @param int|null $ptId ID du patient concerné (optionnel)
+     * @param int|null $idMesure ID de la mesure/graphique concerné (optionnel)
+     * @return bool True si l'enregistrement a réussi, false sinon
      */
     public static function log(int $medId, string $typeAction, ?int $ptId = null, ?int $idMesure = null): bool
     {
         $pdo = Database::getConnection();
 
         // Valider le type d'action
-        if (!in_array($typeAction, self::VALID_ACTIONS, true)) {
+        if (!in_array($typeAction, self:: VALID_ACTIONS, true)) {
             error_log(sprintf('[HISTORIQUE] Type d\'action invalide: %s', $typeAction));
             return false;
         }
@@ -77,12 +83,12 @@ final class HistoriqueConsole
     }
 
     /**
-     * Enregistre l'ajout d'un graphique.
+     * Enregistre l'ajout d'un graphique au tableau de bord.
      *
      * @param int $medId ID du médecin
-     * @param int|null $ptId ID du patient
-     * @param int|null $idMesure ID de la mesure/graphique
-     * @return bool
+     * @param int|null $ptId ID du patient (optionnel)
+     * @param int|null $idMesure ID de la mesure/graphique (optionnel)
+     * @return bool True si l'enregistrement a réussi, false sinon
      */
     public static function logGraphiqueAjouter(int $medId, ?int $ptId = null, ?int $idMesure = null): bool
     {
@@ -90,12 +96,12 @@ final class HistoriqueConsole
     }
 
     /**
-     * Enregistre la suppression d'un graphique.
+     * Enregistre la suppression d'un graphique du tableau de bord.
      *
      * @param int $medId ID du médecin
-     * @param int|null $ptId ID du patient
-     * @param int|null $idMesure ID de la mesure/graphique
-     * @return bool
+     * @param int|null $ptId ID du patient (optionnel)
+     * @param int|null $idMesure ID de la mesure/graphique (optionnel)
+     * @return bool True si l'enregistrement a réussi, false sinon
      */
     public static function logGraphiqueSupprimer(int $medId, ?int $ptId = null, ?int $idMesure = null): bool
     {
@@ -106,9 +112,9 @@ final class HistoriqueConsole
      * Enregistre la réduction de taille d'un graphique.
      *
      * @param int $medId ID du médecin
-     * @param int|null $ptId ID du patient
-     * @param int|null $idMesure ID de la mesure/graphique
-     * @return bool
+     * @param int|null $ptId ID du patient (optionnel)
+     * @param int|null $idMesure ID de la mesure/graphique (optionnel)
+     * @return bool True si l'enregistrement a réussi, false sinon
      */
     public static function logGraphiqueReduire(int $medId, ?int $ptId = null, ?int $idMesure = null): bool
     {
@@ -119,9 +125,9 @@ final class HistoriqueConsole
      * Enregistre l'agrandissement d'un graphique.
      *
      * @param int $medId ID du médecin
-     * @param int|null $ptId ID du patient
-     * @param int|null $idMesure ID de la mesure/graphique
-     * @return bool
+     * @param int|null $ptId ID du patient (optionnel)
+     * @param int|null $idMesure ID de la mesure/graphique (optionnel)
+     * @return bool True si l'enregistrement a réussi, false sinon
      */
     public static function logGraphiqueAgrandir(int $medId, ?int $ptId = null, ?int $idMesure = null): bool
     {
@@ -129,11 +135,14 @@ final class HistoriqueConsole
     }
 
     /**
-     * Récupère l'historique d'un médecin (optionnel, pour consultation interne/admin).
+     * Récupère l'historique complet des actions d'un médecin.
+     *
+     * Retourne les logs triés par date et heure décroissantes (plus récents en premier).
+     * Utilisé pour consultation interne, audit ou interface d'administration.
      *
      * @param int $medId ID du médecin
-     * @param int $limit Nombre de logs à récupérer
-     * @return array Liste des logs
+     * @param int $limit Nombre maximum de logs à récupérer (défaut :  100)
+     * @return array<int,array<string,mixed>> Liste des logs avec colonnes : log_id, med_id, type_action, pt_id, id_mesure, date_action, heure_action
      */
     public static function getHistoryByMedId(int $medId, int $limit = 100): array
     {
@@ -155,9 +164,9 @@ final class HistoriqueConsole
         ');
 
         $st->bindValue(1, $medId, PDO::PARAM_INT);
-        $st->bindValue(2, $limit, PDO::PARAM_INT);
+        $st->bindValue(2, $limit, PDO:: PARAM_INT);
         $st->execute();
 
-        return $st->fetchAll(PDO::FETCH_ASSOC);
+        return $st->fetchAll(PDO:: FETCH_ASSOC);
     }
 }

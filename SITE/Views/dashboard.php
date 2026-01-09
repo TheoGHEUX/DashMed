@@ -1,16 +1,18 @@
 <?php
 
 /**
- * Vue : Tableau de bord médical (Dashboard)
+ * Vue : Tableau de bord médical
  *
- * Affiche une grille de cartes graphiques (Chart.js) pour le suivi des constantes
- * vitales. Accès réservé aux utilisateurs authentifiés.
+ * Affiche les graphiques de suivi des constantes vitales du patient sélectionné
+ * avec seuils d'alerte.  Accès réservé aux utilisateurs authentifiés.
  *
- * @package    DashMed
- * @subpackage Views
- * @category   Frontend
- * @version    1.3
- * @since      1.0
+ * Variables attendues :
+ * @var array<int,array> $patients Liste des patients suivis par le médecin
+ * @var array $patient Données du patient sélectionné
+ * @var array<string,array> $chartData Données des graphiques (températures, tension, etc.)
+ * @var bool $noPatient Indicateur d'absence de patients
+ *
+ * @package Views
  */
 
 if (session_status() !== PHP_SESSION_ACTIVE) {

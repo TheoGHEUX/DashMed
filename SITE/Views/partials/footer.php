@@ -1,15 +1,11 @@
 <?php
 
 /**
- * Partial : Footer commun
+ * Partial : Footer
  *
- * Pied de page simple et réutilisable affichant le copyright dynamique.
+ * Pied de page commun affichant le copyright avec année dynamique.
  *
- * Variables attendues : aucune
- *
- * @package    DashMed
- * @subpackage Views\Partials
- * @category   Frontend
+ * @package Views
  */
 
 ?>

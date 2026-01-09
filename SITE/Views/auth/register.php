@@ -1,17 +1,16 @@
 <?php
 
+
 /**
  * Vue : Inscription utilisateur
  *
- * Page d'inscription publique pour créer un compte DashMed.
+ * Formulaire public pour créer un compte médecin avec vérification d'email.
+ * Valide les spécialités et applique les règles de complexité des mots de passe.
  *
- * Variables optionnelles :
- *  - $csrf_token (string)  Token CSRF
- *  - $old (array)          Valeurs précédentes du formulaire (pour re-remplir)
- *  - $errors (array)       Liste d'erreurs de validation
- *  - $success (string)     Message de succès
+ * Variables attendues :
+ * @var array<int,string> $specialites Liste des spécialités médicales valides
  *
- * @package DashMed
+ * @package Views
  */
 
 $csrf_token = '';
