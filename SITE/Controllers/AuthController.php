@@ -222,8 +222,8 @@ final class AuthController
             $_SESSION['login_attempts'] = [];
         }
         $now = time();
-        $windowSeconds = 300; // 5 minutes
-        $maxAttempts   = 5;
+        $windowSeconds = 300; // Durée avant de recommencer
+        $maxAttempts   = 5; // Tentatives mauvaises autorisées
         // Purge des anciennes tentatives hors fenêtre
         $attempts = array_filter((array)($_SESSION['login_attempts'][$ip] ?? []), function ($ts) use ($now, $windowSeconds) {
             return ($now - (int)$ts) <= $windowSeconds;

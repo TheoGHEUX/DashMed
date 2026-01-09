@@ -105,7 +105,6 @@ include __DIR__ . '/partials/head.php';
     </div>
 </section>
 
-
 <main class="dashboard-main container">
     <?php if (!isset($noPatient) || $noPatient === false) : ?>
     <div class="dashboard-header">
@@ -202,6 +201,8 @@ include __DIR__ . '/partials/head.php';
                 <div class="small-note" id="note-oxygen">%, dernière mesure</div>
             </div>
         </article>
+
+
         <?php endif; ?>
     </section>
 
@@ -212,11 +213,60 @@ include __DIR__ . '/partials/head.php';
 
     <?php endif; ?>
 
-    <section class="dashboard-legend">
-        <p><br><em>Si l'affichage d'un élément vous semble anormal,
-            actualisez la page ou videz le cache du navigateur.</em></p>
+    <section class="dashboard-note">
+        <p><em>Si l'affichage d'un élément vous semble anormal,
+                actualisez la page ou videz le cache du navigateur.</em></p>
     </section>
 </main>
+
+<!-- Légende des seuils d'alerte -->
+
+<?php if (isset($noPatient) && $noPatient === true) : ?>
+<?php else : ?>
+<section class="thresholds-legend">
+    <h2>Légende des seuils d'alerte</h2>
+    <div class="legend-content">
+        <p class="legend-intro">
+            Les graphiques affichent des lignes de seuils pour vous aider à identifier rapidement les valeurs anormales :
+        </p>
+        <div class="legend-items">
+            <div class="legend-item">
+                <div class="legend-line preoccupant" aria-hidden="true"></div>
+                <div class="legend-text">
+                    <strong>Seuil préoccupant</strong>
+                    <span>Valeurs nécessitant une surveillance accrue</span>
+                </div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-line urgent" aria-hidden="true"></div>
+                <div class="legend-text">
+                    <strong>Seuil urgent</strong>
+                    <span>Valeurs anormales nécessitant une attention rapide</span>
+                </div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-line critique" aria-hidden="true"></div>
+                <div class="legend-text">
+                    <strong>Seuil critique</strong>
+                    <span>Valeurs dangereuses nécessitant une intervention immédiate</span>
+                </div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-point alert" aria-hidden="true"></div>
+                <div class="legend-text">
+                    <strong>Mesure en alerte</strong>
+                    <span>Point rouge : valeur au-delà d'un seuil (trop haute ou trop basse)</span>
+                </div>
+            </div>
+        </div>
+        <p class="legend-note">
+            <strong>Note :</strong> Les lignes pointillées avec espacement large (- - -) indiquent des seuils minimaux,
+            tandis que les lignes pointillées avec espacement court (— — —) indiquent des seuils maximaux.
+        </p>
+    </div>
+</section>
+
+<?php endif; ?>
 
 <?php include __DIR__ . '/partials/footer.php'; ?>
 
