@@ -7,6 +7,8 @@ namespace Core;
  *
  * Génère et valide des tokens CSRF stockés dans la session afin de protéger les formulaires
  * contre la falsification de requêtes inter-sites.
+ *
+ * @package Core
  */
 final class Csrf
 {

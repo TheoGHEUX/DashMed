@@ -16,23 +16,57 @@ use Controllers\ChangeMailController;
 use Core\Database;
 
 /**
- * Router minimal de l'application.
+ * Routeur principal de l'application.
  *
- * Résout les routes définies dans la constante ROUTES et appelle les méthodes
- * des contrôleurs correspondants. Gère également quelques endpoints de
- * diagnostic (`/health`, `/health/db`).
+ * Résout les requêtes HTTP entrantes vers les contrôleurs appropriés en fonction
+ * de l'URI et de la méthode HTTP. Gère l'authentification, les redirections
+ * automatiques et les endpoints de diagnostic.
+ *
+ *
+ * @package Core
  */
 final class Router
 {
+    /**
+     * Chemin de l'URI demandée (sans query string).
+     *
+     * @var string
+     */
     private string $path;
+
+    /**
+     * Méthode HTTP de la requête (GET, POST, etc.).
+     *
+     * @var string
+     */
     private string $method;
 
-    /** @var array<string,bool> */
+    /**
+     * Routes nécessitant obligatoirement une requête POST.
+     *
+     * Utilisé pour sécuriser les actions sensibles (déconnexion).
+     *
+     * @var array<string,bool>
+     */
     private const POST_ONLY = [
         '/logout' => true,
         '/deconnexion' => true,
     ];
 
+    /**
+     * Table de routage de l'application.
+     *
+     * Structure : [groupe => [path => [ControllerClass, postMethod, getMethod]]]
+     * - 'public' : Routes accessibles sans authentification
+     * - 'auth' : Routes d'authentification (login, register, reset password)
+     * - 'protected' : Routes nécessitant une authentification
+     *
+     * Format d'une route :
+     * - 1 méthode : [Controller::class, 'method']
+     * - 2 méthodes : [Controller::class, 'postMethod', 'getMethod']
+     *
+     * @var array<string, array<string, array<int, mixed>>>
+     */
     private const ROUTES = [
         'public' => [
             '/' => [HomeController::class, 'index'],
@@ -55,7 +89,7 @@ final class Router
             '/resend-verification' => [\Controllers\VerifyEmailController::class, 'resend', 'resend'],
         ],
         'protected' => [
-            '/accueil' => [AccueilController::class, 'index'],
+            '/accueil' => [AccueilController:: class, 'index'],
             '/dashboard' => [DashboardController::class, 'index'],
             '/tableau-de-bord' => [DashboardController::class, 'index'],
             '/profile' => [ProfileController::class, 'show'],
@@ -63,14 +97,19 @@ final class Router
             '/change-password' => [ChangePasswordController::class, 'submit', 'showForm'],
             '/changer-mot-de-passe' => [ChangePasswordController::class, 'submit', 'showForm'],
             '/change-mail' => [ChangeMailController::class, 'submit', 'showForm'],
-            '/changer-mail' => [ChangeMailController::class, 'submit', 'showForm'],
+            '/changer-mail' => [ChangeMailController:: class, 'submit', 'showForm'],
             '/api/log-graph-action' => [DashboardController::class, 'logGraphAction'],
         ],
     ];
 
     /**
-     * @param string $uri URI demandée
-     * @param string $method Méthode HTTP (GET, POST...)
+     * Construit une instance du routeur.
+     *
+     * Nettoie et normalise l'URI demandée (suppression du trailing slash,
+     * extraction du path sans query string).
+     *
+     * @param string $uri URI complète de la requête (ex: /dashboard? id=1)
+     * @param string $method Méthode HTTP (GET, POST, PUT, DELETE, etc.)
      */
     public function __construct(string $uri, string $method)
     {
@@ -85,7 +124,14 @@ final class Router
     /**
      * Résout la route et exécute le contrôleur associé.
      *
-     * Peut aussi répondre aux endpoints de diagnostic `/health` et `/health/db`.
+     * Processus de résolution :
+     * 1. Vérifie les endpoints de diagnostic (/health, /health/db)
+     * 2. Redirige automatiquement les utilisateurs connectés de / vers /accueil
+     * 3. Tente les routes publiques
+     * 4. Tente les routes d'authentification
+     * 5. Tente les routes protégées (avec vérification d'authentification)
+     * 6. Affiche une page 404 si aucune route ne correspond
+     *
      *
      * @return void
      */
@@ -102,7 +148,7 @@ final class Router
         if ($this->path === '/health/db') {
             // Lecture minimale de .env pour APP_DEBUG/HEALTH_KEY
             $root = dirname(__DIR__, 2);
-            $envFile = $root . DIRECTORY_SEPARATOR . '.env';
+            $envFile = $root .  DIRECTORY_SEPARATOR . '.env';
             $env = [];
             if (is_file($envFile) && is_readable($envFile)) {
                 $lines = @file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
@@ -142,7 +188,7 @@ final class Router
                 exit;
             }
 
-            header('Content-Type: application/json; charset=utf-8');
+            header('Content-Type:  application/json; charset=utf-8');
             try {
                 $pdo = Database::getConnection();
                 $dbName = $pdo->query('SELECT DATABASE()')->fetchColumn() ?: null;
@@ -180,11 +226,18 @@ final class Router
     }
 
     /**
-     * Tente d'exécuter une route définie dans $routes.
+     * Tente de résoudre et exécuter une route depuis une table de routage.
      *
-     * @param array $routes Table des routes
-     * @param bool $requiresAuth Si true, redirige vers la page de login si non authentifié
-     * @return bool Vrai si la route a été trouvée et exécutée
+     * Supporte deux formats de routes :
+     * - Route simple : [Controller::class, 'method'] → méthode unique
+     * - Route double : [Controller::class, 'postMethod', 'getMethod'] → méthode selon HTTP verb
+     *
+     * Pour les routes listées dans POST_ONLY, seule la méthode POST est acceptée.
+     * Les autres méthodes HTTP reçoivent une erreur 405 Method Not Allowed.
+     *
+     * @param array<string, array<int, mixed>> $routes Table de routage à vérifier
+     * @param bool $requiresAuth Si true, redirige vers /login si l'utilisateur n'est pas authentifié
+     * @return bool True si la route a été trouvée et exécutée, false sinon
      */
     private function tryRoute(array $routes, bool $requiresAuth = false): bool
     {
@@ -220,9 +273,13 @@ final class Router
     }
 
     /**
-     * Indique si un utilisateur est authentifié (présence en session).
+     * Vérifie si un utilisateur est authentifié.
      *
-     * @return bool
+     * Un utilisateur est considéré authentifié si :
+     * - $_SESSION['user'] existe et n'est pas vide
+     * - $_SESSION['user']['email_verified'] est défini et non vide
+     *
+     * @return bool True si l'utilisateur est authentifié avec email vérifié, false sinon
      */
     private function isAuthenticated(): bool
     {
@@ -231,19 +288,22 @@ final class Router
     }
 
     /**
-     * Redirection HTTP et sortie immédiate.
+     * Effectue une redirection HTTP et termine l'exécution.
      *
-     * @param string $path Chemin vers lequel rediriger
+     * @param string $path Chemin de destination (ex: /login, /dashboard)
      * @return void
      */
     private function redirect(string $path): void
     {
-        header("Location: $path");
+        header("Location:  $path");
         exit;
     }
 
     /**
-     * Affiche la page 404 (si disponible) puis termine l'exécution.
+     * Affiche la page d'erreur 404 et termine l'exécution.
+     *
+     * Tente de charger la vue 'errors/404.php'.  Si celle-ci n'existe pas,
+     * affiche un message texte simple.
      *
      * @return void
      */
@@ -259,9 +319,12 @@ final class Router
     }
 
     /**
-     * Répond 405 Method Not Allowed et arrête l'exécution.
+     * Retourne une erreur 405 Method Not Allowed et termine l'exécution.
      *
-     * @param array<int,string> $allowed Liste des méthodes acceptées
+     * Utilisé lorsqu'une route est définie en POST_ONLY mais que la requête
+     * utilise une autre méthode HTTP (ex: GET sur /logout).
+     *
+     * @param array<int,string> $allowed Liste des méthodes HTTP acceptées (ex: ['POST'])
      * @return void
      */
     private function methodNotAllowed(array $allowed): void
