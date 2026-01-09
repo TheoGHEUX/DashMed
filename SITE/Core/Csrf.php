@@ -7,14 +7,18 @@ namespace Core;
  *
  * Génère et valide des tokens CSRF stockés dans la session afin de protéger les formulaires
  * contre la falsification de requêtes inter-sites.
+ * Les tokens expirent après 2 heures et sont consommés après validation.
+ *
+ * @package Core
  */
 final class Csrf
 {
     /**
-     * Retourne le token CSRF pour la session courante. En crée un nouveau si nécessaire.
+     * Retourne le token CSRF pour la session courante.
+     * Génère un nouveau token (64 caractères hex) si aucun n'existe.
      *
      * @return string Token CSRF
-     * @throws \Exception Si random_bytes échoue (propagé)
+     * @throws \Exception Si random_bytes échoue
      */
     public static function token(): string
     {
@@ -27,6 +31,14 @@ final class Csrf
 
     /**
      * Valide un token CSRF fourni et vérifie sa durée de vie.
+     *
+     * Validations effectuées :
+     * - Token présent en session
+     * - Correspondance exacte (hash_equals pour éviter timing attacks)
+     * - Durée de vie respectée (par défaut 2 heures)
+     *
+     * Le token est consommé après une validation réussie pour éviter la réutilisation.
+     * En cas d'expiration, le token est supprimé de la session.
      *
      * @param string $token Token fourni par le formulaire
      * @param int $ttlSeconds Durée de vie en secondes (par défaut 7200s = 2h)

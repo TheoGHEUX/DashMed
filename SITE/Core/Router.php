@@ -16,11 +16,13 @@ use Controllers\ChangeMailController;
 use Core\Database;
 
 /**
- * Router minimal de l'application.
+ * Router principal de l'application.
  *
- * Résout les routes définies dans la constante ROUTES et appelle les méthodes
- * des contrôleurs correspondants. Gère également quelques endpoints de
- * diagnostic (`/health`, `/health/db`).
+ * Résout les requêtes HTTP entrantes vers les contrôleurs appropriés en fonction
+ * de l'URI et de la méthode HTTP. Gère l'authentification, les redirections
+ * automatiques et les endpoints de diagnostic (health checks).
+ *
+ * @package Core
  */
 final class Router
 {
@@ -69,6 +71,11 @@ final class Router
     ];
 
     /**
+     * Construit une instance du routeur.
+     *
+     * Nettoie et normalise l'URI demandée :  suppression du trailing slash,
+     * extraction du path sans query string, normalisation de l'URI vide vers '/'
+     *
      * @param string $uri URI demandée
      * @param string $method Méthode HTTP (GET, POST...)
      */
@@ -85,7 +92,13 @@ final class Router
     /**
      * Résout la route et exécute le contrôleur associé.
      *
-     * Peut aussi répondre aux endpoints de diagnostic `/health` et `/health/db`.
+     * Processus de résolution :
+     * 1. Vérifie les endpoints de diagnostic (/health, /health/db)
+     * 2. Redirige automatiquement les utilisateurs connectés de / vers /accueil
+     * 3. Tente les routes publiques
+     * 4. Tente les routes d'authentification
+     * 5. Tente les routes protégées (avec vérification d'authentification)
+     * 6. Affiche une page 404 si aucune route ne correspond
      *
      * @return void
      */
@@ -180,7 +193,14 @@ final class Router
     }
 
     /**
-     * Tente d'exécuter une route définie dans $routes.
+     * Tente de résoudre et d'exécuter une route depuis une table de routage.
+     *
+     * Supporte deux formats de routes :
+     * - Route simple : [Controller::class, 'method'] → méthode unique pour GET et POST
+     * - Route double : [Controller::class, 'postMethod', 'getMethod'] → méthode selon HTTP verb
+     *
+     * Pour les routes listées dans POST_ONLY, seule la méthode POST est acceptée.
+     * Les autres méthodes HTTP reçoivent une erreur 405 Method Not Allowed.
      *
      * @param array $routes Table des routes
      * @param bool $requiresAuth Si true, redirige vers la page de login si non authentifié
@@ -220,9 +240,13 @@ final class Router
     }
 
     /**
-     * Indique si un utilisateur est authentifié (présence en session).
+     * Vérifie si un utilisateur est authentifié.
      *
-     * @return bool
+     * Un utilisateur est considéré authentifié si :
+     * - $_SESSION['user'] existe et n'est pas vide
+     * - $_SESSION['user']['email_verified'] est défini et truthy
+     *
+     * @return bool True si l'utilisateur est authentifié avec email vérifié, false sinon
      */
     private function isAuthenticated(): bool
     {
@@ -231,7 +255,7 @@ final class Router
     }
 
     /**
-     * Redirection HTTP et sortie immédiate.
+     * Redirection HTTP et termine l'exécution.
      *
      * @param string $path Chemin vers lequel rediriger
      * @return void
@@ -243,7 +267,10 @@ final class Router
     }
 
     /**
-     * Affiche la page 404 (si disponible) puis termine l'exécution.
+     * Affiche la page 404 et termine l'exécution.
+     *
+     *Tente de charger la vue 'errors/404.php'.  Si celle-ci n'existe pas,
+     * affiche un message HTML simple.
      *
      * @return void
      */
@@ -259,7 +286,10 @@ final class Router
     }
 
     /**
-     * Répond 405 Method Not Allowed et arrête l'exécution.
+     * Renvoie une erreur 405 Method Not Allowed et termine l'exécution.
+     *
+     * Utilisé lorsqu'une route est définie en POST_ONLY mais que la requête
+     * utilise une autre méthode HTTP.
      *
      * @param array<int,string> $allowed Liste des méthodes acceptées
      * @return void

@@ -6,10 +6,12 @@ use PDO;
 use PDOException;
 
 /**
- * Wrapper minimal pour obtenir une connexion PDO partagée.
+ * Gestionnaire de connexion à la base de données.
  *
  * Lit facultativement un fichier `.env` à la racine pour récupérer les paramètres
- * DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS. Si absent, des valeurs par défaut non-sensibles sont utilisées.
+ * Utilise des valeurs par défaut si le fichier .env est absent.
+ *
+ * @package Core
  */
 final class Database
 {
@@ -17,6 +19,13 @@ final class Database
 
     /**
      * Retourne une instance PDO singleton configurée pour MySQL.
+     *
+     * Configuration :
+     * - Lecture du fichier .env (si présent) pour DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS
+     * - Valeurs par défaut :  127.0.0.1:3306, dashmed-site_db, root, (pas de mot de passe)
+     * - Mode d'erreur : ERRMODE_EXCEPTION
+     * - Mode de fetch : FETCH_ASSOC
+     * - Emulation de requêtes préparées désactivée
      *
      * @return PDO Connexion PDO
      * @throws PDOException En cas d'échec de connexion

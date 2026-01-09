@@ -3,9 +3,9 @@
 namespace Core;
 
 /**
- * Classe Mailer : gestion simplifiée de l'envoi d'emails
+ * Gestionnaire d'envoi d'emails.
  *
- * Fournit des méthodes statiques pour envoyer des emails (vérification d'email,
+ * Fournit des méthodes pour envoyer des emails automatiques (vérification d'email,
  * réinitialisation de mot de passe, etc.) avec fallback vers fichier .eml
  * si l'envoi via mail() échoue.
  *
@@ -15,6 +15,9 @@ final class Mailer
 {
     /**
      * Envoie un email de vérification d'adresse email.
+     *
+     * Génère un email HTML avec lien de vérification valide 24 heures.
+     * Utilise SERVER_NAME pour construire l'URL.
      *
      * @param string $to Destinataire
      * @param string $name Prénom du destinataire
@@ -75,6 +78,9 @@ final class Mailer
 
     /**
      * Envoie un email de réinitialisation de mot de passe.
+     *
+     * Génère un email HTML avec lien de réinitialisation valide 60 minutes.
+     * Utilise SERVER_NAME pour construire l'URL.
      *
      * @param string $to Destinataire
      * @param string $displayName Nom affiché
@@ -160,7 +166,10 @@ final class Mailer
     }
 
     /**
-     * Écrit un email dans un fichier . eml en cas d'échec d'envoi.
+     * Sauvegarde un email dans un fichier .eml.
+     *
+     * Crée le dossier SITE/storage/mails/ s'il n'existe pas.
+     * Génère un fichier .eml avec timestamp et identifiant unique.
      *
      * @param string $to
      * @param string $from

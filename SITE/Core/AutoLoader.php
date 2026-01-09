@@ -5,16 +5,21 @@ namespace Core;
 require __DIR__ . '/Constant.php';
 
 /**
- * Gestionnaire d'autoloading pour le projet.
+ * Gestionnaire d'autoloading.
  *
  * Enregistre plusieurs autoloaders ciblant les dossiers Core, Models, Views et Controllers.
+ *
+ * @package Core
  */
 final class AutoLoader
 {
     /**
      * Charge une classe située dans le dossier Core.
      *
-     * @param string $className Nom complet de la classe (peut inclure le namespace 'Core\\').
+     * Supporte les classes préfixées par le namespace `Core\`.
+     * Ignore les classes d'autres namespaces.
+     *
+     * @param string $className Nom complet de la classe (peut inclure le namespace)
      * @return void
      */
     public static function loadCore($className)
@@ -34,7 +39,10 @@ final class AutoLoader
     /**
      * Charge une classe située dans le dossier Models.
      *
-     * @param string $className Nom complet de la classe (peut inclure le namespace 'Models\\').
+     * Supporte les classes préfixées par le namespace `Models\`.
+     * Ignore les classes d'autres namespaces.
+     *
+     * @param string $className Nom complet de la classe (peut inclure le namespace)
      * @return void
      */
     public static function loadModel($className)
@@ -53,19 +61,25 @@ final class AutoLoader
     /**
      * Charge un fichier de vue.
      *
-     * @param string $className Nom du fichier de vue (sans extension)
+     * Utilisé pour charger dynamiquement des vues depuis le dossier Views.
+     * Le nom de classe fourni est traité comme un nom de fichier sans extension.
+     *
+     * @param string $className Nom du fichier de vue (sans extension . php)
      * @return void
      */
     public static function loadView($className)
     {
         $file = Constant::viewDirectory() . "$className.php";
-        static::load($file);
+        static:: load($file);
     }
 
     /**
      * Charge un contrôleur depuis le dossier Controllers.
      *
-     * @param string $className Nom complet de la classe (peut inclure le namespace 'Controllers\\').
+     * Supporte les classes préfixées par le namespace `Controllers\`.
+     * Ignore les classes d'autres namespaces.
+     *
+     * @param string $className Nom complet de la classe (peut inclure le namespace)
      * @return void
      */
     public static function loadController($className)
@@ -77,14 +91,17 @@ final class AutoLoader
                 return; // pas dans Controllers
             }
         }
-        $file = Constant::controllerDirectory() . str_replace('\\', DIRECTORY_SEPARATOR, $className) . '.php';
+        $file = Constant:: controllerDirectory() . str_replace('\\', DIRECTORY_SEPARATOR, $className) . '.php';
         static::load($file);
     }
 
     /**
      * Inclusion sécurisée d'un fichier PHP s'il est lisible.
      *
-     * @param string $file Chemin du fichier à inclure
+     * Vérifie la lisibilité du fichier avant de l'inclure.  Échoue silencieusement
+     * si le fichier n'existe pas ou n'est pas lisible.
+     *
+     * @param string $file Chemin absolu du fichier à inclure
      * @return void
      */
     private static function load($file)
@@ -98,5 +115,5 @@ final class AutoLoader
 // Enregistrement des autoloaders
 spl_autoload_register([AutoLoader::class, 'loadCore']);
 spl_autoload_register([AutoLoader::class, 'loadModel']);
-spl_autoload_register([AutoLoader::class, 'loadView']);
+spl_autoload_register([AutoLoader:: class, 'loadView']);
 spl_autoload_register([AutoLoader::class, 'loadController']);

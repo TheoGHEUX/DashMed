@@ -6,11 +6,10 @@ use Core\Database;
 use PDO;
 
 /**
- * Class HistoriqueConsole
+ * Modèle HistoriqueConsole - Logging des actions des médecins.
  *
- * Gère l'enregistrement des actions des médecins dans l'historique.
- * Table : historique_console
- * Colonnes : log_id, med_id, type_action, pt_id, id_mesure, date_action, heure_action
+ *Enregistre les interactions des médecins avec les graphiques du dashboard
+ * dans la table 'historique_console'.
  *
  * @package Models
  */
@@ -18,6 +17,10 @@ final class HistoriqueConsole
 {
     /**
      * Types d'action valides
+     *
+     * Liste des actions loggables sur les graphiques.
+     *
+     * @var array<int,string>
      */
     private const VALID_ACTIONS = [
         'ajouter',
@@ -28,6 +31,9 @@ final class HistoriqueConsole
 
     /**
      * Enregistre une action du médecin dans l'historique.
+     *
+     * Génère un log_id unique basé sur timestamp + random pour éviter les collisions.
+     * Valide le type d'action avant insertion. Log les erreurs si l'insertion échoue.
      *
      * @param int $medId ID du médecin
      * @param string $typeAction Type d'action ('ajouter', 'supprimer', 'réduire', 'agrandir')
@@ -129,7 +135,10 @@ final class HistoriqueConsole
     }
 
     /**
-     * Récupère l'historique d'un médecin (optionnel, pour consultation interne/admin).
+     * Récupère l'historique d'un médecin (optionnel, pour consultation interne/admin, analyse d'utilsation).
+     *
+     * Retourne les N dernières actions d'un médecin, triées de la plus récente
+     * à la plus ancienne. Utilisé pour l'analyse d'utilisation.
      *
      * @param int $medId ID du médecin
      * @param int $limit Nombre de logs à récupérer

@@ -6,24 +6,21 @@ use Core\Database;
 use PDO;
 
 /**
- * Class User
+ * Modèle User - Gestion des utilisateurs (médecins)
  *
- * Représente les opérations basiques liées aux utilisateurs (table medecin).
- * Fournit des méthodes pour la création, la recherche, la mise à jour et la gestion
- * des tokens de vérification d'email.
+ * Fournit les opérations CRUD et la gestion des tokens de vérification d'email
+ * pour la table 'medecin'. Toutes les comparaisons d'emails sont insensibles à la casse via LOWER().
  *
- * Notes :
- * - Toutes les méthodes utilisent Database::getConnection() pour obtenir un PDO.
- * - Les retours utilisent des types scalaires simples (bool, string|null, array|null).
  *
  * @package Models
- * @author  DashMed
- * @version 1.0
  */
 final class User
 {
     /**
-     * Vérifie si une adresse email existe déjà (insensible à la casse).
+     * Vérifie si une adresse email existe déjà.
+     *
+     * Comparaison insensible à la casse via LOWER(). Utilisé lors de
+     * l'inscription pour éviter les doublons.
      *
      * @param string $email Email à tester
      * @return bool True si l'email existe, false sinon
@@ -38,6 +35,8 @@ final class User
 
     /**
      * Crée un nouvel utilisateur (médecin).
+     *
+     * Insère un nouveau médecin dans la base avec compte actif par défaut.
      *
      * @param string $name      Prénom
      * @param string $lastName  Nom
@@ -66,6 +65,9 @@ final class User
 
     /**
      * Récupère un utilisateur par son adresse email.
+     *
+     *  Retourne toutes les données nécessaires pour l'authentification et la
+     *  vérification d'email.
      *
      * @param string $email Email recherché
      * @return array|null Tableau associatif de l'utilisateur ou null si non trouvé
@@ -97,6 +99,9 @@ final class User
     /**
      * Récupère un utilisateur par son identifiant.
      *
+     * Retourne toutes les données nécessaires pour l'affichage du profil et la
+     * gestion du compte.
+     *
      * @param int $id Identifiant utilisateur
      * @return array|null Tableau associatif de l'utilisateur ou null si non trouvé
      */
@@ -127,6 +132,9 @@ final class User
     /**
      * Met à jour le mot de passe d'un utilisateur.
      *
+     * Utilisé lors du changement de mot de passe et de la réinitialisation.
+     * Met également à jour le timestamp de dernière modification.
+     *
      * @param int    $id   Identifiant utilisateur
      * @param string $hash Nouveau hash du mot de passe
      * @return bool True si la mise à jour a réussi, false sinon
@@ -141,6 +149,8 @@ final class User
     /**
      * Met à jour l'adresse email d'un utilisateur.
      *
+     * Simple mise à jour sans réinitialisation de la vérification.
+     *
      * @param int    $id       Identifiant utilisateur
      * @param string $newEmail Nouvelle adresse email (sera trim + strtolower)
      * @return bool True si la mise à jour a réussi, false sinon
@@ -154,7 +164,19 @@ final class User
 
     /**
      * Met à jour l'email en forçant une nouvelle vérification.
-     * Retourne le token à envoyer ou null en cas d'échec.
+     *
+     * Processus en :
+     *  1. Génère un nouveau token de vérification (64 hex chars)
+     *  2. Définit email_verified à 0
+     *  3. Définit une expiration à +24 heures
+     *  4. Met à jour l'email
+     *
+     * Utilisé lors du changement d'email depuis le profil pour garantir que
+     *  le nouvel email appartient bien à l'utilisateur.
+     *
+     * @param int $id Identifiant utilisateur (med_id)
+     * @param string $newEmail Nouvelle adresse email (sera normalisée)
+     * @return string|null Token de vérification généré (à envoyer par email), ou null en cas d'échec
      */
     public static function updateEmailWithVerification(int $id, string $newEmail): ?string
     {
@@ -222,6 +244,12 @@ final class User
     /**
      * Vérifie un token de vérification d'email et active le compte.
      *
+     * Processus :
+     * 1. Recherche un utilisateur avec le token fourni, non expiré et non vérifié
+     * 2. Si trouvé, active le compte (email_verified = 1)
+     * 3. Supprime le token et sa date d'expiration
+     * 4. Enregistre la date d'activation
+     *
      * @param string $token Token de vérification
      * @return bool True si le token est valide et l'activation réussie, false sinon
      */
@@ -261,6 +289,9 @@ final class User
 
     /**
      * Trouve un utilisateur par son token de vérification.
+     *
+     * Retourne les données minimales nécessaires pour afficher la page de
+     * vérification d'email (nom, statut de vérification, expiration).
      *
      * @param string $token Token de vérification
      * @return array|null Tableau associatif de l'utilisateur ou null si non trouvé

@@ -6,7 +6,10 @@ namespace Core;
  * Constantes et chemins utilitaires du projet.
  *
  * Fournit des méthodes renvoyant les chemins absolus vers les dossiers clé (Views, Models, Core, Controllers).
+ *
+ * @package Core
  */
+
 final class Constant
 {
     // Sous-répertoires relatifs au répertoire SITE

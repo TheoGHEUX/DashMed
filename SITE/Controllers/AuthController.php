@@ -9,24 +9,21 @@ use Core\Mailer;
 /**
  * Contrôleur : Authentification & inscription
  *
- * Gère l'affichage et le traitement des formulaires d'inscription, de connexion
- * et la déconnexion. Fournit également la liste des spécialités valides.
- *
- * Méthodes principales :
- *  - showRegister(), register()
- *  - showLogin(), login()
- *  - logout()
- *
- * Variables passées aux vues :
- *  - $errors  (array)
- *  - $success (string)
- *  - $old     (array) pour remplir les formulaires après erreur
+ * Gère le cycle d'authentification : inscription avec vérification d'email,
+ * connexion avec limitation de débit et déconnexion sécurisée. Valide les spécialités
+ * médicales et applique des règles de complexité des mots de passe.
  *
  * @package Controllers
  */
 final class AuthController
 {
-    // Liste complète des spécialités médicales valides
+    /**
+     * Liste des spécialités médicales valides.
+     *
+     * Utilisée pour la validation côté serveur lors de l'inscription.
+     *
+     * @var array<int,string>
+     */
     private const SPECIALITES_VALIDES = [
         'Addictologie',
         'Algologie',
@@ -80,6 +77,24 @@ final class AuthController
         require __DIR__ . '/../Views/auth/register.php';
     }
 
+    /**
+     * Traite l'inscription d'un nouvel utilisateur.
+     *
+     * Validations effectuées :
+     * - Token CSRF
+     * - Prénom, nom, email (format et unicité)
+     * - Sexe (M ou F)
+     * - Spécialité (liste fermée)
+     * - Mot de passe (12+ caractères, maj/min/chiffre/spécial, confirmation)
+     *
+     * Processus en cas de succès :
+     * 1. Création du compte (compte_actif = 1, email_verified = 0)
+     * 2. Génération d'un token de vérification d'email (64 hex chars, valide 24h)
+     * 3. Envoi de l'email de vérification
+     * 4. Affichage du message de succès
+     *
+     * @return void
+     */
     public function register(): void
     {
         $errors = [];
@@ -206,6 +221,25 @@ final class AuthController
         require __DIR__ . '/../Views/auth/login.php';
     }
 
+    /**
+     * Traite la connexion d'un utilisateur.
+     *
+     * Validations effectuées :
+     * - Token CSRF
+     * - Format email
+     * - Identifiants corrects (email + mot de passe)
+     * - Email vérifié (email_verified = 1)
+     * - Connexion à accès limité :  5 tentatives max par IP sur 5 minutes
+     *
+     * Processus en cas de succès :
+     * 1. Régénération de l'ID de session (prévient session fixation)
+     * 2. Stockage des données utilisateur en session
+     * 3. Redirection vers /accueil
+     *
+     * En cas d'échec, la tentative est loggée pour le rate-limiting.
+     *
+     * @return void
+     */
     public function login(): void
     {
         $errors = [];
@@ -293,6 +327,17 @@ final class AuthController
         require __DIR__ . '/../Views/auth/login.php';
     }
 
+    /**
+     * Déconnecte l'utilisateur et détruit la session.
+     *
+     * Sécurité :
+     * - Requiert un token CSRF valide (évite logout CSRF)
+     * - Requiert POST (défini dans Router:: POST_ONLY)
+     * - Détruit complètement la session (variables + cookie)
+     * - Redirige vers /login
+     *
+     * @return void
+     */
     public function logout(): void
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {

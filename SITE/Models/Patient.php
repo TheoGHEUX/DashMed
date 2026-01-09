@@ -6,22 +6,21 @@ use Core\Database;
 use PDO;
 
 /**
- * Class Patient
+ * Modèle Patient - Gestion des patients et de leurs données.
  *
- * Fournit les opérations de lecture et préparation des données patients.
- * Méthodes statiques pour récupérer patient, mesures, valeurs et données
- * destinées aux graphiques.
+ * Fournit les opérations de lecturepour les patients, leurs mesures, valeurs
+ * et seuils d'alerte. Inclut des méthodes utilitaires pour la normalisation
+ * des données destinées aux graphiques.
  *
  * @package Models
  */
 final class Patient
 {
     /**
-     * Récupère les informations complètes d'un patient à partir de son identifiant.
+     * Récupère les informations complètes d'un patient.
      *
-     * Cette méthode retourne un tableau associatif contenant toutes les données
-     * pertinentes du patient pour l'affichage dans le dashboard ou d'autres interfaces :
-     * prénom, nom, email, sexe, groupe sanguin, date de naissance, téléphone, adresse et ville.
+     * Retourne toutes les données nécessaires pour l'affichage dans le dashboard
+     * et le profil patient : identité, contact, groupe sanguin, date de naissance.
      *
      * @param int $id Identifiant unique du patient (`pt_id`).
      *
@@ -70,7 +69,7 @@ final class Patient
      * Cette méthode retourne un tableau associatif contenant uniquement les informations
      * nécessaires pour lister les patients : l'identifiant ('pt_id'), le nom et le prénom.
      * L'identifiant du patient est essentiel pour créer les liens vers le tableau de bord
-     * ou d'autres actions côté frontend, même si toutes les données ne sont pas affichées.
+     * et d'autres actions côté frontend, même si toutes les données ne sont pas affichées.
      *
      * @param int $doctorId L'identifiant du médecin dont on souhaite récupérer les patients.
      *
@@ -100,10 +99,10 @@ final class Patient
     }
 
     /**
-     * Récupère les informations d'un patient en vérifiant qu'il est suivi par le médecin.
+     * Récupère toutes les mesures associées à un patient.
      *
-     * Cette méthode assure que le médecin est autorisé à accéder aux données du patient
-     * en vérifiant la relation dans la table 'suivre'.
+     * Chaque mesure représente un type de donnée médicale collectée pour le patient
+     * (fréquence cardiaque, tension artérielle, température, poids, etc.).
      *
      * @param int $patientId Identifiant du patient
      * @param int $medId     Identifiant du médecin
@@ -227,10 +226,15 @@ final class Patient
     /**
      * Récupère les valeurs d'une mesure spécifique.
      *
+     * Retourne l'historique des valeurs pour une mesure donnée, triées de la plus
+     *  récente à la plus ancienne.
+     *
      * @param int      $mesureId Identifiant de la mesure
      * @param int|null $limit    Nombre maximum de valeurs à retourner (optionnel)
-     * @return array Liste des valeurs (id_val, valeur, date_mesure, heure_mesure, datetime_mesure)
-     */
+     * @return array<int,array> Liste des valeurs. Chaque élément contient :
+     * *                          id_val, valeur, date_mesure, heure_mesure, datetime_mesure
+     * *                          Trié par date DESC puis heure DESC
+ */
     public static function getValeursMesure(int $mesureId, ?int $limit = null): array
     {
         $pdo = Database::getConnection();
@@ -257,6 +261,9 @@ final class Patient
 
     /**
      * Récupère les dernières valeurs pour chaque type de mesure d'un patient.
+     *
+     * Retourne un snapshot des dernières valeurs de toutes les mesures du patient.
+     * Utilisé pour l'affichage du résumé rapide dans le dashboard.
      *
      * @param int $patientId Identifiant du patient
      * @return array Liste des mesures avec leur dernière valeur et date/heure
@@ -289,7 +296,10 @@ final class Patient
     }
 
     /**
-     * Récupère les données pour un graphique (dernières N valeurs) pour un type de mesure.
+     * Récupère les données pour un graphique.
+     *
+     * Retourne les N dernières valeurs d'un type de mesure spécifique.
+     *Les valeurs sont inversées pour obtenir un ordre chronologique (plus anciennes en premier).
      *
      * @param int    $patientId  Identifiant du patient
      * @param string $typeMesure Type de mesure (ex: "poids", "tension")
@@ -340,12 +350,15 @@ final class Patient
     }
 
     /**
-     * Normalise une valeur entre 0 et 1 selon un min/max.
+     * Normalise une valeur entre 0 et 1 selon un intervalle min/max.
+     *
+     * Utilisé pour la mise à l'échelle des valeurs dans les graphiques.
+     * Retourne 0.5 si min == max (évite division par zéro).
      *
      * @param float $value Valeur à normaliser
      * @param float $min   Valeur minimale attendue
      * @param float $max   Valeur maximale attendue
-     * @return float Valeur normalisée entre 0 et 1 (0.5 si min==max)
+     * @return float Valeur normalisée entre 0 et 1
      */
     public static function normalizeValue(float $value, float $min, float $max): float
     {
@@ -358,10 +371,13 @@ final class Patient
     /**
      * Prépare les données normalisées pour les graphiques JavaScript.
      *
+     * Applique la normalisation à un tableau de valeurs issues de la base.
+     * Chaque élément du tableau doit contenir une clé 'valeur'.
+     *
      * @param array $valeurs Liste de valeurs issues de la base (chaque élément doit avoir la clé 'valeur')
      * @param float $min     Min pour la normalisation
      * @param float $max     Max pour la normalisation
-     * @return array Tableau des valeurs normalisées (float)
+     * @return array Tableau des valeurs normalisées entre 0 et 1
      */
     public static function prepareChartValues(array $valeurs, float $min, float $max): array
     {
@@ -371,11 +387,10 @@ final class Patient
     }
 
     /**
-     * Récupère l'identifiant du premier patient associé à un médecin donné.
+     * Récupère l'identifiant du premier patient suivi par un médecin.
      *
-     * Cette méthode retourne le pt_id du patient suivi par le médecin avec l'ID
-     * '$medId', selon l'ordre croissant des identifiants. Utile comme valeur
-     * par défaut lorsque aucun patient n'est sélectionné.
+     * Utilisé comme valeur par défaut lorsque aucun patient n'est sélectionné
+     * dans le dashboard. Retourne le patient avec le pt_id le plus petit.
      *
      * @param int $medId L'identifiant du médecin (med_id)
      * @return int|null L'identifiant du premier patient suivi par le médecin,
@@ -402,11 +417,14 @@ final class Patient
     /**
      * Récupère la valeur seuil pour un patient et une mesure donnée selon le statut.
      *
+     * Les seuils d'alerte définissent les limites pour les statuts 'préoccupant',
+     * 'urgent' ou 'critique'.  Chaque seuil peut être majorant (max) ou minorant (min).
+     *
      * @param int $patientId
      * @param string $typeMesure
-     * @param string $statut 'préoccupant', 'urgent' ou 'critique'
-     * @param bool $majorant true = seuil max, false = seuil min
-     * @return float|null
+     * @param string $statut  Statut d'alerte 'préoccupant', 'urgent' ou 'critique'
+     * @param bool $majorant True = seuil max, False = seuil min
+     * @return float|null Valeur du seuil ou null si non défini
      */
     public static function getSeuilByStatus(int $patientId, string $typeMesure, string $statut, bool $majorant): ?float
     {

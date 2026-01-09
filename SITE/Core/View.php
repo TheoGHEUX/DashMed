@@ -3,15 +3,24 @@
 namespace Core;
 
 /**
- * Gestionnaire simple d'affichage des vues.
+ * Gestionnaire d'affichage des vues.
  *
  * Utilise la mise en tampon de sortie pour inclure les fichiers de vue
- * et permet de fournir des paramètres (variables) à la vue.
+ * et permet de transmettre des variables via extract() à la vue.
+ * Gère les erreurs 404 si une vue est introuvable.
  */
 final class View
 {
     /**
      * Rend une vue PHP en lui passant des paramètres.
+     *
+     * Processus :
+     * - Construit le chemin complet vers Views/{$path}. php
+     * - Si le fichier n'existe pas, affiche la vue errors/404.php (HTTP 404)
+     * - Sinon, extrait les paramètres comme variables et inclut la vue
+     *
+     * Les paramètres sont extraits avec EXTR_SKIP pour éviter l'écrasement de
+     * variables existantes.
      *
      * @param string $path Chemin relatif de la vue (depuis `Views/`), sans extension
      * @param array $params Variables à rendre disponibles dans la vue
