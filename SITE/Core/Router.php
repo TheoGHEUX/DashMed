@@ -251,7 +251,7 @@ final class Router
     {
         http_response_code(404);
         if (file_exists(__DIR__ . '/../Views/errors/404.php')) {
-            \View::render('errors/404');
+            \Core\View::render('errors/404');
         } else {
             echo '404 - Page non trouvée';
         }

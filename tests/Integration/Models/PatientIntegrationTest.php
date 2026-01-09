@@ -23,8 +23,6 @@ class PatientIntegrationTest extends TestCase
     #[Test]
     public function findByIdReturnsNullForNonExistentPatient(): void
     {
-        $this->markTestSkipped('Test d\'intégration - nécessite une base de données configurée');
-
         $patient = Patient::findById(999999999);
         $this->assertNull($patient);
     }
@@ -35,8 +33,6 @@ class PatientIntegrationTest extends TestCase
     #[Test]
     public function getMesuresReturnsEmptyArrayForNonExistentPatient(): void
     {
-        $this->markTestSkipped('Test d\'intégration - nécessite une base de données configurée');
-
         $mesures = Patient::getMesures(999999999);
 
         $this->assertIsArray($mesures);
@@ -49,8 +45,6 @@ class PatientIntegrationTest extends TestCase
     #[Test]
     public function getValeursMesureReturnsEmptyArrayForNonExistentMesure(): void
     {
-        $this->markTestSkipped('Test d\'intégration - nécessite une base de données configurée');
-
         $valeurs = Patient::getValeursMesure(999999999);
 
         $this->assertIsArray($valeurs);
@@ -63,8 +57,6 @@ class PatientIntegrationTest extends TestCase
     #[Test]
     public function getDernieresValeursReturnsEmptyArrayForNonExistentPatient(): void
     {
-        $this->markTestSkipped('Test d\'intégration - nécessite une base de données configurée');
-
         $valeurs = Patient::getDernieresValeurs(999999999);
 
         $this->assertIsArray($valeurs);
@@ -77,8 +69,6 @@ class PatientIntegrationTest extends TestCase
     #[Test]
     public function getChartDataReturnsNullForNonExistentData(): void
     {
-        $this->markTestSkipped('Test d\'intégration - nécessite une base de données configurée');
-
         $data = Patient::getChartData(999999999, 'inexistent_type');
         $this->assertNull($data);
     }
@@ -89,10 +79,6 @@ class PatientIntegrationTest extends TestCase
     #[Test]
     public function findByIdReturnsCorrectStructure(): void
     {
-        $this->markTestSkipped(
-            'Test d\'intégration - nécessite une base de données configurée avec des données de test'
-        );
-
         // Ce test suppose qu'il existe au moins un patient avec pt_id = 1
         $patient = Patient::findById(1);
 
@@ -117,8 +103,6 @@ class PatientIntegrationTest extends TestCase
     #[Test]
     public function getValeursMesureRespectsLimit(): void
     {
-        $this->markTestSkipped('Test d\'intégration - nécessite une base de données configurée');
-
         // Ce test vérifie que la limite est respectée
         $limit = 5;
         $valeurs = Patient::getValeursMesure(1, $limit);

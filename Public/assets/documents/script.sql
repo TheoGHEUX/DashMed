@@ -126,11 +126,15 @@ CREATE TABLE HISTORIQUE_CONSOLE
 (
     log_id       BIGINT,
     med_id       INT,
-    type_action  VARCHAR(20) NOT NULL CHECK (type_action IN ('réduire', 'ouvrir')),
-    date_action  DATE        NOT NULL,
-    heure_action TIME        NOT NULL,
+    type_action  VARCHAR(20) NOT NULL CHECK (type_action IN ('ajouter', 'supprimer', 'réduire', 'agrandir')),
+    pt_id        INT,
+    id_mesure    BIGINT,
+    date_action  DATE NOT NULL,
+    heure_action TIME NOT NULL,
     CONSTRAINT pk_historique PRIMARY KEY (log_id),
-    CONSTRAINT fk_historique FOREIGN KEY (med_id) REFERENCES MEDECIN (med_id) ON DELETE CASCADE
+    CONSTRAINT fk_historique FOREIGN KEY (med_id) REFERENCES MEDECIN (med_id) ON DELETE CASCADE,
+    CONSTRAINT fk2_historique FOREIGN KEY (pt_id) REFERENCES PATIENT (pt_id),
+    CONSTRAINT fk3_historique FOREIGN KEY (id_mesure) REFERENCES MESURES (id_mesure)
 );
 
 -- TABLE GRAPHIQUE

@@ -332,6 +332,7 @@ final class Patient
         $valeurs = array_reverse($valeurs);
 
         return [
+            'id_mesure' => $mesure['id_mesure'],
             'type_mesure' => $typeMesure,
             'unite' => $mesure['unite'],
             'valeurs' => $valeurs
@@ -404,7 +405,7 @@ final class Patient
      * @param int $patientId
      * @param string $typeMesure
      * @param string $statut 'préoccupant', 'urgent' ou 'critique'
-     * @param bool|null $majorant true = seuil max, false = seuil min, null = indifférent
+     * @param bool $majorant true = seuil max, false = seuil min
      * @return float|null
      */
     public static function getSeuilByStatus(int $patientId, string $typeMesure, string $statut, bool $majorant): ?float
@@ -434,6 +435,4 @@ final class Patient
         $row = $stmt->fetch();
         return $row ? (float) $row['seuil'] : null;
     }
-
-
 }

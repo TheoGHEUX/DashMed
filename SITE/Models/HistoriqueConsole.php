@@ -10,7 +10,7 @@ use PDO;
  *
  * Gère l'enregistrement des actions des médecins dans l'historique.
  * Table : historique_console
- * Colonnes : log_id, med_id, type_action, date_action, heure_action
+ * Colonnes : log_id, med_id, type_action, pt_id, id_mesure, date_action, heure_action
  *
  * @package Models
  */
@@ -20,44 +20,55 @@ final class HistoriqueConsole
      * Types d'action valides
      */
     private const VALID_ACTIONS = [
-        'ouvrir',
-        'réduire'
+        'ajouter',
+        'supprimer',
+        'réduire',
+        'agrandir'
     ];
 
     /**
      * Enregistre une action du médecin dans l'historique.
      *
      * @param int $medId ID du médecin
-     * @param string $typeAction Type d'action ('ouvrir' ou 'réduire')
+     * @param string $typeAction Type d'action ('ajouter', 'supprimer', 'réduire', 'agrandir')
+     * @param int|null $ptId ID du patient (optionnel)
+     * @param int|null $idMesure ID de la mesure/graphique (optionnel)
      * @return bool True si l'insertion a réussi, false sinon
      */
-    public static function log(int $medId, string $typeAction): bool
+    public static function log(int $medId, string $typeAction, ?int $ptId = null, ?int $idMesure = null): bool
     {
         $pdo = Database::getConnection();
-        
+
         // Valider le type d'action
         if (!in_array($typeAction, self::VALID_ACTIONS, true)) {
             error_log(sprintf('[HISTORIQUE] Type d\'action invalide: %s', $typeAction));
             return false;
         }
-        
+
         $dateAction = date('Y-m-d');
         $heureAction = date('H:i:s');
         // Générer un log_id unique basé sur timestamp + random
         $logId = (int)(microtime(true) * 10000) + random_int(1, 999);
-        
+
         try {
             $st = $pdo->prepare('
-                INSERT INTO historique_console (log_id, med_id, type_action, date_action, heure_action)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO historique_console 
+                    (log_id, med_id, type_action, pt_id, id_mesure, date_action, heure_action)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             ');
-            
-            $result = $st->execute([$logId, $medId, $typeAction, $dateAction, $heureAction]);
-            
+
+            $result = $st->execute([$logId, $medId, $typeAction, $ptId, $idMesure, $dateAction, $heureAction]);
+
             if (!$result) {
-                error_log(sprintf('[HISTORIQUE] Erreur INSERT: med_id=%d type=%s', $medId, $typeAction));
+                error_log(sprintf(
+                    '[HISTORIQUE] Erreur INSERT: med_id=%d type=%s pt_id=%s id_mesure=%s',
+                    $medId,
+                    $typeAction,
+                    $ptId ?? 'null',
+                    $idMesure ?? 'null'
+                ));
             }
-            
+
             return $result;
         } catch (\Throwable $e) {
             error_log(sprintf('[HISTORIQUE] Exception: %s', $e->getMessage()));
@@ -66,25 +77,55 @@ final class HistoriqueConsole
     }
 
     /**
-     * Enregistre l'agrandissement ou la récupération d'un graphique (action 'ouvrir').
+     * Enregistre l'ajout d'un graphique.
      *
      * @param int $medId ID du médecin
+     * @param int|null $ptId ID du patient
+     * @param int|null $idMesure ID de la mesure/graphique
      * @return bool
      */
-    public static function logGraphiqueOuvrir(int $medId): bool
+    public static function logGraphiqueAjouter(int $medId, ?int $ptId = null, ?int $idMesure = null): bool
     {
-        return self::log($medId, 'ouvrir');
+        return self::log($medId, 'ajouter', $ptId, $idMesure);
     }
 
     /**
-     * Enregistre le rapetissement ou la suppression d'un graphique (action 'réduire').
+     * Enregistre la suppression d'un graphique.
      *
      * @param int $medId ID du médecin
+     * @param int|null $ptId ID du patient
+     * @param int|null $idMesure ID de la mesure/graphique
      * @return bool
      */
-    public static function logGraphiqueReduire(int $medId): bool
+    public static function logGraphiqueSupprimer(int $medId, ?int $ptId = null, ?int $idMesure = null): bool
     {
-        return self::log($medId, 'réduire');
+        return self::log($medId, 'supprimer', $ptId, $idMesure);
+    }
+
+    /**
+     * Enregistre la réduction de taille d'un graphique.
+     *
+     * @param int $medId ID du médecin
+     * @param int|null $ptId ID du patient
+     * @param int|null $idMesure ID de la mesure/graphique
+     * @return bool
+     */
+    public static function logGraphiqueReduire(int $medId, ?int $ptId = null, ?int $idMesure = null): bool
+    {
+        return self::log($medId, 'réduire', $ptId, $idMesure);
+    }
+
+    /**
+     * Enregistre l'agrandissement d'un graphique.
+     *
+     * @param int $medId ID du médecin
+     * @param int|null $ptId ID du patient
+     * @param int|null $idMesure ID de la mesure/graphique
+     * @return bool
+     */
+    public static function logGraphiqueAgrandir(int $medId, ?int $ptId = null, ?int $idMesure = null): bool
+    {
+        return self::log($medId, 'agrandir', $ptId, $idMesure);
     }
 
     /**
@@ -97,12 +138,14 @@ final class HistoriqueConsole
     public static function getHistoryByMedId(int $medId, int $limit = 100): array
     {
         $pdo = Database::getConnection();
-        
+
         $st = $pdo->prepare('
             SELECT 
                 log_id,
                 med_id,
                 type_action,
+                pt_id,
+                id_mesure,
                 date_action,
                 heure_action
             FROM historique_console
@@ -110,11 +153,11 @@ final class HistoriqueConsole
             ORDER BY date_action DESC, heure_action DESC
             LIMIT ?
         ');
-        
+
         $st->bindValue(1, $medId, PDO::PARAM_INT);
         $st->bindValue(2, $limit, PDO::PARAM_INT);
         $st->execute();
-        
+
         return $st->fetchAll(PDO::FETCH_ASSOC);
     }
 }

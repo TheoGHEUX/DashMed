@@ -32,7 +32,7 @@ class UserIntegrationTest extends TestCase
         // Nettoyer l'utilisateur de test s'il existe
         try {
             $pdo = Database::getConnection();
-            $st = $pdo->prepare('DELETE FROM MEDECIN WHERE email = ?');
+            $st = $pdo->prepare('DELETE FROM medecin WHERE email = ?');
             $st->execute([self::$testEmail]);
         } catch (\Exception $e) {
             // Ignorer les erreurs de connexion pour les environnements sans DB
@@ -49,7 +49,7 @@ class UserIntegrationTest extends TestCase
         // Supprimer l'utilisateur de test
         try {
             $pdo = Database::getConnection();
-            $st = $pdo->prepare('DELETE FROM MEDECIN WHERE email = ?');
+            $st = $pdo->prepare('DELETE FROM medecin WHERE email = ?');
             $st->execute([self::$testEmail]);
         } catch (\Exception $e) {
             // Ignorer
@@ -62,15 +62,13 @@ class UserIntegrationTest extends TestCase
     #[Test]
     public function createUserSuccessfully(): void
     {
-        $this->markTestSkipped('Test d\'intégration - nécessite une base de données configurée');
-
         $result = User::create(
             'Test',
             'User',
             self::$testEmail,
             password_hash('TestPassword123!', PASSWORD_DEFAULT),
             'M',
-            'Généraliste'
+            'Médecine générale'
         );
 
         $this->assertTrue($result);
@@ -83,8 +81,6 @@ class UserIntegrationTest extends TestCase
     #[Depends('createUserSuccessfully')]
     public function emailExistsAfterCreation(): void
     {
-        $this->markTestSkipped('Test d\'intégration - nécessite une base de données configurée');
-
         $result = User::emailExists(self::$testEmail);
         $this->assertTrue($result);
     }
@@ -96,8 +92,6 @@ class UserIntegrationTest extends TestCase
     #[Depends('createUserSuccessfully')]
     public function findByEmailReturnsUser(): void
     {
-        $this->markTestSkipped('Test d\'intégration - nécessite une base de données configurée');
-
         $user = User::findByEmail(self::$testEmail);
 
         $this->assertNotNull($user);
@@ -116,8 +110,6 @@ class UserIntegrationTest extends TestCase
     #[Depends('findByEmailReturnsUser')]
     public function findByIdReturnsUser(): void
     {
-        $this->markTestSkipped('Test d\'intégration - nécessite une base de données configurée');
-
         if (self::$createdUserId === null) {
             $this->markTestSkipped('User ID non disponible');
         }
@@ -135,8 +127,6 @@ class UserIntegrationTest extends TestCase
     #[Depends('findByIdReturnsUser')]
     public function updatePasswordSuccessfully(): void
     {
-        $this->markTestSkipped('Test d\'intégration - nécessite une base de données configurée');
-
         if (self::$createdUserId === null) {
             $this->markTestSkipped('User ID non disponible');
         }
@@ -157,8 +147,6 @@ class UserIntegrationTest extends TestCase
     #[Test]
     public function emailExistsReturnsFalseForNonExistentEmail(): void
     {
-        $this->markTestSkipped('Test d\'intégration - nécessite une base de données configurée');
-
         $result = User::emailExists('nonexistent_' . time() . '@example.com');
         $this->assertFalse($result);
     }
@@ -169,8 +157,6 @@ class UserIntegrationTest extends TestCase
     #[Test]
     public function findByEmailReturnsNullForNonExistentEmail(): void
     {
-        $this->markTestSkipped('Test d\'intégration - nécessite une base de données configurée');
-
         $user = User::findByEmail('nonexistent_' . time() . '@example.com');
         $this->assertNull($user);
     }
@@ -181,8 +167,6 @@ class UserIntegrationTest extends TestCase
     #[Test]
     public function findByIdReturnsNullForNonExistentId(): void
     {
-        $this->markTestSkipped('Test d\'intégration - nécessite une base de données configurée');
-
         $user = User::findById(999999999);
         $this->assertNull($user);
     }
