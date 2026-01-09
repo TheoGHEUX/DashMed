@@ -38,16 +38,15 @@ document.addEventListener('DOMContentLoaded', () => {
 	const patientData = window.patientChartData || {};
 
 	// Gestion de la configuration des graphiques
-	const CHART_DEFINITIONS = {
-		'blood-pressure': {
-			title: 'Tendance de la tension (mmHg)',
-			type: 'area',
-			// Utiliser les vraies données si disponibles, sinon placeholder
-			data: patientData['blood-pressure']?.values || [0.68,0.70,0.72,0.71,0.73,0.72,0.71,0.74,0.75,0.73],
-			color: '#efcd44',
-			minVal: 80,
-			maxVal: 160,
-			unit: 'mmHg',
+    const CHART_DEFINITIONS = {
+        'blood-pressure': {
+            title: 'Tendance de la tension (mmHg)',
+            type: 'area',
+            data: patientData['blood-pressure']?.values, // Si pas de valeur pour cette mesure, mettre un tableau vide par défaut
+            color: '#efcd44',
+            minVal: 80,
+            maxVal: 160,
+            unit: 'mmHg',
             thresholds: {
                 preoccupant: patientData['blood-pressure']?.seuil_preoccupant ?? null,
                 urgent: patientData['blood-pressure']?.seuil_urgent ?? null,
@@ -57,19 +56,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 critique_min: patientData['blood-pressure']?.seuil_critique_min ?? null,
             },
             valueId: 'value-bp',
-			noteId: 'note-bp',
-			value: patientData['blood-pressure']?.lastValue?.toFixed(0) || '122',
-			note: (patientData['blood-pressure']?.unit || 'mmHg') + ', dernière mesure'
-		},
-		'heart-rate': {
-			title: 'Fréquence cardiaque',
-			type: 'area',
-			// Utiliser les vraies données si disponibles
-			data: patientData['heart-rate']?.values || [0.48,0.52,0.50,0.55,0.58,0.54,0.56,0.60,0.55,0.53],
-			color: '#ff71ac',
-			minVal: 35,
-			maxVal: 130,
-			unit: 'bpm',
+            noteId: 'note-bp',
+            value: patientData['blood-pressure']?.lastValue?.toFixed(0) || 'No Data',
+            note: (patientData['blood-pressure']?.unit || 'mmHg') + ', dernière mesure'
+        },
+        'heart-rate': {
+            title: 'Fréquence cardiaque',
+            type: 'area',
+            data: patientData['heart-rate']?.values,
+            color: '#ff71ac',
+            minVal: 35,
+            maxVal: 130,
+            unit: 'bpm',
             thresholds: {
                 preoccupant: patientData['heart-rate']?.seuil_preoccupant ?? null,
                 urgent: patientData['heart-rate']?.seuil_urgent ?? null,
@@ -79,19 +77,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 critique_min: patientData['heart-rate']?.seuil_critique_min ?? null,
             },
             valueId: 'value-hr',
-			noteId: 'note-hr',
-			value: patientData['heart-rate']?.lastValue?.toFixed(0) || '72',
-			note: (patientData['heart-rate']?.unit || 'BPM') + ', dernière mesure'
-		},
-		'respiration': {
-			title: 'Fréquence respiratoire',
-			type: 'area',
-			// Utiliser les vraies données si disponibles
-			data: patientData['respiration']?.values || [0.40,0.42,0.44,0.43,0.45,0.46,0.44,0.43,0.42,0.44],
-			color: '#0ea5e9',
-			minVal: 0,
-			maxVal: 30,
-			unit: 'resp/min',
+            noteId: 'note-hr',
+            value: patientData['heart-rate']?.lastValue?.toFixed(0) || 'No Data',
+            note: (patientData['heart-rate']?.unit || 'BPM') + ', dernière mesure'
+        },
+        'respiration': {
+            title: 'Fréquence respiratoire',
+            type: 'area',
+            data: patientData['respiration']?.values,
+            color: '#0ea5e9',
+            minVal: 0,
+            maxVal: 30,
+            unit: 'resp/min',
             thresholds: {
                 preoccupant: patientData['respiration']?.seuil_preoccupant ?? null,
                 urgent: patientData['respiration']?.seuil_urgent ?? null,
@@ -101,19 +98,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 critique_min: patientData['respiration']?.seuil_critique_min ?? null,
             },
             valueId: 'value-resp',
-			noteId: 'note-resp',
-			value: patientData['respiration']?.lastValue?.toFixed(0) || '16',
-			note: (patientData['respiration']?.unit || 'Resp/min')
-		},
-		'temperature': {
-			title: 'Température corporelle',
-			type: 'area',
-			// Utiliser les vraies données si disponibles
-			data: patientData['temperature']?.values || [0.46,0.47,0.48,0.49,0.50,0.51,0.50,0.49,0.48,0.49],
-			color: '#ffab6e',
-			minVal: 31.0,
-			maxVal: 42.0,
-			unit: '°C',
+            noteId: 'note-resp',
+            value: patientData['respiration']?.lastValue?.toFixed(0) || 'No Data',
+            note: (patientData['respiration']?.unit || 'Resp/min')
+        },
+        'temperature': {
+            title: 'Température corporelle',
+            type: 'area',
+            data: patientData['temperature']?.values,
+            color: '#ffab6e',
+            minVal: 31.0,
+            maxVal: 42.0,
+            unit: '°C',
             thresholds: {
                 preoccupant: patientData['temperature']?.seuil_preoccupant ?? null,
                 urgent: patientData['temperature']?.seuil_urgent ?? null,
@@ -123,19 +119,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 critique_min: patientData['temperature']?.seuil_critique_min ?? null,
             },
             valueId: 'value-temp',
-			noteId: 'note-temp',
-			value: patientData['temperature']?.lastValue?.toFixed(1) || '36.7',
-			note: (patientData['temperature']?.unit || '°C') + ', dernière mesure'
-		},
-		'glucose-trend': {
-			title: 'Glycémie (tendance)',
-			type: 'area',
-			// Utiliser les vraies données si disponibles
-			data: patientData['glucose-trend']?.values || [0.52,0.50,0.54,0.58,0.62,0.60,0.56,0.54,0.52,0.55],
-			color: '#ffffff',
-			minVal: 2.0,
-			maxVal: 10,
-			unit: 'mmol/L',
+            noteId: 'note-temp',
+            value: patientData['temperature']?.lastValue?.toFixed(1) || 'No Data',
+            note: (patientData['temperature']?.unit || '°C') + ', dernière mesure'
+        },
+        'glucose-trend': {
+            title: 'Glycémie (tendance)',
+            type: 'area',
+            data: patientData['glucose-trend']?.values,
+            color: '#ee7dff',
+            minVal: 2.0,
+            maxVal: 10,
+            unit: 'mmol/L',
             thresholds: {
                 preoccupant: patientData['glucose-trend']?.seuil_preoccupant ?? null,
                 urgent: patientData['glucose-trend']?.seuil_urgent ?? null,
@@ -145,19 +140,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 critique_min: patientData['glucose-trend']?.seuil_critique_min ?? null,
             },
             valueId: 'value-glucose-trend',
-			noteId: 'note-glucose',
-			value: patientData['glucose-trend']?.lastValue?.toFixed(1) || '5.9',
-			note: (patientData['glucose-trend']?.unit || 'mmol/L')
-		},
-		'weight': {
-			title: 'Poids',
-			type: 'area',
-			// Utiliser les vraies données si disponibles
-			data: patientData['weight']?.values || [0.52,0.53,0.54,0.53,0.54,0.55,0.54,0.55,0.56,0.55],
-			color: '#10b981',
-			minVal: 35,
-			maxVal: 110,
-			unit: 'kg',
+            noteId: 'note-glucose',
+            value: patientData['glucose-trend']?.lastValue?.toFixed(1) || 'No Data',
+            note: (patientData['glucose-trend']?.unit || 'mmol/L')
+        },
+        'weight': {
+            title: 'Poids',
+            type: 'area',
+            data: patientData['weight']?.values,
+            color: '#10b981',
+            minVal: 35,
+            maxVal: 110,
+            unit: 'kg',
             thresholds: {
                 preoccupant: patientData['weight']?.seuil_preoccupant ?? null,
                 urgent: patientData['weight']?.seuil_urgent ?? null,
@@ -167,19 +161,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 critique_min: patientData['weight']?.seuil_critique_min ?? null,
             },
             valueId: 'value-weight',
-			noteId: 'note-weight',
-			value: patientData['weight']?.lastValue?.toFixed(1) || '72.5',
-			note: (patientData['weight']?.unit || 'kg') + ', dernière mesure'
-		},
-		'oxygen-saturation': {
-			title: 'Saturation en oxygène',
-			type: 'area',
-			// Utiliser les avraies données si disponibles
-			data: patientData['oxygen-saturation']?.values || [0.96,0.97,0.98,0.97,0.98,0.99,0.98,0.97,0.98,0.98],
-			color: '#06b6d4',
-			minVal: 72,
-			maxVal:100,
-			unit: '%',
+            noteId: 'note-weight',
+            value: patientData['weight']?.lastValue?.toFixed(1) || 'No Data',
+            note: (patientData['weight']?.unit || 'kg') + ', dernière mesure'
+        },
+        'oxygen-saturation': {
+            title: 'Saturation en oxygène',
+            type: 'area',
+            data: patientData['oxygen-saturation']?.values,
+            color: '#06b6d4',
+            minVal: 72,
+            maxVal: 100,
+            unit: '%',
             thresholds: {
                 preoccupant: patientData['oxygen-saturation']?.seuil_preoccupant ?? null,
                 urgent: patientData['oxygen-saturation']?.seuil_urgent ?? null,
@@ -189,11 +182,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 critique_min: patientData['oxygen-saturation']?.seuil_critique_min ?? null,
             },
             valueId: 'value-oxygen',
-			noteId: 'note-oxygen',
-			value: patientData['oxygen-saturation']?.lastValue?.toFixed(0) || '98',
-			note: (patientData['oxygen-saturation']?.unit || '%') + ', dernière mesure'
-		}
-	};
+            noteId: 'note-oxygen',
+            value: patientData['oxygen-saturation']?.lastValue?.toFixed(0) || 'No Data',
+            note: (patientData['oxygen-saturation']?.unit || '%') + ', dernière mesure'
+        }
+    };
 
 	let editMode = false;
 	let chartConfig = loadChartConfig();
@@ -1570,23 +1563,30 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 	}
 
-	// Initialize chart animations
-	function initializeChart(chartId) {
-		const def = CHART_DEFINITIONS[chartId];
-		if (!def) {
-			console.error(`Graphique ${chartId} non trouvé dans CHART_DEFINITIONS`);
-			return;
-		}
+    // Initialize chart animations
+    function initializeChart(chartId) {
+        const def = CHART_DEFINITIONS[chartId];
+        if (!def) {
+            console.error(`Graphique ${chartId} non trouvé dans CHART_DEFINITIONS`);
+            return;
+        }
 
-		const canvasId = 'chart-' + chartId;
-		const canvas = document.getElementById(canvasId);
-		if (!canvas) {
-			console.warn(`Canvas ${canvasId} non trouvé dans le DOM`);
-			return;
-		}
+        // Ne dessiner que si les données existent
+        if (!def.data || !Array.isArray(def.data) || def.data.length === 0) {
+            console.warn(`Pas de données pour le graphique ${chartId} - graphique masqué`);
+            return;
+        }
+
+        const canvasId = 'chart-' + chartId;
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) {
+            console.warn(`Canvas ${canvasId} non trouvé dans le DOM`);
+            return;
+        }
 
         if (def.type === 'area') {
-            if (def.thresholds) {
+            if (def.thresholds && Object.values(def.thresholds).some(v => v !== null)) {
+                // Utiliser animateAreaWithThreshold si au moins un seuil existe
                 animateAreaWithThreshold(
                     canvasId,
                     def.data,
@@ -1597,6 +1597,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     def.unit
                 );
             } else {
+                // Sinon utiliser le graphique simple sans seuils
                 animateArea(
                     canvasId,
                     def.data,
@@ -1607,7 +1608,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 );
             }
         }
-	}
+    }
 
 	// Resize indicator functions
 	let resizeIndicator = null;
