@@ -12,6 +12,8 @@
  *  - $pageScripts (array)      Scripts spécifiques
  *  - $success (string|null)    Message de succès (optionnel)
  *  - $errors (array|null)      Liste d'erreurs (optionnel)
+ *
+ * @package Views
  */
 
 $pageTitle = $pageTitle ?? "Vérification d'email";

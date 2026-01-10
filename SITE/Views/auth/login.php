@@ -12,7 +12,7 @@
  *  - $success    (string)
  *  - $old        (array)  Valeurs précédentes
  *
- * @package DashMed
+ * @package Views
  */
 
 $csrf_token = '';

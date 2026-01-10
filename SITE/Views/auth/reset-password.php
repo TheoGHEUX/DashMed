@@ -15,6 +15,8 @@
  * @var string $pageDescription   Meta description (optionnel)
  * @var array  $pageStyles        Styles spécifiques (optionnel)
  * @var array  $pageScripts       Scripts spécifiques (optionnel)
+ *
+ * @package Views
  */
 
 $csrf_token = (class_exists('\Core\Csrf') && method_exists('\Core\Csrf', 'token'))

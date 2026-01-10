@@ -5,26 +5,17 @@
  * Affiche les informations du compte pour l'utilisateur authentifié
  * et propose les actions de modification (email, mot de passe).
  *
- * @package    DashMed
- * @subpackage Views
- * @category   Frontend
- * @version    2.0
- * @since      1.0
- *
- * @see        \SITE\Controllers\ProfileController
- * @requires   PHP >= 7.4
- *
  * Variables attendues :
  * @var array  $_SESSION['user']         Données utilisateur (name, last_name, sexe, specialite, email)
  * @var string $pageTitle               Titre de la page ("Profil")
  * @var string $pageDescription         Meta description
  * @var array<int,string> $pageStyles   Styles spécifiques (["/assets/style/profile.css"])
  * @var array<int,string> $pageScripts  Scripts spécifiques
+ *
+ * @package Views
  */
 
-// ============================================================================
 // SÉCURITÉ : Contrôle d'authentification
-// ============================================================================
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
@@ -34,16 +25,12 @@ if (empty($_SESSION['user'])) {
     exit;
 }
 
-// ============================================================================
 // RÉCUPÉRATION DES DONNÉES UTILISATEUR
-// ============================================================================
 $user  = $_SESSION['user'];
 $first = $user['name'] ?? '';
 $last  = $user['last_name'] ?? '';
 
-// ============================================================================
 // CONFIGURATION : Variables du template
-// ============================================================================
 $pageTitle       = $pageTitle ?? "Profil";
 $pageDescription = $pageDescription ?? "Consultez votre profil DashMed une fois connecté";
 $pageStyles      = $pageStyles ?? ["/assets/style/profile.css"];

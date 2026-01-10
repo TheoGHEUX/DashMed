@@ -3,14 +3,25 @@
 // Ouvrez la console (F12) et tapez : localStorage.removeItem('dashboardChartConfig'); location.reload();
 // Ou ajoutez ?reset=1 à l'URL du dashboard
 /**
- * Scripts des graphiques du tableau de bord
+ * Scripts de gestion des graphiques du tableau de bord
  *
- * Fournit des rendus canvas simples (area, bar, sparkline, donut, gauge) pour visualiser
- * les mesures cliniques. Utilise les données injectées par PHP via `window.patientChartData`.
+ * Fournit des rendus Canvas 2D pour visualiser les constantes vitales des patients
+ * avec seuils d'alerte, tooltips interactifs et configuration personnalisable.
  *
- * Astuces : pour réinitialiser la configuration depuis la console :
- *   localStorage.removeItem('dashboardChartConfig'); location.reload();
- * Ou ajoutez `?reset=1` à l'URL du dashboard.
+ * Fonctionnalités principales :
+ *  * - **Seuils d'alerte** : Trois niveaux (préoccupant, urgent, critique) min et max
+ *  * - **Responsive** : Adaptation devicePixelRatio pour tout type d'écrans
+ *  * - **Interactivité** : Tooltips au survol, highlight des points
+ *  * - **Mode édition** : Drag & drop, redimensionnement, ajout/suppression de graphiques
+ *  * - **Persistance** : Configuration sauvegardée dans localStorage
+ *  * - **Thème** : Adaptation automatique au mode sombre/clair
+ *  * - **Auto-scroll** : Défilement automatique lors du drag près des bords
+ *  * - **Log** : Envoi des actions (ajouter, supprimer, agrandir, réduire) au serveur
+ *
+ * @module dashboard_charts
+ *  * @requires dashboard. js (pour initialisation via window.initDashboardCharts)
+ *  * @requires dark-mode.js (pour l'événement 'themechange')
+ *
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -37,7 +48,22 @@ document.addEventListener('DOMContentLoaded', () => {
 	// Récupérer les données réelles du patient injectées par PHP
 	const patientData = window.patientChartData || {};
 
-	// Gestion de la configuration des graphiques
+    /**
+     * Définition des données médicales disponibles.
+     *
+     * Chaque entrée contient :
+     * - title : Titre affiché sur la carte
+     * - type : Type de graphique ('area', 'bar', 'dual-line')
+     * - data : Tableau de valeurs normalisées (0-1) depuis patientData
+     * - color : Couleur principale de la courbe
+     * - minVal/maxVal : Bornes pour la normalisation
+     * - unit : Unité de mesure affichée
+     * - thresholds : Seuils d'alerte (6 valeurs :  3 majorants + 3 minorants)
+     * - valueId/noteId : IDs des éléments DOM pour affichage des valeurs
+     * - value/note : Valeur et note affichées sous le graphique
+     *
+     * @const {Object. <string, Object>}
+     */
     const CHART_DEFINITIONS = {
         'blood-pressure': {
             title: 'Tendance de la tension (mmHg)',
@@ -191,6 +217,15 @@ document.addEventListener('DOMContentLoaded', () => {
 	let editMode = false;
 	let chartConfig = loadChartConfig();
 
+    /**
+     * Configure un canvas pour avoir un bon rendu.
+     *
+     * Ajuste la taille du canvas selon le devicePixelRatio et retourne le contexte 2D
+     * avec la transformation appropriée.
+     *
+     * @param {HTMLCanvasElement} canvas - Canvas à configurer
+     * @returns {{ctx: CanvasRenderingContext2D, width: number, height: number}}
+     */
 	function setupCanvas(canvas) {
 		const rect = canvas.getBoundingClientRect();
 		canvas.width = rect.width * DPR;
@@ -200,7 +235,23 @@ document.addEventListener('DOMContentLoaded', () => {
 		return {ctx, width: rect.width, height: rect.height};
 	}
 
-	// Area / line chart - Version médicale professionnelle avec axes et valeurs
+    /**
+     * Dessine un graphique area simple (sans seuils).
+     *
+     * Fonctionnalités :
+     * - Axes X/Y avec grilles et labels
+     * - Courbe lissée avec dégradé sous la ligne
+     * - Points interactifs avec highlight au survol
+     * - Tooltip affichant la valeur réelle
+     * - Adaptation automatique au mode sombre/clair
+     *
+     * @param {string} canvasId - ID du canvas
+     * @param {number[]} data - Valeurs normalisées entre 0 et 1
+     * @param {string} color - Couleur principale (hex)
+     * @param {number} minVal - Valeur minimale de l'axe Y
+     * @param {number} maxVal - Valeur maximale de l'axe Y
+     * @param {string} unit - Unité de mesure
+     */
 	function animateArea(canvasId, data, color, minVal, maxVal, unit) {
 		const canvas = document.getElementById(canvasId);
 		if (!canvas) return;
@@ -556,15 +607,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	// Area avec ligne de seuil (pour température) - Version médicale avec axes
     /**
-     * Affiche un graphique area avec plusieurs seuils (préoccupant, urgent, critique)
-     * et des tooltips interactifs au survol
-     * @param {string} canvasId ID du canvas
-     * @param {number[]} data Tableau des valeurs normalisées entre 0 et 1
-     * @param {string} color Couleur principale de la ligne
-     * @param {object} thresholds Objet { preoccupant, urgent, critique, preoccupant_min, urgent_min, critique_min }
-     * @param {number} minVal Valeur minimale de l'axe Y
-     * @param {number} maxVal Valeur maximale de l'axe Y
-     * @param {string} unit Unité à afficher
+     * Dessine un graphique area avec seuils d'alerte multiples.
+     *
+     * Fonctionnalités supplémentaires par rapport à animateArea() :
+     * - Zones colorées pour seuils (préoccupant=jaune, urgent=orange, critique=rouge)
+     * - Lignes pointillées pour seuils majorants
+     * - Lignes pointillées plus espacées pour seuils minorants (4px, 8px gaps)
+     * - Points rouges si valeur hors seuils
+     * - Labels et axes identiques à animateArea()
+     *
+     * @param {string} canvasId - ID du canvas
+     * @param {number[]} data - Valeurs normalisées entre 0 et 1
+     * @param {string} color - Couleur principale (hex)
+     * @param {Object} thresholds - Objet avec clés preoccupant, urgent, critique (+ _min)
+     * @param {number} minVal - Valeur minimale de l'axe Y
+     * @param {number} maxVal - Valeur maximale de l'axe Y
+     * @param {string} unit - Unité de mesure
      */
     function animateAreaWithThreshold(canvasId, data, color, thresholds = {}, minVal = 0, maxVal = 1, unit = '') {
         const canvas = document.getElementById(canvasId);
@@ -924,7 +982,14 @@ document.addEventListener('DOMContentLoaded', () => {
 		ctx.fill();
 	}
 
-	// Charger et sauvegarder la configuration depuis localStorage
+    /**
+     * Charge la configuration des graphiques depuis localStorage.
+     *
+     * Ajoute automatiquement les nouveaux graphiques définis dans CHART_DEFINITIONS.
+     * Supprime les graphiques obsolètes non présents dans CHART_DEFINITIONS.
+     *
+     * @returns {{visible: string[], sizes: Object.<string, number>}}
+     */
 	function loadChartConfig() {
 		// Liste complète de tous les graphiques disponibles
 		const allCharts = ['blood-pressure', 'heart-rate', 'respiration', 'temperature', 'glucose-trend', 'weight', 'oxygen-saturation'];
@@ -957,7 +1022,12 @@ document.addEventListener('DOMContentLoaded', () => {
 		};
 	}
 
-	// Log action graphique vers le serveur
+    /**
+     * Envoie une action utilisateur au serveur pour logging.
+     *
+     * @param {string} action - Type d'action ('ajouter', 'supprimer', 'réduire', 'agrandir')
+     * @param {string|null} chartId - ID du graphique concerné (pour récupérer id_mesure)
+     */
 	function logGraphiqueAction(action, chartId = null) {
 		// Récupérer pt_id depuis window.activePatient
 		const ptId = window.activePatient?.pt_id || null;
@@ -995,11 +1065,14 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 	}
 
+
+    //Sauvegarde la configuration dans localStorage.
 	function saveChartConfig() {
 		localStorage.setItem('dashboardChartConfig', JSON.stringify(chartConfig));
 	}
 
-	// Apply saved configuration
+
+    //Applique la configuration sauvegardée (visibilité + taille des graphiques).
 	function applyChartConfig() {
 		const grid = document.getElementById('dashboardGrid');
 		if (!grid) return;
@@ -1097,7 +1170,17 @@ document.addEventListener('DOMContentLoaded', () => {
 	// Variables pour l'auto-scroll lors du drag
 	let autoScrollInterval = null;
 
-	// Setup drag functionality for chart cards
+    /**
+     * Configure le drag & drop
+     *
+     * Gère :
+     * - dragstart : Ajoute classe 'dragging', bloque redraws
+     * - dragend : Retire classe, débloque redraws après 150ms
+     * - dragover : Calcule position drop (before/after/left/right)
+     * - drop : Réorganise chartConfig.visible et DOM
+     *
+     * @param {HTMLElement} card - Carte graphique à rendre draggable
+     */
 	function setupChartDrag(card) {
 		card.draggable = true;
 		card.style.cursor = 'grab';
@@ -1152,7 +1235,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			stopAutoScroll();
 		});
 
-		// Setup drop zones on cards for reordering
+
 		card.addEventListener('dragover', (e) => {
 			if (!editMode) return;
 			const dragging = document.querySelector('.dragging');
@@ -1244,7 +1327,12 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 	}
 
-	// Réorganiser les cartes de manière fluide SANS recharger la page
+    /**
+     * Réorganise les cartes dans le DOM.
+     *
+     * Méthode sans rechargement : utilise insertBefore pour éviter
+     * les disparitions de canvas pendant la réorganisation.
+     */
 	function reorderChartsInDOMSmooth() {
 		const dashboardGrid = document.getElementById('dashboardGrid');
 		if (!dashboardGrid) return;
@@ -1281,7 +1369,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 	}
 
-	// Reorder charts in the DOM based on the visible array order (ancienne méthode avec reload)
+
 	function reorderChartsInDOM() {
 		const dashboardGrid = document.getElementById('dashboardGrid');
 		if (!dashboardGrid) return;
@@ -1357,7 +1445,11 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 	}
 
-	// Update available charts panel
+    /**
+     * Met à jour le panneau des graphiques disponibles à ajouter.
+     *
+     * Affiche uniquement les graphiques non visibles, avec drag & drop activé.
+     */
 	function updateAvailableCharts() {
 		const container = document.getElementById('availableCharts');
 		if (!container) return;
@@ -1399,7 +1491,18 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 	}
 
-	// Add chart
+    /**
+     * Ajoute un graphique au dashboard.
+     *
+     * Actions :
+     * 1. Log de l'action 'ajouter'
+     * 2. Ajout à chartConfig.visible
+     * 3. Sauvegarde + affichage + réorganisation
+     * 4. Initialisation du rendu
+     * 5. Setup drag si mode édition actif
+     *
+     * @param {string} chartId - ID du graphique à ajouter
+     */
 	function addChart(chartId) {
 		if (chartConfig.visible.includes(chartId)) return;
 
@@ -1441,7 +1544,16 @@ document.addEventListener('DOMContentLoaded', () => {
 		updateAvailableCharts();
 	}
 
-	// Remove chart
+    /**
+     * Supprime un graphique du dashboard (masquage, pas suppression DOM).
+     *
+     * Actions :
+     * 1. Log de l'action 'supprimer'
+     * 2. Retrait de chartConfig.visible
+     * 3. Sauvegarde + application config
+     *
+     * @param {string} chartId - ID du graphique à supprimer
+     */
 	function removeChart(chartId) {
 		const index = chartConfig.visible.indexOf(chartId);
 		if (index > -1) {
@@ -1453,7 +1565,14 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 	}
 
-	// Resize chart
+    /**
+     * Redimensionne un graphique (3-12 colonnes).
+     *
+     * Déclenche un redraw complet après 50ms pour éviter les bugs.
+     *
+     * @param {string} chartId - ID du graphique
+     * @param {number} colSpan - Nombre de colonnes (3-12)
+     */
 	function resizeChart(chartId, colSpan) {
 		// Clamp between 3 and 12 columns
 		colSpan = Math.max(3, Math.min(12, colSpan));
@@ -1471,7 +1590,13 @@ document.addEventListener('DOMContentLoaded', () => {
 		}, 50);
 	}
 
-	// Setup resize handles with smooth dragging
+    /**
+     * Configure les handles de redimensionnement pour tout les graphiques.
+     *
+     * Drag horizontal : calcule le deltaX en colonnes et applique en temps réel.
+     * Affiche un indicateur de taille pendant le drag.
+     * Log l'action 'agrandir' ou 'réduire' au mouseup selon la direction.
+     */
 	function setupResizeHandles() {
 		document.querySelectorAll('.chart-card').forEach(card => {
 			const handle = card.querySelector('.resize-handle');
@@ -1563,7 +1688,14 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 	}
 
-    // Initialize chart animations
+    /**
+     * Initialise le rendu d'un graphique.
+     *
+     * Choisit automatiquement entre animateArea() et animateAreaWithThreshold()
+     * selon la présence de seuils non-null dans la définition.
+     *
+     * @param {string} chartId - ID du graphique à initialiser
+     */
     function initializeChart(chartId) {
         const def = CHART_DEFINITIONS[chartId];
         if (!def) {
@@ -1610,7 +1742,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-	// Resize indicator functions
+    /**
+     * Affiche un indicateur temporaire lors du redimensionnement.
+     *
+     * Format : "50% (6/12)" en overlay fixe au centre de l'écran.
+     *
+     * @param {number} colSpan - Nombre de colonnes actuel
+     */
 	let resizeIndicator = null;
 
 	function showResizeIndicator(colSpan) {
@@ -1625,6 +1763,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		resizeIndicator.style.display = 'block';
 	}
 
+    // Masque l'indicateur de redimensionnement.
 	function hideResizeIndicator() {
 		if (resizeIndicator) {
 			resizeIndicator.style.display = 'none';
@@ -1634,7 +1773,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	// Setup resize handles
 	setupResizeHandles();
 
-	// Setup drag & drop zone for the dashboard grid
+    // Setup drag & drop zone pour le dashboard grid
 	const dashboardGrid = document.getElementById('dashboardGrid');
 	if (dashboardGrid) {
 		dashboardGrid.addEventListener('dragover', (e) => {
@@ -1664,7 +1803,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 	}
 
-	// Setup drop zone for deleting charts
+    // Setup drop zone pour supprimer des graphiques (drag vers panneau)
 	if (addChartPanel) {
 		addChartPanel.addEventListener('dragover', (e) => {
 			if (!editMode) return;
@@ -1705,7 +1844,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		if (noteEl) noteEl.textContent = def.note;
 	});
 
-	// Ensure canvases are sized correctly on load and when window resizes
+	// Redimensionne tous les canvas pour obtenir une bonne résolution.
 	function resizeAllCanvases() {
 		const canvases = document.querySelectorAll('.dashboard-grid canvas');
 		canvases.forEach(canvas => {
@@ -1717,7 +1856,13 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 	}
 
-	// debounce helper
+    /**
+     * Helper de debounce pour limiter la fréquence d'appel d'une fonction.
+     *
+     * @param {Function} fn - Fonction à debouncer
+     * @param {number} wait - Délai en millisecondes
+     * @returns {Function} Fonction debouncée
+     */
 	function debounce(fn, wait) {
 		let t = null;
 		return (...args) => {

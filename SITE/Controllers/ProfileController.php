@@ -5,22 +5,28 @@ namespace Controllers;
 /**
  * Contrôleur : Profil utilisateur
  *
- * Affiche la page de profil pour un utilisateur connecté.
- * Vérifie la session et redirige vers la page de connexion si l'utilisateur n'est pas authentifié.
- *
- * Comportement :
- * - Démarre la session si nécessaire
- * - Vérifie l'existence de $_SESSION['user']
- * - Prépare $user et sépare le nom complet en prénom / nom (utilisé par la vue)
- * - Inclut la vue ../Views/profile.php
- *
- * Variables utilisées dans la session :
- * - $_SESSION['user'] tableau associatif contenant au minimum : id, email, name
+ * Affiche les informations du compte pour un utilisateur authentifié et propose
+ * les actions de modification (email, mot de passe).
  *
  * @package Controllers
  */
 final class ProfileController
 {
+    /**
+     * Affiche la page de profil utilisateur.
+     *
+     * Vérifie l'authentification avant d'afficher la vue. Redirige vers /login
+     * si l'utilisateur n'est pas connecté.
+     *
+     * Processus :
+     * 1. Démarre la session si nécessaire
+     * 2. Vérifie $_SESSION['user']
+     * 3. Extrait le nom complet et le sépare en prénom/nom
+     * 4. Passe $user, $first, $last à la vue profile.php
+     *
+     *
+     * @return void
+     */
     public function show(): void
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {

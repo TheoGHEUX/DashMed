@@ -5,12 +5,6 @@
  * Vitrine publique de l'application DashMed. Présente le hero, les CTA et les
  * principales fonctionnalités pour inviter à l'inscription ou la connexion.
  *
- * @package    DashMed
- * @subpackage Views
- * @category   Frontend
- * @version    1.1
- * @since      1.0
- *
  * Variables attendues :
  * @var string $pageTitle               Titre de la page (défaut : "Accueil")
  * @var string $pageDescription         Meta description
@@ -20,6 +14,8 @@
  * @see \SITE\Views\partials\head.php
  * @see \SITE\Views\partials\headerPublic.php
  * @see \SITE\Views\partials\footer.php
+ *
+ * @package Views
  */
 
 $pageTitle       = $pageTitle ?? "Accueil";

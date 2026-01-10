@@ -6,7 +6,7 @@
  * Page publique pour demander le renvoi d'un email de vérification.
  * Variables optionnelles : $success (string), $errors (array), $email (string)
  *
- * @package DashMed
+ * @package Views
  */
 
 $csrf_token = '';

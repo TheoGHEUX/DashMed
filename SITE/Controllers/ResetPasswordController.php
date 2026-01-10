@@ -32,13 +32,20 @@ use Core\Database;
 use PDO;
 
 /**
- * Contrôleur de la réinitialisation de mot de passe : affichage du formulaire
- * et traitement du reset sécurisé via token.
+ * Contrôleur de la réinitialisation de mot de passe.
+ *
+ * Gère l'affichage du formulaire de réinitialisation et le traitement du nouveau
+ * mot de passe. Utilise un token sécurisé (SHA-256) stocké dans password_resets
+ * avec expiration et protection contre la réutilisation (used_at).
+ *
  */
 final class ResetPasswordController
 {
     /**
-     * Affiche le formulaire de réinitialisation si le token est valide.
+     * Affiche le formulaire de réinitialisation.
+     *
+     * Valide le token reçu en GET (email + token) avant d'afficher le formulaire.
+     * Si le token est invalide/expiré, affiche un message d'erreur.
      *
      * @return void
      */
@@ -59,8 +66,22 @@ final class ResetPasswordController
     }
 
     /**
-     * Traite la soumission du formulaire de réinitialisation : validations
-     * et mise à jour du mot de passe si le token est valide.
+     * Traite la soumission du formulaire de réinitialisation.
+     *
+     * Validations effectuées :
+     *  - Token CSRF
+     *  - Token de reset valide et non expiré
+     *  - Nouveau mot de passe conforme (12+ caractères, maj/min/chiffre/char spécial)
+     *  - Confirmation correspondante
+     *
+     *  Processus en transaction :
+     *  1. Verrouille la ligne du token (FOR UPDATE)
+     *  2. Récupère l'email associé au token
+     *  3. Met à jour le mot de passe de l'utilisateur
+     *  4. Invalide le token (used_at = NOW())
+     *  5. Commit et redirection vers /login? reset=1
+     *
+     *  En cas d'erreur, rollback et affichage du message d'erreur.
      *
      * @return void
      */
@@ -187,11 +208,17 @@ final class ResetPasswordController
     }
 
     /**
-     * Vérifie si le token est valide pour l'email donné.
+     * Vérifie si un token de réinitialisation est valide.
      *
-     * @param string $email
+     * Validations :
+     *  - Email et token non vides
+     *  - Correspondance email/token_hash en base
+     *  - Token non expiré (expires_at > NOW())
+     *  - Token non utilisé (used_at IS NULL)
+     *
+     * @param string $email email de l'utilisateur
      * @param string $token
-     * @return bool
+     * @return bool True si le token est valide, false sinon
      */
     private function isValidToken(string $email, string $token): bool
     {

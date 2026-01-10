@@ -9,11 +9,9 @@ use Models\User;
  * Contrôleur : Changement de mot de passe
  *
  * Gère l'affichage et le traitement du formulaire de modification de mot de passe
- * pour un utilisateur connecté.
+ * pour un utilisateur connecté. Vérifie l'ancien mot de passe et applique
+ * les règles de complexité au nouveau.
  *
- * Variables passées aux vues :
- *  - $errors  (array)   Erreurs à afficher
- *  - $success (string)  Message de succès
  *
  * @package Controllers
  */
@@ -21,6 +19,9 @@ final class ChangePasswordController
 {
     /**
      * Affiche le formulaire de changement de mot de passe.
+     *
+     * Vérifie l'authentification avant d'afficher la vue.
+     * Redirige vers /login si l'utilisateur n'est pas connecté.
      *
      * @return void
      */
@@ -40,7 +41,16 @@ final class ChangePasswordController
     }
 
     /**
-     * Traite la soumission du formulaire de changement de mot de passe.
+     * Traite le changement de mot de passe.
+     *
+     * Validations effectuées :
+     * - Token CSRF
+     * - Ancien mot de passe correct
+     * - Nouveau mot de passe conforme (12+ caractères, maj/min/chiffre/char spécial)
+     * - Confirmation correspondante
+     *
+     * En cas de succès, le mot de passe est mis à jour en base (hash bcrypt)
+     * et un message de succès est affiché.  L'utilisateur reste connecté.
      *
      * @return void
      */

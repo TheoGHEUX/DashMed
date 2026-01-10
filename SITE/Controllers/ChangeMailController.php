@@ -9,12 +9,9 @@ use Models\User;
 /**
  * Contrôleur : Changement d'adresse email
  *
- * Gère l'affichage et le traitement du formulaire de modification d'email
- * pour un utilisateur connecté.
- *
- * Variables passées aux vues :
- *  - $errors  (array)   Erreurs à afficher
- *  - $success (string)  Message de succès
+ * Gère le changement d'email pour un utilisateur authentifié avec revérification
+ * obligatoire de la nouvelle adresse.  Envoie des notifications aux deux adresses
+ * (ancienne et nouvelle) pour des raisons de sécurité.
  *
  * @package Controllers
  */
@@ -113,6 +110,15 @@ final class ChangeMailController
 
     /**
      * Envoie des emails de notification à l'ancienne et à la nouvelle adresse
+     *
+     * Envoie un email à :
+     * - L'ancienne adresse :  notification du changement + contact support si non autorisé
+     * - La nouvelle adresse : confirmation du changement + contact support si non autorisé
+     *
+     * @param string $oldEmail Ancienne adresse email
+     * @param string $newEmail Nouvelle adresse email
+     * @param string $userName Prénom de l'utilisateur
+     * @return void
      */
     private function sendEmailNotifications(string $oldEmail, string $newEmail, string $userName): void
     {

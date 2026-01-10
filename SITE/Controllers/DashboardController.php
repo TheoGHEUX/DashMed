@@ -8,9 +8,9 @@ use Models\HistoriqueConsole;
 /**
  * Contrôleur : Tableau de bord
  *
- * Prépare les données patients et les séries pour les graphiques du dashboard.
- * Méthode principale :
- *  - index() : récupère patient + séries et affiche la vue ../Views/dashboard.php
+ * Prépare et affiche les données des patients suivis par le médecin connecté
+ * avec leurs graphiques (température, tension, fréquence cardiaque, etc.)
+ * incluant les seuils d'alerte.
  *
  * @package Controllers
  */
@@ -18,6 +18,12 @@ final class DashboardController
 {
     /**
      * Configuration des métriques médicales avec leurs plages de valeurs
+     *
+     *  Chaque métrique contient :
+     *  - label : Nom affiché de la métrique
+     *  - labelAlt : Nom alternatif
+     *  - min : Valeur minimale pour la normalisation des graphiques
+     *  - max : Valeur maximale pour la normalisation des graphiques
      */
     private const METRICS_CONFIG = [
         'temperature' => [
@@ -60,6 +66,15 @@ final class DashboardController
 
     /**
      * Affiche la page du tableau de bord avec graphiques et infos patients.
+     *
+     * Fonctionnement :
+     *  1. Vérifie l'authentification (redirige vers /login sinon)
+     *  2. Récupère les patients suivis par le médecin
+     *  3. Si aucun patient → affiche une icône SVG avec message
+     *  4. Détermine le patient sélectionné (URL, session ou premier de la liste)
+     *  5. Vérifie que le patient est autorisé pour ce médecin
+     *  6. Récupère les données de toutes les métriques avec seuils d'alerte
+     *  7. Affiche la vue dashboard.php
      *
      * @return void
      */
@@ -135,6 +150,13 @@ final class DashboardController
     /**
      * Récupère les données d'une métrique avec ses seuils
      *
+     * Processus :
+     *  1. Récupère les 50 dernières valeurs de la métrique
+     *  2. Tente un repli (fallback) sur le label alternatif si pas de données
+     *  3. Normalise les valeurs entre 0 et 1 selon min/max
+     *  4. Récupère les seuils d'alerte (préoccupant, urgent, critique) min et max
+     *  5. Retourne un tableau formaté pour Chart.js
+     *
      * @param int $patientId ID du patient
      * @param string $metricLabel Nom de la métrique
      * @param string|null $labelAlt Nom alternatif de la métrique (fallback)
@@ -192,6 +214,9 @@ final class DashboardController
     /**
      * API endpoint pour logger les actions sur les graphiques
      * Attend POST avec JSON: {"action": "ajouter"|"supprimer"|"réduire"|"agrandir", "ptId": int, "idMesure": int}
+     *
+     * Enregistre l'action dans historique_console via HistoriqueConsole.
+     * Retourne JSON :  {"success": true, "action": "..."} ou {"error": "... "}
      *
      * @return void
      */

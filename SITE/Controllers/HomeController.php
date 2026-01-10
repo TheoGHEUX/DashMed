@@ -5,9 +5,10 @@ namespace Controllers;
 /**
  * Contrôleur : Page d'accueil
  *
- * Affiche la page d'accueil du site.
+ * Affiche la page d'accueil du site accesible sans authentification.
+ *
  * Méthode unique :
- *  - index(): rend la vue 'home'
+ *   - show(): rend la vue 'home'
  *
  * @package Controllers
  */

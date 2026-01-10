@@ -1,6 +1,23 @@
 <?php
 declare(strict_types=1);
 
+/**
+ * Point d'entrée de l'application DashMed.
+ *
+ * Ce fichier démarre l'application et configure la sécurité de base :
+ * 1. Configure la session utilisateur de manière sécurisée
+ * 2. Active les protections de sécurité du navigateur
+ * 3. Charge l'autoloader pour les classes PHP
+ * 4. Lance le routeur qui dirige vers la bonne page
+ *
+ * Sécurité appliquée :
+ * - Session protégée contre le vol de cookies
+ * - Headers sécurisés pour bloquer les attaques courantes
+ * - Force HTTPS en production
+ * - Masque les informations sensibles du serveur
+ *
+ * @package DashMed
+ */
 // Configuration sécurisée de la session
 $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
 session_set_cookie_params([
@@ -17,8 +34,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Security HTTP headers (set early, before any output)
-// Adjust HSTS only if HTTPS is detected in production
+// En-têtes HTTP de sécurité (définis avant toute sortie)
+// Ajuster HSTS uniquement si HTTPS est détecté en production
 $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
 header('X-Frame-Options: DENY');
 header('X-Content-Type-Options: nosniff');

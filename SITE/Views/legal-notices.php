@@ -5,12 +5,6 @@
  * Page des mentions légales et d'information sur la gestion des données (RGPD),
  * conditions d'utilisation et droits des utilisateurs.
  *
- * @package    DashMed
- * @subpackage Views
- * @category   Frontend
- * @version    1.0
- * @since      1.0
- *
  * Variables attendues :
  * @var string $pageTitle               Titre de la page (défaut : "Mentions légales")
  * @var string $pageDescription         Meta description
@@ -20,6 +14,8 @@
  * @see \SITE\Views\partials\head.php
  * @see \SITE\Views\partials\headerPublic.php
  * @see \SITE\Views\partials\footer.php
+ *
+ * @package Views
  */
 
 $pageTitle       = $pageTitle ?? "Mentions légales";

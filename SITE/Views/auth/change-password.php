@@ -9,7 +9,7 @@
  *  - $errors  (array)   Erreurs de validation à afficher
  *  - $success (string)  Message de succès
  *
- * @package DashMed
+ * @package Views
  */
 
 $csrf_token = \Core\Csrf::token();

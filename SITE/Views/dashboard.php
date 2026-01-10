@@ -6,11 +6,7 @@
  * Affiche une grille de cartes graphiques (Chart.js) pour le suivi des constantes
  * vitales. Accès réservé aux utilisateurs authentifiés.
  *
- * @package    DashMed
- * @subpackage Views
- * @category   Frontend
- * @version    1.3
- * @since      1.0
+ * @package    Views
  */
 
 if (session_status() !== PHP_SESSION_ACTIVE) {

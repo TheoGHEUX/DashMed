@@ -8,22 +8,26 @@ use Models\User;
  * Contrôleur : Vérification d'email
  *
  * Gère l'activation du compte via token de vérification et le renvoi
- * d'un nouvel email de vérification.
- *
- * Méthodes :
- *  - verify() : vérifie le token passé en GET et affiche la vue correspondante
- *  - resend() : génère/renvoie un token de vérification par email (POST)
- *
- * Les vues utilisées :
- *  - Views/auth/verify-email.php
- *  - Views/auth/resend-verification.php
+ * d'un nouvel email en cas d'expiration.
  *
  * @package Controllers
  */
 final class VerifyEmailController
 {
     /**
-     * Affiche la page de vérification d'email
+     * Vérifie le token d'email et active le compte.
+     *
+     * Processus :
+     *  1. Récupère le token depuis GET
+     *  2. Recherche l'utilisateur associé au token
+     *  3. Vérifie l'expiration du token (24 heures)
+     *  4. Active le compte si valide (email_verified = 1, suppression du token)
+     *
+     * Messages possibles :
+     *  - Token manquant/invalide → Erreur
+     *  - Email déjà vérifié → Succès (message informatif)
+     *  - Token expiré → Erreur avec suggestion de renvoyer le lien
+     *  - Vérification réussie → Succès avec redirection vers login
      *
      * Variables passées à la vue :
      *  - $success (string)
@@ -69,6 +73,11 @@ final class VerifyEmailController
 
     /**
      * Renvoie un email de vérification
+     *
+     * Processus si l'email existe et n'est pas vérifié :
+     *  1. Génère un nouveau token (64 hex chars, valide 24h)
+     *  2. Met à jour la base (email_verification_token, email_verification_expires)
+     *  3. Envoie l'email via Mailer:: sendEmailVerification()
      *
      * Variables passées à la vue :
      *  - $success (string)

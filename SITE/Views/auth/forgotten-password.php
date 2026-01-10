@@ -11,8 +11,7 @@
  * @var string|null $success    Message de confirmation
  * @var array|null  $old        Anciennes valeurs du formulaire
  *
- * @package DashMed
- * @version 1.1
+ * @package Views
  */
 
 $csrf_token = '';

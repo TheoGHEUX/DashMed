@@ -11,7 +11,7 @@
  *  - $errors (array)       Liste d'erreurs de validation
  *  - $success (string)     Message de succès
  *
- * @package DashMed
+ * @package Views
  */
 
 $csrf_token = '';

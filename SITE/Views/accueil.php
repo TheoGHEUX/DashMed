@@ -5,17 +5,13 @@
  * Page d'accueil pour les utilisateurs authentifiés. Affiche une bannière de
  * bienvenue et un lien vers le tableau de bord.
  *
- * @package    DashMed
- * @subpackage Views
- * @category   Frontend
- * @version    1.1
- * @since      1.0
- *
  * Variables attendues :
  * @var string $pageTitle               Titre de la page (défaut : "Accueil")
  * @var string $pageDescription         Meta description
  * @var array<int,string> $pageStyles   Styles spécifiques ( ["/assets/style/accueil.css"])
  * @var array<int,string> $pageScripts  Scripts spécifiques ( ["/assets/script/header_responsive.js"])
+ *
+ * @package Views
  */
 
 // ============================================================================

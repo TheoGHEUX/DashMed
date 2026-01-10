@@ -9,6 +9,8 @@
  * @var string $pageDescription
  * @var array  $pageStyles
  * @var array  $pageScripts
+ *
+ * @package Views
  */
 
 http_response_code(404);

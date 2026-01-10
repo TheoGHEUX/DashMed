@@ -5,9 +5,11 @@ namespace Controllers;
 /**
  * Contrôleur : Mentions légales
  *
- * Responsable de l'affichage de la page des mentions légales.
+ * Affiche la page des mentions légales, informations RGPD et conditions d'utilisation.
+ * Page accessible publiquement (non authentifié)
+ *
  * Méthode unique :
- *  - show(): rend la vue 'legal-notices'
+ *   - show(): rend la vue 'legal-notices'.
  *
  * @package Controllers
  */
