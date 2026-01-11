@@ -31,7 +31,7 @@ final class ChangeEmailController
 
         $errors = [];
         $success = '';
-        \Core\View::render('auth/change-mail', compact('errors', 'success'));
+        \Core\View::render('auth/change-email', compact('errors', 'success'));
     }
 
     /**
@@ -116,7 +116,7 @@ final class ChangeEmailController
             }
         }
 
-        \Core\View::render('auth/change-mail', compact('errors', 'success'));
+        \Core\View::render('auth/change-email', compact('errors', 'success'));
     }
 
     /**

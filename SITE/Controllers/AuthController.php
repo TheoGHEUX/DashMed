@@ -240,7 +240,7 @@ final class AuthController
      * Processus en cas de succès :
      * 1. Régénération de l'ID de session (prévient session fixation)
      * 2. Stockage des données utilisateur en session
-     * 3. Redirection vers l'accueil connecté (/connected/home)
+     * 3. Redirection vers l'accueil connecté (/home)
      *
      * En cas d'échec, la tentative est loggée pour le rate-limiting.
      *
@@ -314,7 +314,7 @@ final class AuthController
                         'email_verified' => (bool) $user['email_verified'],
                     ];
 
-                    header('Location: /connected/home');
+                    header('Location: /home');
                     exit;
                 }
             } catch (\Throwable $e) {

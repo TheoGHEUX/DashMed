@@ -57,7 +57,7 @@ final class Router
             '/resend-verification' => [\Controllers\VerifyEmailController::class, 'resend', 'resend'],
         ],
         'protected' => [
-            '/accueil' => [ConnectedHomeController::class, 'index'],
+            '/home' => [ConnectedHomeController::class, 'index'],
             '/dashboard' => [DashboardController::class, 'index'],
             '/tableau-de-bord' => [DashboardController::class, 'index'],
             '/profile' => [ProfileController::class, 'show'],
@@ -172,7 +172,7 @@ final class Router
 
         // Redirection automatique si l'utilisateur est connecté et visite la page publique d'accueil
         if (($this->path === '/' || $this->path === '/index.php') && $this->isAuthenticated()) {
-            $this->redirect('/accueil');
+            $this->redirect('/home');
         }
 
         // Tentative de résolution de la route
