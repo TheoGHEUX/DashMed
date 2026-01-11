@@ -6,12 +6,12 @@ use Core\Csrf;
 use Models\User;
 
 /**
- * Contrôleur : Changement de mot de passe
+ * Changement de mot de passe
  *
- * Gère l'affichage et le traitement du formulaire de modification de mot de passe
- * pour un utilisateur connecté. Vérifie l'ancien mot de passe et applique
- * les règles de complexité au nouveau.
+ * Gère l'affichage et le traitement du formulaire de modification de mot de
+ * passe pour un utilisateur connecté.
  *
+ * Vérifie l'ancien mot de passe et applique les règles de complexité.
  *
  * @package Controllers
  */

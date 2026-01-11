@@ -7,11 +7,12 @@ use Core\Csrf;
 use Core\Mailer;
 
 /**
- * Contrôleur : Authentification & inscription
+ * Authentification
  *
- * Gère le cycle d'authentification : inscription avec vérification d'email,
- * connexion avec limitation de débit et déconnexion sécurisée. Valide les spécialités
- * médicales et applique des règles de complexité des mots de passe.
+ * Gère le cycle complet d'authentification des praticiens.
+ *
+ * Inclut l'inscription (avec vérification d'email),
+ * la connexion sécurisée (avec limitation de débit) et la gestion de session.
  *
  * @package Controllers
  */
@@ -20,7 +21,7 @@ final class AuthController
     /**
      * Liste des spécialités médicales valides.
      *
-     * Utilisée pour la validation côté serveur lors de l'inscription.
+     * Note : Utilisée pour la validation côté serveur lors de l'inscription.
      *
      * @var array<int,string>
      */
@@ -62,6 +63,9 @@ final class AuthController
         'Urologie',
     ];
 
+    /**
+     * Affiche le formulaire d'inscription.
+     */
     public function showRegister(): void
     {
         $errors = [];
@@ -78,20 +82,28 @@ final class AuthController
     }
 
     /**
-     * Traite l'inscription d'un nouvel utilisateur.
+     * Traite l'inscription d'un nouveau praticien.
      *
      * Validations effectuées :
-     * - Token CSRF
-     * - Prénom, nom, email (format et unicité)
+     * - Jeton CSRF : protection contre l'usurpation de requête
+     * - Nom et prénom
      * - Sexe (M ou F)
-     * - Spécialité (liste fermée)
-     * - Mot de passe (12+ caractères, maj/min/chiffre/spécial, confirmation)
+     * - Email (format et unicité)
+     * - Spécialité (doit apparaitre dans la liste SPECIALITES_VALIDES)
+     * - Mot de passe (12+ car., maj, min, chiffre...)
      *
      * Processus en cas de succès :
-     * 1. Création du compte (compte_actif = 1, email_verified = 0)
-     * 2. Génération d'un token de vérification d'email (64 hex chars, valide 24h)
+     * 1. Initialisation du compte avec hachage du mot de passe
+     * (le compte est actif mais en attente de vérification)
+     * 2. Génération d'un jeton de vérification d'email (64 hex chars, valide 24h)
      * 3. Envoi de l'email de vérification
      * 4. Affichage du message de succès
+     *
+     * Variables transmises à la vue :
+     * - array  $errors      Liste des messages d'erreur de validation.
+     * - string $success     Message de confirmation de création.
+     * - array  $old         Données de formulaire pour persistance en cas d'erreur.
+     * - array  $specialites Liste des choix pour le champ spécialité.
      *
      * @return void
      */
@@ -110,42 +122,35 @@ final class AuthController
         $password_confirm = (string)($_POST['password_confirm'] ?? '');
         $csrf             = (string)($_POST['csrf_token'] ?? '');
 
-        // Validation du jeton CSRF
         if (!Csrf::validate($csrf)) {
             $errors[] = 'Session expirée ou jeton CSRF invalide.';
         }
 
-        // Validation du prénom
         if (empty($old['name'])) {
             $errors[] = 'Le prénom est obligatoire.';
         }
 
-        // Validation du nom
         if (empty($old['last_name'])) {
             $errors[] = 'Le nom est obligatoire.';
         }
 
-        // Validation de l'email
         if (!filter_var($old['email'], FILTER_VALIDATE_EMAIL)) {
             $errors[] = 'Adresse email invalide.';
         }
 
-        // Validation du sexe
         if (empty($old['sexe']) || !in_array($old['sexe'], ['M', 'F'], true)) {
             $errors[] = 'Veuillez sélectionner un sexe valide.';
         }
 
-        // Validation de la spécialité
         if (empty($old['specialite']) || !in_array($old['specialite'], self::SPECIALITES_VALIDES, true)) {
             $errors[] = 'Veuillez sélectionner une spécialité médicale valide.';
         }
 
-        // Validation des mots de passe
         if ($password !== $password_confirm) {
             $errors[] = 'Les mots de passe ne correspondent pas.';
         }
 
-        // Validation de la complexité du mot de passe
+        // Complexité du mot de passe
         if (
             strlen($password) < 12
             || !preg_match('/[A-Z]/', $password)
@@ -157,7 +162,7 @@ final class AuthController
                 . 'minuscules, chiffres et un caractère spécial.';
         }
 
-        // Vérification de l'existence de l'email
+        // Vérification de l'existence de l'email pour l'unicité
         if (!$errors && User::emailExists($old['email'])) {
             $errors[] = 'Un compte existe déjà avec cette adresse email.';
         }
@@ -174,7 +179,7 @@ final class AuthController
                 $old['specialite']
             )
         ) {
-            // Génération du token de vérification d'email
+            // Génération du jeton de vérification d'email
             $verificationToken = User::generateEmailVerificationToken($old['email']);
 
             if ($verificationToken) {
@@ -211,6 +216,9 @@ final class AuthController
         require __DIR__ . '/../Views/auth/register.php';
     }
 
+    /**
+     * Affiche le formulaire de connexion.
+     */
     public function showLogin(): void
     {
         $errors = [];
@@ -222,19 +230,17 @@ final class AuthController
     }
 
     /**
-     * Traite la connexion d'un utilisateur.
+     * Traite la connexion d'un practicien.
      *
      * Validations effectuées :
-     * - Token CSRF
-     * - Format email
-     * - Identifiants corrects (email + mot de passe)
-     * - Email vérifié (email_verified = 1)
-     * - Connexion à accès limité :  5 tentatives max par IP sur 5 minutes
+     * - Jeton CSRF
+     * - Identifiants corrects : email + mot de passe
+     * - Email vérifié
      *
      * Processus en cas de succès :
      * 1. Régénération de l'ID de session (prévient session fixation)
      * 2. Stockage des données utilisateur en session
-     * 3. Redirection vers /accueil
+     * 3. Redirection vers l'accueil connecté (/connected/home)
      *
      * En cas d'échec, la tentative est loggée pour le rate-limiting.
      *
@@ -250,30 +256,31 @@ final class AuthController
         $password = (string)($_POST['password'] ?? '');
         $csrf     = (string)($_POST['csrf_token'] ?? '');
 
-        // Limitation basique des tentatives de connexion par IP (5 essais / 5 minutes)
+        // Limitation basique des tentatives de connexion par IP (5 tentatives max par IP sur 5 minutes)
         $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
         if (!isset($_SESSION['login_attempts'])) {
             $_SESSION['login_attempts'] = [];
         }
         $now = time();
         $windowSeconds = 300; // Durée avant de recommencer
-        $maxAttempts   = 5; // Tentatives mauvaises autorisées
+        $maxAttempts   = 5;
         // Purge des anciennes tentatives hors fenêtre
-        $attempts = array_filter((array)($_SESSION['login_attempts'][$ip] ?? []), function ($ts) use ($now, $windowSeconds) {
-            return ($now - (int)$ts) <= $windowSeconds;
-        });
+        $attempts = array_filter(
+            (array)($_SESSION['login_attempts'][$ip] ?? []),
+            function ($ts) use ($now, $windowSeconds) {
+                return ($now - (int)$ts) <= $windowSeconds;
+            }
+        );
         $_SESSION['login_attempts'][$ip] = $attempts;
         if (count($attempts) >= $maxAttempts) {
             http_response_code(429);
             $errors[] = 'Trop de tentatives. Réessayez dans quelques minutes.';
         }
 
-        // Validation du jeton CSRF
         if (!Csrf::validate($csrf)) {
             $errors[] = 'Session expirée ou jeton CSRF invalide.';
         }
 
-        // Validation de l'email
         if (!filter_var($old['email'], FILTER_VALIDATE_EMAIL)) {
             $errors[] = 'Adresse email invalide.';
         }
@@ -290,7 +297,6 @@ final class AuthController
                 } elseif (!$user['email_verified']) {
                     $errors[] = 'Adresse email non vérifiée. '
                         . 'Consultez votre boîte de réception et cliquez sur le lien de vérification.';
-                    // Enregistrer la tentative échouée
                     $_SESSION['login_attempts'][$ip][] = $now;
                 } else {
                     if (session_status() !== PHP_SESSION_ACTIVE) {
@@ -308,7 +314,7 @@ final class AuthController
                         'email_verified' => (bool) $user['email_verified'],
                     ];
 
-                    header('Location: /accueil');
+                    header('Location: /connected/home');
                     exit;
                 }
             } catch (\Throwable $e) {
@@ -319,7 +325,6 @@ final class AuthController
                     $e->getLine()
                 ));
                 $errors[] = 'Erreur lors de la connexion. Veuillez réessayer.';
-                // Enregistrer la tentative échouée
                 $_SESSION['login_attempts'][$ip][] = $now;
             }
         }
@@ -328,13 +333,13 @@ final class AuthController
     }
 
     /**
-     * Déconnecte l'utilisateur et détruit la session.
+     * Déconnecte l'utilisateur et détruit la session active.
      *
-     * Sécurité :
-     * - Requiert un token CSRF valide (évite logout CSRF)
-     * - Requiert POST (défini dans Router:: POST_ONLY)
-     * - Détruit complètement la session (variables + cookie)
-     * - Redirige vers /login
+     * Processus :
+     * - Validation du jeton CSRF pour prévenir les déconnexions forcées par des tiers
+     * - Restriction d'accès avec la méthode POST (défini dans Router:: POST_ONLY)
+     * - Supprime les variables de session et réinitialise le cookie côté client
+     * - Redirige vers la page de connexion (/login)
      *
      * @return void
      */

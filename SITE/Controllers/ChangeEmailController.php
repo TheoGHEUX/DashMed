@@ -7,15 +7,17 @@ use Core\Mailer;
 use Models\User;
 
 /**
- * Contrôleur : Changement d'adresse email
+ * Changement d'adresse email
  *
- * Gère le changement d'email pour un utilisateur authentifié avec revérification
- * obligatoire de la nouvelle adresse.  Envoie des notifications aux deux adresses
- * (ancienne et nouvelle) pour des raisons de sécurité.
+ * Gère le changement d'email pour un utilisateur authentifié
+ * avec revérification obligatoire de la nouvelle adresse.
+ *
+ * Envoie des notifications aux deux adresses (ancienne et nouvelle)
+ * pour des raisons de sécurité.
  *
  * @package Controllers
  */
-final class ChangeMailController
+final class ChangeEmailController
 {
     public function showForm(): void
     {
@@ -32,6 +34,20 @@ final class ChangeMailController
         \Core\View::render('auth/change-mail', compact('errors', 'success'));
     }
 
+    /**
+     * Traite la demande de changement d'adresse.
+     *
+     * Étapes de validation :
+     * 1. Vérification du mot de passe actuel pour confirmer l'identité
+     * 2. Contrôle de l'unicité et du format de la nouvelle adresse
+     *
+     * Logique de sécurité :
+     * 1. Enregistre la nouvelle adresse mais la définit comme "non vérifiée"
+     * 2. Génère un nouveau jeton de vérification d'adresse email
+     * 3. Envoie une notification à l'ancienne adresse ET un mail de validation
+     *    à la nouvelle
+     * 4. Actualise l'adresse en session mais force la revérification
+     */
     public function submit(): void
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {
@@ -50,17 +66,14 @@ final class ChangeMailController
         $newEmail        = trim((string)($_POST['new_email'] ?? ''));
         $confirmEmail    = trim((string)($_POST['new_email_confirm'] ?? ''));
 
-        // Validation CSRF
         if (!Csrf::validate($csrf)) {
             $errors[] = 'Session expirée ou jeton CSRF invalide.';
         }
 
-        // Vérification que les emails correspondent
         if ($newEmail !== $confirmEmail) {
             $errors[] = 'Les adresses email ne correspondent pas.';
         }
 
-        // Validation du format email
         if (!filter_var($newEmail, FILTER_VALIDATE_EMAIL)) {
             $errors[] = 'L\'adresse email n\'est pas valide.';
         }
@@ -75,11 +88,9 @@ final class ChangeMailController
             } else {
                 $oldEmail = $user['email'];
 
-                // Vérifier si le nouvel email est différent de l'ancien
                 if (strtolower($oldEmail) === strtolower($newEmail)) {
                     $errors[] = 'La nouvelle adresse email est identique à l\'ancienne.';
                 } elseif (User::emailExists($newEmail)) {
-                    // Email déjà utilisé
                     $errors[] = 'Cette adresse email est déjà utilisée par un autre compte.';
                 } else {
                     // Mise à jour de l'email + nouvelle vérification obligatoire
@@ -109,15 +120,17 @@ final class ChangeMailController
     }
 
     /**
-     * Envoie des emails de notification à l'ancienne et à la nouvelle adresse
+     * Envoie des emails de notification à l'ancienne et à la nouvelle adresse.
      *
-     * Envoie un email à :
-     * - L'ancienne adresse :  notification du changement + contact support si non autorisé
-     * - La nouvelle adresse : confirmation du changement + contact support si non autorisé
+     * Contenu des emails selon l'adresse :
+     * - L'ancienne : notification du changement +
+     *   contact support si tentative non autorisée
+     * - La nouvelle : confirmation du changement +
+     *   contact support si tentative non autorisée
      *
-     * @param string $oldEmail Ancienne adresse email
-     * @param string $newEmail Nouvelle adresse email
-     * @param string $userName Prénom de l'utilisateur
+     * @param string $oldEmail  Ancienne adresse email
+     * @param string $newEmail  Nouvelle adresse email
+     * @param string $userName  Prénom de l'utilisateur
      * @return void
      */
     private function sendEmailNotifications(string $oldEmail, string $newEmail, string $userName): void

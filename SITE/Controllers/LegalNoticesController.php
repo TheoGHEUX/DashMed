@@ -3,13 +3,10 @@
 namespace Controllers;
 
 /**
- * Contrôleur : Mentions légales
+ * Mentions légales
  *
- * Affiche la page des mentions légales, informations RGPD et conditions d'utilisation.
- * Page accessible publiquement (non authentifié)
- *
- * Méthode unique :
- *   - show(): rend la vue 'legal-notices'.
+ * Affiche les mentions légales, informations RGPD et conditions d'utilisation.
+ * Page accessible publiquement (sans authentification).
  *
  * @package Controllers
  */

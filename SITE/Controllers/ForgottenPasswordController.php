@@ -9,12 +9,13 @@ use Models\User;
 use PDO;
 
 /**
- * Contrôleur : Mot de passe oublié
+ * Mot de passe oublié
  *
  * Gère la demande de réinitialisation de mot de passe avec génération de token
- * sécurisé et envoi d'email.  Applique une limite par session (5 demandes/heure)
- * et retourne toujours une réponse neutre pour éviter la fuite de toutes informations de comptes.
+ * sécurisé et envoi d'email. Applique une limite par session (5 demandes/heure).
  *
+ * Note : Retourne toujours une réponse neutre pour ne pas révéler l'existence
+ * d'un compte.
  *
  * @package Controllers
  */
@@ -23,8 +24,8 @@ final class ForgottenPasswordController
     /**
      * Affiche le formulaire de demande de réinitialisation.
      *
-     * Récupère les messages depuis la session (errors, success, old) et les supprime
-     * immédiatement pour éviter leur persistance. Pattern PRG (Post-Redirect-Get).
+     * Récupère les messages depuis la session (errors, success, old) et les
+     * supprime immédiatement pour éviter leur persistance (pattern PRG).
      *
      * @return void
      */
@@ -43,31 +44,30 @@ final class ForgottenPasswordController
         ]);
     }
 
+    /**
+     * Traite la demande de réinitialisation de mot de passe.
+     *
+     * Sécurité appliquée :
+     * - Contrôle du débit : 5 tentatives max par session sur 1 heure
+     * - Validation CSRF
+     * - Réponse neutre (même si l'email n'existe pas)
+     * - Token sécurisé (64 hex, hash SHA-256, expire 60 min)
+     * - Nettoyage des anciens tokens avant insertion
+     *
+     * Processus en cas de compte existant :
+     * 1. Supprime les anciens tokens pour cet email + tokens expirés
+     * 2. Génère un token (64 hex), le hash en SHA-256
+     * 3. Insert dans password_resets avec expiration 60 min
+     * 4. Construit l'URL de reset (utilise SERVER_NAME, pas HTTP_HOST)
+     * 5. Envoie l'email via Mailer::sendPasswordResetEmail()
+     *
+     * En cas d'email inexistant : log serveur mais réponse neutre côté UI.
+     * Redirige toujours vers /forgotten-password avec message de succès (PRG).
+     *
+     * @return void
+     */
     public function submit(): void
     {
-        /**
-         * Traite la demande de réinitialisation de mot de passe.
-         *
-         * Sécurité appliquée :
-         * - Contrôle du débit : 5 tentatives max par session sur 1 heure
-         * - Validation CSRF
-         * - Réponse neutre (même si l'email n'existe pas)
-         * - Token sécurisé (64 hex, hash SHA-256, expire 60 min)
-         * - Nettoyage des anciens tokens avant insertion
-         *
-         * Processus en cas de compte existant :
-         * 1. Supprime les anciens tokens pour cet email + tokens expirés
-         * 2. Génère un token (64 hex), le hash en SHA-256
-         * 3. Insert dans password_resets avec expiration 60 min
-         * 4. Construit l'URL de reset (utilise SERVER_NAME, pas HTTP_HOST)
-         * 5. Envoie l'email via Mailer:: sendPasswordResetEmail()
-         *
-         * En cas d'email inexistant : Log serveur mais réponse neutre côté UI.
-         *
-         * Redirige toujours vers /forgotten-password avec message de succès (PRG).
-         *
-         * @return void
-         */
         $errors = [];
         $success = '';
         // Simple rate-limiting per session to avoid abuse of password reset endpoint

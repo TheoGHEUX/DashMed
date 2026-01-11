@@ -5,10 +5,10 @@ namespace Controllers;
 use Models\User;
 
 /**
- * Contrôleur : Vérification d'email
+ * Vérification d'email
  *
- * Gère l'activation du compte via token de vérification et le renvoi
- * d'un nouvel email en cas d'expiration.
+ * Gère l'activation du compte via token de vérification et le renvoi d'un
+ * nouvel email en cas d'expiration.
  *
  * @package Controllers
  */
@@ -18,20 +18,18 @@ final class VerifyEmailController
      * Vérifie le token d'email et active le compte.
      *
      * Processus :
-     *  1. Récupère le token depuis GET
-     *  2. Recherche l'utilisateur associé au token
-     *  3. Vérifie l'expiration du token (24 heures)
-     *  4. Active le compte si valide (email_verified = 1, suppression du token)
+     * 1. Récupère le token depuis GET
+     * 2. Recherche l'utilisateur associé au token
+     * 3. Vérifie l'expiration du token (24 heures)
+     * 4. Active le compte si valide (email_verified = 1, suppression du token)
      *
      * Messages possibles :
-     *  - Token manquant/invalide → Erreur
-     *  - Email déjà vérifié → Succès (message informatif)
-     *  - Token expiré → Erreur avec suggestion de renvoyer le lien
-     *  - Vérification réussie → Succès avec redirection vers login
+     * - Token manquant/invalide → erreur
+     * - Email déjà vérifié → succès (message informatif)
+     * - Token expiré → erreur avec suggestion de renvoyer le lien
+     * - Vérification réussie → succès avec redirection vers login
      *
-     * Variables passées à la vue :
-     *  - $success (string)
-     *  - $errors  (array)
+     * @return void
      */
     public function verify(): void
     {
@@ -72,16 +70,14 @@ final class VerifyEmailController
     }
 
     /**
-     * Renvoie un email de vérification
+     * Renvoie un email de vérification.
      *
      * Processus si l'email existe et n'est pas vérifié :
-     *  1. Génère un nouveau token (64 hex chars, valide 24h)
-     *  2. Met à jour la base (email_verification_token, email_verification_expires)
-     *  3. Envoie l'email via Mailer:: sendEmailVerification()
+     * 1. Génère un nouveau token (64 hex chars, valide 24h)
+     * 2. Met à jour la base (email_verification_token, expires)
+     * 3. Envoie l'email via Mailer::sendEmailVerification()
      *
-     * Variables passées à la vue :
-     *  - $success (string)
-     *  - $errors  (array)
+     * @return void
      */
     public function resend(): void
     {

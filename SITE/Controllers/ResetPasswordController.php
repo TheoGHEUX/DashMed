@@ -1,30 +1,5 @@
 <?php
 
-/**
- * Contrôleur : Réinitialisation du mot de passe
- *
- * Gère l'affichage du formulaire de réinitialisation (showForm) et le traitement
- * du nouveau mot de passe (submit). Utilise un token stocké dans la table
- * password_resets et protège les soumissions avec CSRF.
- *
- * Méthodes principales :
- *  - showForm(): affiche la vue de reset (email + token en GET)
- *  - submit():   valide CSRF, vérifie token, met à jour le mot de passe et invalide le token
- *
- * Variables passées aux vues :
- *  - $errors  (array)   Liste d'erreurs à afficher
- *  - $success (string)  Message de succès
- *  - $email   (string)  Email affiché dans le formulaire
- *  - $token   (string)  Token (hidden)
- *
- * Remarques de sécurité :
- *  - Vérification stricte du token (hash SHA-256) et usage en transaction
- *  - Validation côté serveur de la complexité du mot de passe
- *  - Invalidation du token après usage (used_at)
- *
- * @package Controllers
- */
-
 namespace Controllers;
 
 use Core\Csrf;
@@ -32,20 +7,28 @@ use Core\Database;
 use PDO;
 
 /**
- * Contrôleur de la réinitialisation de mot de passe.
+ * Réinitialisation du mot de passe
  *
- * Gère l'affichage du formulaire de réinitialisation et le traitement du nouveau
- * mot de passe. Utilise un token sécurisé (SHA-256) stocké dans password_resets
- * avec expiration et protection contre la réutilisation (used_at).
+ * Gère l'affichage du formulaire de réinitialisation (showForm) et le
+ * traitement du nouveau mot de passe (submit).
  *
+ * Utilise un jeton stocké dans la table password_resets et
+ * protège les soumissions avec CSRF.
+ *
+ * Sécurité :
+ * - Vérification stricte du jeton (hash SHA-256) et usage en transaction
+ * - Validation côté serveur de la complexité du mot de passe
+ * - Invalidation du jeton après usage (used_at)
+ *
+ * @package Controllers
  */
 final class ResetPasswordController
 {
     /**
      * Affiche le formulaire de réinitialisation.
      *
-     * Valide le token reçu en GET (email + token) avant d'afficher le formulaire.
-     * Si le token est invalide/expiré, affiche un message d'erreur.
+     * Valide le jeton reçu en GET (email + jeton) avant d'afficher le formulaire.
+     * Affiche un message d'erreur si le jeton est invalide ou expiré.
      *
      * @return void
      */
@@ -69,19 +52,19 @@ final class ResetPasswordController
      * Traite la soumission du formulaire de réinitialisation.
      *
      * Validations effectuées :
-     *  - Token CSRF
-     *  - Token de reset valide et non expiré
-     *  - Nouveau mot de passe conforme (12+ caractères, maj/min/chiffre/char spécial)
-     *  - Confirmation correspondante
+     * - Jeton CSRF
+     * - Jeton de reset valide et non expiré
+     * - Nouveau mot de passe conforme (12+ car., maj/min/chiffre/spécial)
+     * - Confirmation correspondante
      *
-     *  Processus en transaction :
-     *  1. Verrouille la ligne du token (FOR UPDATE)
-     *  2. Récupère l'email associé au token
-     *  3. Met à jour le mot de passe de l'utilisateur
-     *  4. Invalide le token (used_at = NOW())
-     *  5. Commit et redirection vers /login? reset=1
+     * Processus en transaction :
+     * 1. Verrouille la ligne du jeton (FOR UPDATE)
+     * 2. Récupère l'email associé au jeton
+     * 3. Met à jour le mot de passe de l'utilisateur
+     * 4. Invalide le jeton (used_at = NOW())
+     * 5. Commit et redirection vers /login?reset=1
      *
-     *  En cas d'erreur, rollback et affichage du message d'erreur.
+     * En cas d'erreur, rollback et affichage du message d'erreur.
      *
      * @return void
      */
@@ -124,7 +107,7 @@ final class ResetPasswordController
             try {
                 $pdo->beginTransaction();
 
-                // 1) Retrouver l'email à partir du token et verrouiller la ligne (évite les courses)
+                // 1) Retrouver l'email à partir du jeton et verrouiller la ligne (évite les courses)
                 $sel = $pdo->prepare('
                     SELECT email
                     FROM password_resets
@@ -178,7 +161,7 @@ final class ResetPasswordController
                     return;
                 }
 
-                // 3) Invalider le token (par token_hash, pour être strict)
+                // 3) Invalider le jeton (par token_hash, pour être strict)
                 $t = $pdo->prepare(
                     'UPDATE password_resets SET used_at = NOW() WHERE token_hash = ? AND used_at IS NULL'
                 );
@@ -208,17 +191,17 @@ final class ResetPasswordController
     }
 
     /**
-     * Vérifie si un token de réinitialisation est valide.
+     * Vérifie si un jeton de réinitialisation est valide.
      *
      * Validations :
-     *  - Email et token non vides
+     *  - Email et jeton non vides
      *  - Correspondance email/token_hash en base
-     *  - Token non expiré (expires_at > NOW())
-     *  - Token non utilisé (used_at IS NULL)
+     *  - Jeton non expiré (expires_at > NOW())
+     *  - Jeton non utilisé (used_at IS NULL)
      *
      * @param string $email email de l'utilisateur
      * @param string $token
-     * @return bool True si le token est valide, false sinon
+     * @return bool True si le jeton est valide, false sinon
      */
     private function isValidToken(string $email, string $token): bool
     {

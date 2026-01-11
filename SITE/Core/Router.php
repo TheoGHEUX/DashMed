@@ -2,7 +2,7 @@
 
 namespace Core;
 
-use Controllers\AccueilController;
+use Controllers\ConnectedHomeController;
 use Controllers\AuthController;
 use Controllers\DashboardController;
 use Controllers\ForgottenPasswordController;
@@ -12,7 +12,7 @@ use Controllers\MapController;
 use Controllers\ProfileController;
 use Controllers\ResetPasswordController;
 use Controllers\ChangePasswordController;
-use Controllers\ChangeMailController;
+use Controllers\ChangeEmailController;
 use Core\Database;
 
 /**
@@ -57,15 +57,15 @@ final class Router
             '/resend-verification' => [\Controllers\VerifyEmailController::class, 'resend', 'resend'],
         ],
         'protected' => [
-            '/accueil' => [AccueilController::class, 'index'],
+            '/accueil' => [ConnectedHomeController::class, 'index'],
             '/dashboard' => [DashboardController::class, 'index'],
             '/tableau-de-bord' => [DashboardController::class, 'index'],
             '/profile' => [ProfileController::class, 'show'],
             '/profil' => [ProfileController::class, 'show'],
             '/change-password' => [ChangePasswordController::class, 'submit', 'showForm'],
             '/changer-mot-de-passe' => [ChangePasswordController::class, 'submit', 'showForm'],
-            '/change-mail' => [ChangeMailController::class, 'submit', 'showForm'],
-            '/changer-mail' => [ChangeMailController::class, 'submit', 'showForm'],
+            '/change-email' => [ChangeEmailController::class, 'submit', 'showForm'],
+            '/changer-email' => [ChangeEmailController::class, 'submit', 'showForm'],
             '/api/log-graph-action' => [DashboardController::class, 'logGraphAction'],
         ],
     ];

@@ -3,12 +3,9 @@
 namespace Controllers;
 
 /**
- * Contrôleur : Page d'accueil
+ * Page d'accueil
  *
- * Affiche la page d'accueil du site accesible sans authentification.
- *
- * Méthode unique :
- *   - show(): rend la vue 'home'
+ * Affiche la page d'accueil publique du site (sans authentification).
  *
  * @package Controllers
  */

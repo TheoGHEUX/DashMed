@@ -3,20 +3,20 @@
 namespace Controllers;
 
 /**
- * Contrôleur de la page d'accueil authentifiée.
+ * Page d'accueil connectée
  *
- * Affiche la page d'accueil pour les utilisateurs connectés après login.
- * Redirige vers /login si l'utilisateur n'est pas authentifié.
+ * Affiche la page d'accueil pour les utilisateurs connectés.
  *
  * @package Controllers
  */
-final class AccueilController
+final class ConnectedHomeController
 {
     /**
      * Affiche la page d'accueil pour les utilisateurs connectés.
      *
      * Vérifie la présence de $_SESSION['user'] avant d'afficher la vue.
-     * Redirige vers /login si la session est vide.
+     *
+     * Redirige vers la page de connexion (/login) si la session est vide.
      *
      * @return void
      */
@@ -26,6 +26,6 @@ final class AccueilController
             header('Location: /login');
             exit;
         }
-        require __DIR__ . '/../Views/accueil.php';
+        require __DIR__ . '/../Views/connected/home.php';
     }
 }

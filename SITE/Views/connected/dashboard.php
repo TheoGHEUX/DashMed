@@ -223,7 +223,8 @@ include __DIR__ . '/partials/head.php';
     <h2>Légende des seuils d'alerte</h2>
     <div class="legend-content">
         <p class="legend-intro">
-            Les graphiques affichent des lignes de seuils pour vous aider à identifier rapidement les valeurs anormales :
+            Les graphiques affichent des lignes de seuils pour vous aider à identifier
+            rapidement les valeurs anormales :
         </p>
         <div class="legend-items">
             <div class="legend-item">

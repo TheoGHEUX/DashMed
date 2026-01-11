@@ -6,7 +6,7 @@ use Models\Patient;
 use Models\HistoriqueConsole;
 
 /**
- * Contrôleur : Tableau de bord
+ * Tableau de bord
  *
  * Prépare et affiche les données des patients suivis par le médecin connecté
  * avec leurs graphiques (température, tension, fréquence cardiaque, etc.)
@@ -19,11 +19,11 @@ final class DashboardController
     /**
      * Configuration des métriques médicales avec leurs plages de valeurs
      *
-     *  Chaque métrique contient :
-     *  - label : Nom affiché de la métrique
-     *  - labelAlt : Nom alternatif
-     *  - min : Valeur minimale pour la normalisation des graphiques
-     *  - max : Valeur maximale pour la normalisation des graphiques
+     * Chaque métrique contient :
+     * - label    : nom affiché de la métrique
+     * - labelAlt : nom alternatif (fallback)
+     * - min      : valeur minimale pour la normalisation des graphiques
+     * - max      : valeur maximale pour la normalisation des graphiques
      */
     private const METRICS_CONFIG = [
         'temperature' => [
@@ -68,13 +68,13 @@ final class DashboardController
      * Affiche la page du tableau de bord avec graphiques et infos patients.
      *
      * Fonctionnement :
-     *  1. Vérifie l'authentification (redirige vers /login sinon)
-     *  2. Récupère les patients suivis par le médecin
-     *  3. Si aucun patient → affiche une icône SVG avec message
-     *  4. Détermine le patient sélectionné (URL, session ou premier de la liste)
-     *  5. Vérifie que le patient est autorisé pour ce médecin
-     *  6. Récupère les données de toutes les métriques avec seuils d'alerte
-     *  7. Affiche la vue dashboard.php
+     * 1. Vérifie l'authentification (redirige vers /login sinon)
+     * 2. Récupère les patients suivis par le médecin
+     * 3. Si aucun patient → affiche une icône SVG avec message
+     * 4. Détermine le patient sélectionné (URL, session ou premier de la liste)
+     * 5. Vérifie que le patient est autorisé pour ce médecin
+     * 6. Récupère les données de toutes les métriques avec seuils d'alerte
+     * 7. Affiche la vue dashboard.php
      *
      * @return void
      */
@@ -96,7 +96,7 @@ final class DashboardController
             error_log("DEBUG: Aucun patient - affichage icône SVG");
             $noPatient = true;
             $chartData = [];
-            require __DIR__ . '/../Views/dashboard.php';
+            require __DIR__ . '/../Views/connected/dashboard.php';
             return;
         }
 
@@ -144,28 +144,34 @@ final class DashboardController
         }
 
         // Affichage
-        require __DIR__ . '/../Views/dashboard.php';
+        require __DIR__ . '/../Views/connected/dashboard.php';
     }
 
     /**
-     * Récupère les données d'une métrique avec ses seuils
+     * Récupère les données d'une métrique avec ses seuils.
      *
      * Processus :
-     *  1. Récupère les 50 dernières valeurs de la métrique
-     *  2. Tente un repli (fallback) sur le label alternatif si pas de données
-     *  3. Normalise les valeurs entre 0 et 1 selon min/max
-     *  4. Récupère les seuils d'alerte (préoccupant, urgent, critique) min et max
-     *  5. Retourne un tableau formaté pour Chart.js
+     * 1. Récupère les 50 dernières valeurs de la métrique
+     * 2. Tente un repli (fallback) sur le label alternatif si pas de données
+     * 3. Normalise les valeurs entre 0 et 1 selon min/max
+     * 4. Récupère les seuils d'alerte (préoccupant, urgent, critique)
+     * 5. Retourne un tableau formaté pour Chart.js
      *
-     * @param int $patientId ID du patient
-     * @param string $metricLabel Nom de la métrique
-     * @param string|null $labelAlt Nom alternatif de la métrique (fallback)
-     * @param float $minValue Valeur minimale pour le graphique
-     * @param float $maxValue Valeur maximale pour le graphique
+     * @param int         $patientId   ID du patient
+     * @param string      $metricLabel Nom de la métrique
+     * @param string|null $labelAlt    Nom alternatif (fallback)
+     * @param float       $minValue    Valeur minimale pour le graphique
+     * @param float       $maxValue    Valeur maximale pour le graphique
+     *
      * @return array|null Données formatées ou null si pas de données
      */
-    private function getMetricChartData(int $patientId, string $metricLabel, ?string $labelAlt, float $minValue, float $maxValue): ?array
-    {
+    private function getMetricChartData(
+        int $patientId,
+        string $metricLabel,
+        ?string $labelAlt,
+        float $minValue,
+        float $maxValue
+    ): ?array {
         $data = Patient::getChartData($patientId, $metricLabel, 50);
 
         // Fallback pour label alternatif (ex: Tension arterielle vs Tension artérielle)
@@ -212,13 +218,15 @@ final class DashboardController
     }
 
     /**
-     * API endpoint pour logger les actions sur les graphiques
-     * Attend POST avec JSON: {"action": "ajouter"|"supprimer"|"réduire"|"agrandir", "ptId": int, "idMesure": int}
+     * Endpoint API pour logger les actions sur les graphiques.
+     *
+     * Attend POST avec JSON :
+     * {"action": "ajouter"|"supprimer"|"réduire"|"agrandir",
+     *  "ptId": int, "idMesure": int}
      *
      * Enregistre l'action dans historique_console via HistoriqueConsole.
-     * Retourne JSON :  {"success": true, "action": "..."} ou {"error": "... "}
      *
-     * @return void
+     * @return void Réponse JSON {"success": true} ou {"error": "..."}
      */
     public function logGraphAction(): void
     {
@@ -271,7 +279,13 @@ final class DashboardController
             }
 
             if (!$success) {
-                error_log(sprintf('[LOG] Échec du log: med_id=%d, action=%s, pt_id=%s, id_mesure=%s', $medId, $action, $ptId ?? 'null', $idMesure ?? 'null'));
+                error_log(sprintf(
+                    '[LOG] Échec du log: med_id=%d, action=%s, pt_id=%s, id_mesure=%s',
+                    $medId,
+                    $action,
+                    $ptId ?? 'null',
+                    $idMesure ?? 'null'
+                ));
                 http_response_code(500);
                 echo json_encode(['error' => 'Échec de l\'enregistrement']);
                 exit;
