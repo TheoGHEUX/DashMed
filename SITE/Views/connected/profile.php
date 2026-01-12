@@ -36,10 +36,10 @@ $pageDescription = $pageDescription ?? "Consultez votre profil DashMed une fois 
 $pageStyles      = $pageStyles ?? ["/assets/style/profile.css"];
 $pageScripts     = $pageScripts ?? [];
 
-include __DIR__ . '/partials/head.php';
+include __DIR__ . '/../partials/head.php';
 ?>
 <body>
-<?php include __DIR__ . '/partials/headerPrivate.php'; ?>
+<?php include __DIR__ . '/../partials/headerPrivate.php'; ?>
 <main>
     <div class="container">
         <h1 class="profile-title">Profil</h1>
@@ -96,6 +96,6 @@ include __DIR__ . '/partials/head.php';
     </div>
 </main>
 
-<?php include __DIR__ . '/partials/footer.php'; ?>
+<?php include __DIR__ . '/../partials/footer.php'; ?>
 </body>
 </html>

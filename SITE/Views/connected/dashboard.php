@@ -28,12 +28,12 @@ $pageScripts     = $pageScripts ?? [
         '/assets/script/dashboard.js'
 ];
 
-include __DIR__ . '/partials/head.php';
+include __DIR__ . '/../partials/head.php';
 ?>
 
 <body>
 
-<?php include __DIR__ . '/partials/headerPrivate.php'; ?>
+<?php include __DIR__ . '/../partials/headerPrivate.php'; ?>
 
 <!-- Données du patient pour les scripts -->
 <script>
@@ -265,7 +265,7 @@ include __DIR__ . '/partials/head.php';
 
 <?php endif; ?>
 
-<?php include __DIR__ . '/partials/footer.php'; ?>
+<?php include __DIR__ . '/../partials/footer.php'; ?>
 
 </body>
 </html>

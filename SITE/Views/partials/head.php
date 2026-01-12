@@ -1,7 +1,9 @@
 <?php
+
 /**
  * Partial : head commun
  */
+
 ?>
 <!DOCTYPE html>
 <html lang="fr">

@@ -38,10 +38,10 @@ $pageDescription = $pageDescription ?? "Page d'accueil accessible une fois conne
 $pageStyles      = $pageStyles ?? ["/assets/style/accueil.css"];
 $pageScripts     = $pageScripts ?? ["/assets/script/header_responsive.js"];
 
-include __DIR__ . '/partials/head.php';
+include __DIR__ . '/../partials/head.php';
 ?>
 <body>
-<?php include __DIR__ . '/partials/headerPrivate.php'; ?>
+<?php include __DIR__ . '/../partials/headerPrivate.php'; ?>
 
 <main>
     <div class="accueil-container">
@@ -65,6 +65,6 @@ include __DIR__ . '/partials/head.php';
     </div>
 </main>
 
-<?php include __DIR__ . '/partials/footer.php'; ?>
+<?php include __DIR__ . '/../partials/footer.php'; ?>
 </body>
 </html>
