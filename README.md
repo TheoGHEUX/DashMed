@@ -57,6 +57,48 @@ Pour toute question ou demande : dashmed-site@alwaysdata.net
 
 Projet développé dans le cadre de notre formation. Made with ♥ by Team DashMed.
 
-# Fichiers concernant la base de données :
+## Outils de développement
+
+### Prérequis
+
+```bash
+composer install   # Dépendances PHP
+npm install        # Dépendances JS (JSDoc)
+```
+
+Télécharger phpDocumentor : [phpDocumentor.phar](https://phpdoc.org/phpDocumentor.phar)
+
+### Tests unitaires
+
+```bash
+composer test
+```
+
+### Analyse statique et linting
+
+```bash
+# PHPStan (analyse statique niveau 5)
+vendor/bin/phpstan analyse SITE --level=5
+
+# PHPCS (vérification du style PSR-12)
+vendor/bin/phpcs --standard=PSR12 SITE
+
+# PHPCBF (correction automatique du style)
+vendor/bin/phpcbf --standard=PSR12 SITE
+```
+
+### Génération de la documentation
+
+```bash
+# Documentation PHP
+php phpDocumentor.phar -d SITE -t docs/php --title="DashMed - Documentation PHP"
+
+# Documentation JavaScript
+npx jsdoc Public/assets/script -d docs/javascript -R README.md
+```
+
+---
+
+## Fichiers concernant la base de données
 
 Pour des raisons de sécurité, afin d'assurer la confidentialité des données, tous les fichiers concernant la base de données (scripts, protocoles de générations de données etc...) sont stockés ailleurs et accessibles par tous les membres du projet.

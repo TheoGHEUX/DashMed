@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Cchangement d'adresse email
+ * Changement d'adresse email
  *
  * Permet aux utilisateurs connectés de modifier leur adresse email.
  *

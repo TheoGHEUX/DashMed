@@ -11,7 +11,7 @@ use PDO;
 /**
  * Mot de passe oublié
  *
- * Gère la demande de réinitialisation de mot de passe avec génération de token
+ * Gère la demande de réinitialisation de mot de passe avec génération de jeton
  * sécurisé et envoi d'email. Applique une limite par session (5 demandes/heure).
  *
  * Note : Retourne toujours une réponse neutre pour ne pas révéler l'existence
@@ -51,12 +51,12 @@ final class ForgottenPasswordController
      * - Contrôle du débit : 5 tentatives max par session sur 1 heure
      * - Validation CSRF
      * - Réponse neutre (même si l'email n'existe pas)
-     * - Token sécurisé (64 hex, hash SHA-256, expire 60 min)
-     * - Nettoyage des anciens tokens avant insertion
+     * - Jeton sécurisé (64 hex, hash SHA-256, expire 60 min)
+     * - Nettoyage des anciens jetons avant insertion
      *
      * Processus en cas de compte existant :
-     * 1. Supprime les anciens tokens pour cet email + tokens expirés
-     * 2. Génère un token (64 hex), le hash en SHA-256
+     * 1. Supprime les anciens jetons pour cet email + jetons expirés
+     * 2. Génère un jeton (64 hex), le hash en SHA-256
      * 3. Insert dans password_resets avec expiration 60 min
      * 4. Construit l'URL de reset (utilise SERVER_NAME, pas HTTP_HOST)
      * 5. Envoie l'email via Mailer::sendPasswordResetEmail()
@@ -110,11 +110,11 @@ final class ForgottenPasswordController
                 if ($user) {
                     $pdo = Database::getConnection();
 
-                    // Nettoyage des anciens tokens pour le mail associer au mdp réunitialiser
+                    // Nettoyage des anciens jetons pour le mail associer au mdp réunitialiser
                     $del = $pdo->prepare('DELETE FROM password_resets WHERE email = ? OR expires_at < NOW()');
                     $del->execute([$old['email']]);
 
-                    // Génère un nouveau token
+                    // Génère un nouveau jeton
                     $token = bin2hex(random_bytes(32));
                     $tokenHash = hash('sha256', $token);
                     $expiresAt = date('Y-m-d H:i:s', time() + 3600); // 60 minutes

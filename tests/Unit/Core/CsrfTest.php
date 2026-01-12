@@ -23,7 +23,7 @@ class CsrfTest extends TestCase
     }
 
     /**
-     * Test que token() génère un token
+     * Test que token() génère un jeton
      */
     #[Test]
     public function tokenGeneratesNewToken(): void
@@ -36,7 +36,7 @@ class CsrfTest extends TestCase
     }
 
     /**
-     * Test que le token est stocké en session
+     * Test que le jeton est stocké en session
      */
     #[Test]
     public function tokenIsStoredInSession(): void
@@ -49,7 +49,7 @@ class CsrfTest extends TestCase
     }
 
     /**
-     * Test que token() retourne le même token si déjà existant
+     * Test que token() retourne le même jeton si déjà existant
      */
     #[Test]
     public function tokenReturnsSameTokenIfExists(): void
@@ -61,7 +61,7 @@ class CsrfTest extends TestCase
     }
 
     /**
-     * Test que validate() accepte un token valide
+     * Test que validate() accepte un jeton valide
      */
     #[Test]
     public function validateAcceptsValidToken(): void
@@ -73,19 +73,19 @@ class CsrfTest extends TestCase
     }
 
     /**
-     * Test que validate() rejette un token invalide
+     * Test que validate() rejette un jeton invalide
      */
     #[Test]
     public function validateRejectsInvalidToken(): void
     {
-        Csrf::token(); // Générer un token valide
+        Csrf::token(); // Générer un jeton valide
         $result = Csrf::validate('invalid_token_123456');
 
         $this->assertFalse($result);
     }
 
     /**
-     * Test que validate() rejette un token vide
+     * Test que validate() rejette un jeton vide
      */
     #[Test]
     public function validateRejectsEmptyToken(): void
@@ -97,7 +97,7 @@ class CsrfTest extends TestCase
     }
 
     /**
-     * Test que validate() consomme le token (une seule utilisation)
+     * Test que validate() consomme le jeton (une seule utilisation)
      */
     #[Test]
     public function validateConsumesToken(): void
@@ -107,20 +107,20 @@ class CsrfTest extends TestCase
         // Première validation : succès
         $this->assertTrue(Csrf::validate($token));
 
-        // Le token a été consommé, donc la session est vidée
+        // Le jeton a été consommé, donc la session est vidée
         $this->assertArrayNotHasKey('csrf_token', $_SESSION);
         $this->assertArrayNotHasKey('csrf_token_time', $_SESSION);
     }
 
     /**
-     * Test que validate() rejette un token expiré
+     * Test que validate() rejette un jeton expiré
      */
     #[Test]
     public function validateRejectsExpiredToken(): void
     {
         $token = Csrf::token();
 
-        // Simuler un token créé il y a plus de 2 heures
+        // Simuler un jeton créé il y a plus de 2 heures
         $_SESSION['csrf_token_time'] = time() - 7201;
 
         $result = Csrf::validate($token);
@@ -129,14 +129,14 @@ class CsrfTest extends TestCase
     }
 
     /**
-     * Test que validate() accepte un token non expiré
+     * Test que validate() accepte un jeton non expiré
      */
     #[Test]
     public function validateAcceptsNonExpiredToken(): void
     {
         $token = Csrf::token();
 
-        // Simuler un token créé il y a 1 heure (dans la limite de 2h)
+        // Simuler un jeton créé il y a 1 heure (dans la limite de 2h)
         $_SESSION['csrf_token_time'] = time() - 3600;
 
         $result = Csrf::validate($token);
@@ -152,7 +152,7 @@ class CsrfTest extends TestCase
     {
         $token = Csrf::token();
 
-        // Token créé il y a 30 minutes
+        // Jeton créé il y a 30 minutes
         $_SESSION['csrf_token_time'] = time() - 1800;
 
         // Avec TTL de 1 heure (3600s), devrait être valide
@@ -167,7 +167,7 @@ class CsrfTest extends TestCase
     {
         $token = Csrf::token();
 
-        // Token créé il y a 30 minutes
+        // Jeton créé il y a 30 minutes
         $_SESSION['csrf_token_time'] = time() - 1800;
 
         // Avec TTL de 15 minutes (900s), devrait être expiré
@@ -177,7 +177,7 @@ class CsrfTest extends TestCase
     }
 
     /**
-     * Test que le token est bien hexadécimal
+     * Test que le jeton est bien hexadécimal
      */
     #[Test]
     public function tokenIsHexadecimal(): void
@@ -188,7 +188,7 @@ class CsrfTest extends TestCase
     }
 
     /**
-     * Test que les tokens générés sont uniques
+     * Test que les jetons générés sont uniques
      */
     #[Test]
     public function tokensAreUnique(): void
@@ -196,23 +196,23 @@ class CsrfTest extends TestCase
         $tokens = [];
 
         for ($i = 0; $i < 10; $i++) {
-            // Nettoyer la session pour générer un nouveau token
+            // Nettoyer la session pour générer un nouveau jeton
             unset($_SESSION['csrf_token'], $_SESSION['csrf_token_time']);
             $tokens[] = Csrf::token();
         }
 
-        // Tous les tokens devraient être uniques
+        // Tous les jetons devraient être uniques
         $uniqueTokens = array_unique($tokens);
         $this->assertCount(10, $uniqueTokens);
     }
 
     /**
-     * Test que validate() retourne false si aucun token n'existe en session
+     * Test que validate() retourne false si aucun jeton n'existe en session
      */
     #[Test]
     public function validateReturnsFalseWithNoSessionToken(): void
     {
-        // Pas de token en session
+        // Pas de jeton en session
         $result = Csrf::validate('some_random_token');
 
         $this->assertFalse($result);

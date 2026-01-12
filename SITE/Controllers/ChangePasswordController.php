@@ -21,7 +21,8 @@ final class ChangePasswordController
      * Affiche le formulaire de changement de mot de passe.
      *
      * Vérifie l'authentification avant d'afficher la vue.
-     * Redirige vers /login si l'utilisateur n'est pas connecté.
+     *
+     * Redirige vers la page de connexion (/login) si l'utilisateur n'est pas connecté.
      *
      * @return void
      */
@@ -44,7 +45,7 @@ final class ChangePasswordController
      * Traite le changement de mot de passe.
      *
      * Validations effectuées :
-     * - Token CSRF
+     * - Jeton CSRF
      * - Ancien mot de passe correct
      * - Nouveau mot de passe conforme (12+ caractères, maj/min/chiffre/char spécial)
      * - Confirmation correspondante

@@ -8,7 +8,7 @@
  * Propose les liens utiles (inscription, mot de passe oublié).
  *
  * Variables attendues :
- *  - $csrf_token (string)  Token CSRF
+ *  - $csrf_token (string)  Jeton CSRF
  *  - $errors     (array)   Liste d'erreurs
  *  - $success    (string)  Message de succès
  *  - $old        (array)   Valeurs précédentes

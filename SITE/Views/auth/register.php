@@ -8,7 +8,7 @@
  * Affiche le formulaire sécurisé par CSRF et les messages d'état.
  *
  * Variables attendues :
- *  - $csrf_token (string)  Token CSRF
+ *  - $csrf_token (string)  Jeton CSRF
  *  - $old        (array)   Valeurs précédentes (pour re-remplir)
  *  - $errors     (array)   Liste d'erreurs de validation
  *  - $success    (string)  Message de succès

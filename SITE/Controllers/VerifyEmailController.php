@@ -7,7 +7,7 @@ use Models\User;
 /**
  * Vérification d'email
  *
- * Gère l'activation du compte via token de vérification et le renvoi d'un
+ * Gère l'activation du compte via jeton de vérification et le renvoi d'un
  * nouvel email en cas d'expiration.
  *
  * @package Controllers
@@ -15,18 +15,18 @@ use Models\User;
 final class VerifyEmailController
 {
     /**
-     * Vérifie le token d'email et active le compte.
+     * Vérifie le jeton d'email et active le compte.
      *
      * Processus :
-     * 1. Récupère le token depuis GET
-     * 2. Recherche l'utilisateur associé au token
-     * 3. Vérifie l'expiration du token (24 heures)
-     * 4. Active le compte si valide (email_verified = 1, suppression du token)
+     * 1. Récupère le jeton depuis GET
+     * 2. Recherche l'utilisateur associé au jeton
+     * 3. Vérifie l'expiration du jeton (24 heures)
+     * 4. Active le compte si valide (email_verified = 1, suppression du jeton)
      *
      * Messages possibles :
-     * - Token manquant/invalide → erreur
+     * - Jeton manquant/invalide → erreur
      * - Email déjà vérifié → succès (message informatif)
-     * - Token expiré → erreur avec suggestion de renvoyer le lien
+     * - Jeton expiré → erreur avec suggestion de renvoyer le lien
      * - Vérification réussie → succès avec redirection vers login
      *
      * @return void
@@ -40,7 +40,7 @@ final class VerifyEmailController
         if (empty($token)) {
             $errors[] = 'Token de vérification manquant.';
         } else {
-            // Recherche de l'utilisateur par token
+            // Recherche de l'utilisateur par jeton
             $user = User::findByVerificationToken($token);
 
             if (!$user) {
@@ -55,7 +55,7 @@ final class VerifyEmailController
                 if ($now > $expires) {
                     $errors[] = 'Le lien de vérification a expiré. Veuillez demander un nouveau lien.';
                 } else {
-                    // Validation du token et activation du compte
+                    // Validation du jeton et activation du compte
                     if (User::verifyEmailToken($token)) {
                         $success = 'Votre adresse email a été vérifiée avec succès ! '
                             . 'Vous pouvez maintenant vous connecter.';
@@ -73,7 +73,7 @@ final class VerifyEmailController
      * Renvoie un email de vérification.
      *
      * Processus si l'email existe et n'est pas vérifié :
-     * 1. Génère un nouveau token (64 hex chars, valide 24h)
+     * 1. Génère un nouveau jeton (64 hex chars, valide 24h)
      * 2. Met à jour la base (email_verification_token, expires)
      * 3. Envoie l'email via Mailer::sendEmailVerification()
      *
@@ -97,7 +97,7 @@ final class VerifyEmailController
             } elseif ($user['email_verified']) {
                 $errors[] = 'Cette adresse email est déjà vérifiée.';
             } else {
-                // Génération d'un nouveau token
+                // Génération d'un nouveau jeton
                 $token = User::generateEmailVerificationToken($email);
 
                 if ($token) {
