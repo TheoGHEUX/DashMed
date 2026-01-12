@@ -72,6 +72,7 @@ include __DIR__ . '/../partials/head.php';
                     <?= htmlspecialchars($patient['ville'] ?? '-') ?>
                 </li>
                 <li><strong>E-mail :</strong> <?= htmlspecialchars($patient['email'] ?? '-') ?></li>
+                <li><strong>ID Dashmed :</strong> <?= htmlspecialchars($patient['pt_id'] ?? '-') ?></li>
             </ul>
         </div>
     <?php else : ?>
@@ -133,7 +134,7 @@ include __DIR__ . '/../partials/head.php';
             <canvas id="chart-blood-pressure" width="600" height="200" aria-label="Graphique tension"></canvas>
             <div class="card-footer">
                 <div class="large-value" id="value-bp">-</div>
-                <div class="small-note" id="note-bp">mmHg, dernière mesure</div>
+                <div class="small-note">dernière mesure</div>
             </div>
         </article>
 
@@ -143,7 +144,7 @@ include __DIR__ . '/../partials/head.php';
             <canvas id="chart-heart-rate" width="600" height="200" aria-label="Graphique pouls"></canvas>
             <div class="card-footer">
                 <div class="large-value" id="value-hr">-</div>
-                <div class="small-note" id="note-hr">BPM, dernière mesure</div>
+                <div class="small-note">dernière mesure</div>
             </div>
         </article>
 
@@ -153,7 +154,7 @@ include __DIR__ . '/../partials/head.php';
             <canvas id="chart-respiration" width="600" height="200" aria-label="Graphique respiration"></canvas>
             <div class="card-footer">
                 <div class="large-value" id="value-resp">-</div>
-                <div class="small-note" id="note-resp">Resp/min</div>
+                <div class="small-note">dernière mesure</div>
             </div>
         </article>
 
@@ -163,7 +164,7 @@ include __DIR__ . '/../partials/head.php';
             <canvas id="chart-temperature" width="600" height="200" aria-label="Graphique température"></canvas>
             <div class="card-footer">
                 <div class="large-value" id="value-temp">-</div>
-                <div class="small-note" id="note-temp">°C, dernière mesure</div>
+                <div class="small-note">dernière mesure</div>
             </div>
         </article>
 
@@ -173,7 +174,7 @@ include __DIR__ . '/../partials/head.php';
             <canvas id="chart-glucose-trend" width="600" height="200" aria-label="Graphique glycémie"></canvas>
             <div class="card-footer">
                 <div class="large-value" id="value-glucose-trend">-</div>
-                <div class="small-note" id="note-glucose">mmol/L</div>
+                <div class="small-note">dernière mesure</div>
             </div>
         </article>
 
@@ -183,7 +184,7 @@ include __DIR__ . '/../partials/head.php';
             <canvas id="chart-weight" width="600" height="200" aria-label="Graphique poids"></canvas>
             <div class="card-footer">
                 <div class="large-value" id="value-weight">-</div>
-                <div class="small-note" id="note-weight">kg, dernière mesure</div>
+                <div class="small-note">dernière mesure</div>
             </div>
         </article>
 
@@ -194,7 +195,7 @@ include __DIR__ . '/../partials/head.php';
                     aria-label="Graphique saturation oxygène"></canvas>
             <div class="card-footer">
                 <div class="large-value" id="value-oxygen">-</div>
-                <div class="small-note" id="note-oxygen">%, dernière mesure</div>
+                <div class="small-note">dernière mesure</div>
             </div>
         </article>
 
