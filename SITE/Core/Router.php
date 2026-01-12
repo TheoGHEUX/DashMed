@@ -16,11 +16,15 @@ use Controllers\ChangeEmailController;
 use Core\Database;
 
 /**
- * Router principal de l'application.
+ * Router principal de l'application
  *
- * Résout les requêtes HTTP entrantes vers les contrôleurs appropriés en fonction
- * de l'URI et de la méthode HTTP. Gère l'authentification, les redirections
- * automatiques et les endpoints de diagnostic (health checks).
+ * Objectif : Orienter les visiteurs vers la bonne page.
+ *
+ * Analyse l'adresse tapée (URL) et la méthode (GET ou POST)
+ * pour appeler le bon contrôleur.
+ *
+ * Vérifie au passage si l'utilisateur est bien connecté
+ * et gère les redirections automatiques.
  *
  * @package Core
  */
@@ -29,12 +33,32 @@ final class Router
     private string $path;
     private string $method;
 
-    /** @var array<string,bool> */
+    /**
+     *
+     * Liste les pages accessibles uniquement en envoi de données (POST).
+     *
+     * Sécurise les actions sensibles (comme la déconnexion) pour empêcher
+     * qu'elles ne soient déclenchées par un simple lien ou une image cachée.
+     *
+     * @var array<string,bool>
+     */
     private const POST_ONLY = [
         '/logout' => true,
         '/deconnexion' => true,
     ];
 
+    /**
+     * Catalogue central de toutes les adresses du site
+     *
+     * Organise les pages en trois catégories :
+     * - Public : Accessible à tout le monde (visiteurs)
+     * - Auth : Pages de passage (connexion, inscription)
+     * - Protected : Pages réservées aux praticiens connectés
+     *
+     * Format : 'adresse' => [ClasseControleur, 'méthodePOST', 'méthodeGET']
+     *
+     * @var array<string,array<string,array<int,string>>>
+     */
     private const ROUTES = [
         'public' => [
             '/' => [HomeController::class, 'index'],
@@ -73,11 +97,14 @@ final class Router
     /**
      * Construit une instance du routeur.
      *
-     * Nettoie et normalise l'URI demandée :  suppression du trailing slash,
-     * extraction du path sans query string, normalisation de l'URI vide vers '/'
+     * Processus :
+     * 1. Reçoit l'adresse tapée (URI) et la nettoie proprement.
+     * 2. Extrait uniquement le chemin (ex: retire les paramètres après le "?").
+     * 3. S'assure que l'adresse finit sans slash inutile pour éviter les doublons.
+     * 4. Enregistre si l'utilisateur veut lire (GET) ou envoyer (POST) des données.
      *
-     * @param string $uri URI demandée
-     * @param string $method Méthode HTTP (GET, POST...)
+     * @param string $uri     Adresse brute de la page (ex: /profil?id=1)
+     * @param string $method  Méthode HTTP (GET, POST...)
      */
     public function __construct(string $uri, string $method)
     {
@@ -92,13 +119,14 @@ final class Router
     /**
      * Résout la route et exécute le contrôleur associé.
      *
-     * Processus de résolution :
-     * 1. Vérifie les endpoints de diagnostic (/health, /health/db)
-     * 2. Redirige automatiquement les utilisateurs connectés de / vers /accueil
-     * 3. Tente les routes publiques
-     * 4. Tente les routes d'authentification
-     * 5. Tente les routes protégées (avec vérification d'authentification)
-     * 6. Affiche une page 404 si aucune route ne correspond
+     * Processus :
+     * 1. Traite les tests de santé (health checks) pour vérifier que le site répond.
+     * 2. Redirige d'office vers l'accueil privé
+     *    si un utilisateur connecté tente d'aller sur l'index.
+     * 3. Parcourt la liste des pages publiques (Aide, Mentions légales).
+     * 4. Parcourt la liste des pages d'accès (Connexion, Inscription).
+     * 5. Parcourt la liste des pages privées (Profil, Dashboard) en vérifiant l'identité.
+     * 6. Affiche l'erreur 404 si aucune page ne correspond à l'adresse.
      *
      * @return void
      */
@@ -188,23 +216,24 @@ final class Router
             return;
         }
 
-        // 404 - Page non trouvée
         $this->handle404();
     }
 
     /**
-     * Tente de résoudre et d'exécuter une route depuis une table de routage.
+     * Tente d'associer l'adresse à une page existante.
      *
      * Supporte deux formats de routes :
      * - Route simple : [Controller::class, 'method'] → méthode unique pour GET et POST
-     * - Route double : [Controller::class, 'postMethod', 'getMethod'] → méthode selon HTTP verb
+     * - Route double : [Controller::class, 'postMethod', 'getMethod']
+     *                  → méthode selon HTTP verb
      *
      * Pour les routes listées dans POST_ONLY, seule la méthode POST est acceptée.
+     *
      * Les autres méthodes HTTP reçoivent une erreur 405 Method Not Allowed.
      *
-     * @param array $routes Table des routes
-     * @param bool $requiresAuth Si true, redirige vers la page de login si non authentifié
-     * @return bool Vrai si la route a été trouvée et exécutée
+     * @param array $routes       Table des routes
+     * @param bool $requiresAuth  True → redirige vers la page de login si non authentifié
+     * @return bool               Vrai si la route a été trouvée et exécutée
      */
     private function tryRoute(array $routes, bool $requiresAuth = false): bool
     {
@@ -246,7 +275,7 @@ final class Router
      * - $_SESSION['user'] existe et n'est pas vide
      * - $_SESSION['user']['email_verified'] est défini et truthy
      *
-     * @return bool True si l'utilisateur est authentifié avec email vérifié, false sinon
+     * @return bool True si l'utilisateur est authentifié avec email vérifié, False sinon
      */
     private function isAuthenticated(): bool
     {
@@ -269,8 +298,9 @@ final class Router
     /**
      * Affiche la page 404 et termine l'exécution.
      *
-     *Tente de charger la vue 'errors/404.php'.  Si celle-ci n'existe pas,
-     * affiche un message HTML simple.
+     * Tente de charger la vue 'errors/404.php'.
+     *
+     * Si celle-ci n'existe pas, affiche un message HTML simple.
      *
      * @return void
      */

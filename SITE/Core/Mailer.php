@@ -3,11 +3,10 @@
 namespace Core;
 
 /**
- * Gestionnaire d'envoi d'emails.
+ * Gestionnaire d'envoi d'emails
  *
  * Fournit des méthodes pour envoyer des emails automatiques (vérification d'email,
- * réinitialisation de mot de passe, etc.) avec fallback vers fichier .eml
- * si l'envoi via mail() échoue.
+ * réinitialisation de mot de passe, etc.).
  *
  * @package Core
  */
@@ -17,11 +16,12 @@ final class Mailer
      * Envoie un email de vérification d'adresse email.
      *
      * Génère un email HTML avec lien de vérification valide 24 heures.
+     *
      * Utilise SERVER_NAME pour construire l'URL.
      *
-     * @param string $to Destinataire
-     * @param string $name Prénom du destinataire
-     * @param string $verificationToken Token de vérification
+     * @param string $to                 Destinataire
+     * @param string $name               Prénom du destinataire
+     * @param string $verificationToken  Jeton de vérification
      * @return bool
      */
     public static function sendEmailVerification(string $to, string $name, string $verificationToken): bool
@@ -80,11 +80,12 @@ final class Mailer
      * Envoie un email de réinitialisation de mot de passe.
      *
      * Génère un email HTML avec lien de réinitialisation valide 60 minutes.
+     *
      * Utilise SERVER_NAME pour construire l'URL.
      *
-     * @param string $to Destinataire
-     * @param string $displayName Nom affiché
-     * @param string $resetUrl URL de réinitialisation
+     * @param string $to           Destinataire
+     * @param string $displayName  Nom affiché
+     * @param string $resetUrl     URL de réinitialisation
      * @return bool
      */
     public static function sendPasswordResetEmail(string $to, string $displayName, string $resetUrl): bool
@@ -169,6 +170,7 @@ final class Mailer
      * Sauvegarde un email dans un fichier .eml.
      *
      * Crée le dossier SITE/storage/mails/ s'il n'existe pas.
+     *
      * Génère un fichier .eml avec timestamp et identifiant unique.
      *
      * @param string $to

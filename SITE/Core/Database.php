@@ -6,10 +6,7 @@ use PDO;
 use PDOException;
 
 /**
- * Gestionnaire de connexion à la base de données.
- *
- * Lit facultativement un fichier `.env` à la racine pour récupérer les paramètres
- * Utilise des valeurs par défaut si le fichier .env est absent.
+ * Gestionnaire de connexion à la base de données
  *
  * @package Core
  */
@@ -21,14 +18,12 @@ final class Database
      * Retourne une instance PDO singleton configurée pour MySQL.
      *
      * Configuration :
-     * - Lecture du fichier .env (si présent) pour DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS
-     * - Valeurs par défaut :  127.0.0.1:3306, dashmed-site_db, root, (pas de mot de passe)
      * - Mode d'erreur : ERRMODE_EXCEPTION
      * - Mode de fetch : FETCH_ASSOC
      * - Emulation de requêtes préparées désactivée
      *
-     * @return PDO Connexion PDO
-     * @throws PDOException En cas d'échec de connexion
+     * @return PDO           Connexion PDO
+     * @throws PDOException  En cas d'échec de connexion
      */
     public static function getConnection(): PDO
     {
@@ -61,7 +56,7 @@ final class Database
                 }
             }
 
-            // Priorité aux variables DB_* du .env si présentes
+            // Priorité aux variables du .env si présentes, sinon valeurs par défaut
             $host = $env['DB_HOST'] ?? '127.0.0.1';
             $port = $env['DB_PORT'] ?? '3306';
             $db   = $env['DB_NAME'] ?? 'dashmed-site_db';
