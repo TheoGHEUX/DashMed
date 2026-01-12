@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
      * - valueId/noteId : IDs des éléments DOM pour affichage des valeurs
      * - value/note : Valeur et note affichées sous le graphique
      *
-     * @const {Object. <string, Object>}
+     * @const {Object.<string, Object>}
      */
     const CHART_DEFINITIONS = {
         'blood-pressure': {

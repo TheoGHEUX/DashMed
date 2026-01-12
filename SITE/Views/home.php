@@ -33,7 +33,9 @@ include __DIR__ . '/partials/head.php';
             <img src="/assets/images/dashboard.webp" alt="Tableau de bord médical moderne" class="hero-bg" />
             <div class="hero-content">
                 <p class="lead">
-                    DashMed centralise les données de santé de vos patients pour mieux suivre leurs signes vitaux et rester informés en cas de problème.
+                    DashMed centralise les données de santé de vos patients
+                    pour mieux suivre leurs signes vitaux et rester informés
+                    en cas de problème.
                 </p>
                 <div class="cta">
                     <a class="btn btn-primary" href="/register">S'inscrire</a>

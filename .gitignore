@@ -3,6 +3,12 @@
 
 # Dépendances
 vendor/
+node_modules/
 
 # Cache PHPUnit
 .phpunit.cache/
+
+# Documentation générée (à régénérer localement)
+docs/
+phpDocumentor.phar
+.phpdoc/
