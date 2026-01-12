@@ -24,7 +24,7 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
         </div>
 
         <nav id="mainnav" class="mainnav" aria-label="Navigation principale" aria-hidden="false">
-            <a href="/accueil"<?= ($currentPath === '/accueil' ? ' class="current"' : '') ?>>Accueil</a>
+            <a href="/home"<?= ($currentPath === '/home' ? ' class="current"' : '') ?>>Accueil</a>
             <a href="/dashboard"<?= ($currentPath === '/dashboard' ? ' class="current"' : '') ?>>Tableau de bord</a>
             <a href="/profile"<?= ($currentPath === '/profile' ? ' class="current"' : '') ?>>Profil</a>
             <form action="/logout" method="POST" style="display:inline;margin:0">
