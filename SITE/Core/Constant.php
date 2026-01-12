@@ -3,16 +3,17 @@
 namespace Core;
 
 /**
- * Constantes et chemins utilitaires du projet.
+ * Constantes et chemins utilitaires du projet
  *
- * Fournit des méthodes renvoyant les chemins absolus vers les dossiers clé (Views, Models, Core, Controllers).
+ * Fournit des méthodes renvoyant les chemins absolus vers les dossiers clés
+ * (Views, Models, Core, Controllers).
  *
  * @package Core
  */
 
 final class Constant
 {
-    // Sous-répertoires relatifs au répertoire SITE
+    // Sous-répertoires relatifs au répertoire `SITE/`
     public const VIEW_DIRECTORY       = '/Views/';
     public const MODEL_DIRECTORY      = '/Models/';
     public const CORE_DIRECTORY       = '/Core/';
@@ -21,7 +22,8 @@ final class Constant
     /**
      * Retourne le chemin absolu du dossier racine (niveau SITE).
      *
-     * @return string Chemin absolu du répertoire racine du projet (dossier parent de Core/Views/Models/Controllers)
+     * @return string Chemin absolu du répertoire racine du projet
+     *                (dossier parent de Core/Views/Models/Controllers)
      */
     public static function rootDirectory()
     {

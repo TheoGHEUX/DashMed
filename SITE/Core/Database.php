@@ -62,11 +62,11 @@ final class Database
             }
 
             // Priorité aux variables DB_* du .env si présentes
-            $host = $env['DB_HOST'] ?? 'mysql-dashmed-site.alwaysdata.net';
+            $host = $env['DB_HOST'] ?? '127.0.0.1';
             $port = $env['DB_PORT'] ?? '3306';
-            $db   = $env['DB_NAME'] ?? 'dashmed-site_db_2';
-            $user = $env['DB_USER'] ?? '433165';
-            $pass = $env['DB_PASS'] ?? '*Eie(56p/GW82i';
+            $db   = $env['DB_NAME'] ?? 'dashmed-site_db';
+            $user = $env['DB_USER'] ?? 'root';
+            $pass = $env['DB_PASS'] ?? '';
 
             $dsn = "mysql:host={$host};port={$port};dbname={$db};charset=utf8mb4";
 

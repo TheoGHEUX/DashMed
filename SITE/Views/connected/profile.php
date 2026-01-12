@@ -77,7 +77,7 @@ include __DIR__ . '/../partials/head.php';
                     <td class="email-cell">
                         <span><?= htmlspecialchars($user['email'] ?? '', ENT_QUOTES, 'UTF-8') ?></span>
                         <a class="btn-edit"
-                           href="/change-mail"
+                           href="/change-email"
                            title="Changer votre adresse email (connexion requise)">Changer</a>
                     </td>
                 </tr>
