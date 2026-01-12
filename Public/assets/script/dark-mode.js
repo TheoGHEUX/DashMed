@@ -1,11 +1,14 @@
 /**
- * Script de gestion du mode sombre
+ * Gestion du mode sombre
  *
- * - Garde le choix (light/dark) dans localStorage.
- * - Applique l'attribut `data-theme` sur l'élément root.
- * - Émet un événement custom `themechange` pour les autres scripts.
+ * Garde le choix (light/dark) dans localStorage.
+ *
+ * Applique l'attribut `data-theme` sur l'élément root.
+ *
+ * Émet un événement custom `themechange` pour les autres scripts.
  *
  * @module dark-mode
+ * @package Assets
  */
 
 (function() {

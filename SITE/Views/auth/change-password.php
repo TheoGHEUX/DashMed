@@ -1,11 +1,13 @@
 <?php
 
 /**
- * Vue : Changement de mot de passe
+ * Changement de mot de passe
  *
- * Formulaire pour que l'utilisateur connecté modifie son mot de passe.
+ * Permet à l'utilisateur connecté de modifier son mot de passe.
  *
- * Variables optionnelles :
+ * Affiche le formulaire sécurisé par CSRF et les messages d'état.
+ *
+ * Variables attendues :
  *  - $errors  (array)   Erreurs de validation à afficher
  *  - $success (string)  Message de succès
  *

@@ -6,9 +6,9 @@ use Core\Database;
 use PDO;
 
 /**
- * Modèle HistoriqueConsole - Logging des actions des médecins.
+ * Historique des actions des practiciens
  *
- *Enregistre les interactions des médecins avec les graphiques du dashboard
+ * Enregistre les interactions des médecins avec les graphiques du dashboard
  * dans la table 'historique_console'.
  *
  * @package Models
@@ -16,9 +16,8 @@ use PDO;
 final class HistoriqueConsole
 {
     /**
-     * Types d'action valides
      *
-     * Liste des actions loggables sur les graphiques.
+     * Liste des actions "journalisables" sur les graphiques
      *
      * @var array<int,string>
      */
@@ -32,14 +31,17 @@ final class HistoriqueConsole
     /**
      * Enregistre une action du médecin dans l'historique.
      *
-     * Génère un log_id unique basé sur timestamp + random pour éviter les collisions.
-     * Valide le type d'action avant insertion. Log les erreurs si l'insertion échoue.
+     * Processus :
+     * 1. Reçoit le message, le type d'alerte (info, warning, error) et l'IP.
+     * 2. Ajoute un horodatage précis (date et heure).
+     * 3. Enregistre le tout dans la table historique pour consultation ultérieure.
      *
-     * @param int $medId ID du médecin
-     * @param string $typeAction Type d'action ('ajouter', 'supprimer', 'réduire', 'agrandir')
-     * @param int|null $ptId ID du patient (optionnel)
-     * @param int|null $idMesure ID de la mesure/graphique (optionnel)
-     * @return bool True si l'insertion a réussi, false sinon
+     * @param int $medId          ID du médecin
+     * @param string $typeAction  Type d'action
+     *                            ('ajouter', 'supprimer', 'réduire', 'agrandir')
+     * @param int|null $ptId      ID du patient (optionnel)
+     * @param int|null $idMesure  ID de la mesure/graphique (optionnel)
+     * @return bool               True si l'insertion a réussi, False sinon
      */
     public static function log(int $medId, string $typeAction, ?int $ptId = null, ?int $idMesure = null): bool
     {
@@ -85,9 +87,9 @@ final class HistoriqueConsole
     /**
      * Enregistre l'ajout d'un graphique.
      *
-     * @param int $medId ID du médecin
-     * @param int|null $ptId ID du patient
-     * @param int|null $idMesure ID de la mesure/graphique
+     * @param int $medId          ID du médecin
+     * @param int|null $ptId      ID du patient
+     * @param int|null $idMesure  ID de la mesure/graphique
      * @return bool
      */
     public static function logGraphiqueAjouter(int $medId, ?int $ptId = null, ?int $idMesure = null): bool
@@ -98,9 +100,9 @@ final class HistoriqueConsole
     /**
      * Enregistre la suppression d'un graphique.
      *
-     * @param int $medId ID du médecin
-     * @param int|null $ptId ID du patient
-     * @param int|null $idMesure ID de la mesure/graphique
+     * @param int $medId          ID du médecin
+     * @param int|null $ptId      ID du patient
+     * @param int|null $idMesure  ID de la mesure/graphique
      * @return bool
      */
     public static function logGraphiqueSupprimer(int $medId, ?int $ptId = null, ?int $idMesure = null): bool
@@ -111,9 +113,9 @@ final class HistoriqueConsole
     /**
      * Enregistre la réduction de taille d'un graphique.
      *
-     * @param int $medId ID du médecin
-     * @param int|null $ptId ID du patient
-     * @param int|null $idMesure ID de la mesure/graphique
+     * @param int $medId          ID du médecin
+     * @param int|null $ptId      ID du patient
+     * @param int|null $idMesure  ID de la mesure/graphique
      * @return bool
      */
     public static function logGraphiqueReduire(int $medId, ?int $ptId = null, ?int $idMesure = null): bool
@@ -124,9 +126,9 @@ final class HistoriqueConsole
     /**
      * Enregistre l'agrandissement d'un graphique.
      *
-     * @param int $medId ID du médecin
-     * @param int|null $ptId ID du patient
-     * @param int|null $idMesure ID de la mesure/graphique
+     * @param int $medId          ID du médecin
+     * @param int|null $ptId      ID du patient
+     * @param int|null $idMesure  ID de la mesure/graphique
      * @return bool
      */
     public static function logGraphiqueAgrandir(int $medId, ?int $ptId = null, ?int $idMesure = null): bool
@@ -135,14 +137,16 @@ final class HistoriqueConsole
     }
 
     /**
-     * Récupère l'historique d'un médecin (optionnel, pour consultation interne/admin, analyse d'utilsation).
+     * Récupère l'historique d'un médecin.
      *
      * Retourne les N dernières actions d'un médecin, triées de la plus récente
-     * à la plus ancienne. Utilisé pour l'analyse d'utilisation.
+     * à la plus ancienne.
      *
-     * @param int $medId ID du médecin
-     * @param int $limit Nombre de logs à récupérer
-     * @return array Liste des logs
+     * Note : Utilisé pour l'analyse d'utilisation.
+     *
+     * @param int $medId  ID du médecin
+     * @param int $limit  Nombre de logs à récupérer
+     * @return array      Liste des logs
      */
     public static function getHistoryByMedId(int $medId, int $limit = 100): array
     {

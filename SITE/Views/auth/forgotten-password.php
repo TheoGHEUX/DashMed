@@ -1,15 +1,17 @@
 <?php
+
 /**
- * Vue : Mot de passe oublié
+ * Mot de passe oublié
  *
- * Page publique pour demander l'envoi d'un lien de réinitialisation par email.
- * Affiche le formulaire sécurisé par CSRF et les messages d'état (success / errors).
+ * Permet de demander l'envoi d'un lien de réinitialisation par email.
  *
- * Variables attendues (optionnelles) :
- * @var string|null $csrf_token Token CSRF
- * @var array|null  $errors     Liste d'erreurs de validation
- * @var string|null $success    Message de confirmation
- * @var array|null  $old        Anciennes valeurs du formulaire
+ * Affiche le formulaire sécurisé par CSRF et les messages d'état.
+ *
+ * Variables attendues :
+ *  - $csrf_token (string)  Token CSRF
+ *  - $errors     (array)   Liste d'erreurs de validation
+ *  - $success    (string)  Message de confirmation
+ *  - $old        (array)   Anciennes valeurs du formulaire
  *
  * @package Views
  */

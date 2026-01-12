@@ -1,10 +1,3 @@
-/*
- * header.css
- * Description : Styles de l'en-tête / barre supérieure, navigation principale
- * et menu responsive. Variables CSS attendues : --header-bg, --header-text,
- * --border-color, --accent-primary, --bg-primary
- */
-
 .topbar {
     background: var(--header-bg, rgba(255, 255, 255, 0.95));
     border-bottom: 1px solid var(--border-color, #e2e8f0);
@@ -47,21 +40,9 @@
     outline: none;
 }
 
-/* Mode sombre - Option 1: Inverser les couleurs (logo devient blanc) */
 [data-theme="dark"] .logo {
     filter: brightness(0) invert(1);
 }
-
-/* Mode sombre - Option 2: Si votre logo a déjà de bonnes couleurs pour le mode sombre, utilisez ceci à la place : */
-/* [data-theme="dark"] .logo {
-    mix-blend-mode: screen;
-} */
-
-/* Mode sombre - Option 3: Si le PNG a un fond blanc à enlever : */
-/* [data-theme="dark"] .logo {
-    filter: drop-shadow(0 0 0 transparent);
-    mix-blend-mode: multiply;
-} */
 
 .mainnav {
     display: flex;
@@ -94,7 +75,6 @@
     transition: color 0.3s ease;
 }
 
-/* Harmoniser les boutons de déconnexion (qui sont des <button>) avec les liens */
 button.login-btn,
 button.nav-login {
     background: none;
@@ -168,10 +148,10 @@ button.nav-login:hover {
         gap: 0;
         margin: 0;
         padding: 20px;
-        transform: translateX(-105%); /* push fully out of viewport */
+        transform: translateX(-105%); 
         transition: transform 0.28s cubic-bezier(.2,.9,.2,1);
         box-shadow: 2px 0 10px rgba(0,0,0,0.3);
-        z-index: 1100; /* above topbar */
+        z-index: 1100; 
     }
 
     .mainnav.active {
@@ -192,7 +172,7 @@ button.nav-login:hover {
         color: var(--accent-primary, #0b6e4f);
     }
     
-    /* Améliorer le contraste en mode sombre sur mobile */
+    
     [data-theme="dark"] .mainnav a {
         color: #f1f5f9;
         font-weight: 500;
@@ -213,7 +193,6 @@ button.nav-login:hover {
     }
 }
 
-/* Accessibilité : styles de focus pour les utilisateurs au clavier */
 .mainnav a:focus,
 .burger-menu:focus,
 .login-btn:focus,

@@ -1,27 +1,24 @@
-// Lightweight placeholder charts for the dashboard (multiple clinical types)
-// Pour réinitialiser la configuration et afficher tous les graphiques :
-// Ouvrez la console (F12) et tapez : localStorage.removeItem('dashboardChartConfig'); location.reload();
-// Ou ajoutez ?reset=1 à l'URL du dashboard
 /**
- * Scripts de gestion des graphiques du tableau de bord
+ * Graphiques du tableau de bord
  *
- * Fournit des rendus Canvas 2D pour visualiser les constantes vitales des patients
- * avec seuils d'alerte, tooltips interactifs et configuration personnalisable.
+ * Fournit des rendus Canvas 2D pour visualiser les constantes vitales.
+ *
+ * Inclut les seuils d'alerte, tooltips interactifs et mode édition.
  *
  * Fonctionnalités principales :
- *  * - **Seuils d'alerte** : Trois niveaux (préoccupant, urgent, critique) min et max
- *  * - **Responsive** : Adaptation devicePixelRatio pour tout type d'écrans
- *  * - **Interactivité** : Tooltips au survol, highlight des points
- *  * - **Mode édition** : Drag & drop, redimensionnement, ajout/suppression de graphiques
- *  * - **Persistance** : Configuration sauvegardée dans localStorage
- *  * - **Thème** : Adaptation automatique au mode sombre/clair
- *  * - **Auto-scroll** : Défilement automatique lors du drag près des bords
- *  * - **Log** : Envoi des actions (ajouter, supprimer, agrandir, réduire) au serveur
+ *  - Seuils d'alerte    : Trois niveaux (préoccupant, urgent, critique)
+ *  - Responsive         : Adaptation devicePixelRatio pour tout écran
+ *  - Interactivité      : Tooltips au survol, highlight des points
+ *  - Mode édition       : Drag & drop, redimensionnement, ajout/suppression
+ *  - Persistance        : Configuration sauvegardée dans localStorage
+ *  - Thème              : Adaptation automatique au mode sombre/clair
+ *  - Auto-scroll        : Défilement automatique lors du drag
+ *  - Log                : Envoi des actions au serveur
  *
  * @module dashboard_charts
- *  * @requires dashboard. js (pour initialisation via window.initDashboardCharts)
- *  * @requires dark-mode.js (pour l'événement 'themechange')
- *
+ * @requires dashboard.js
+ * @requires dark-mode.js
+ * @package Assets
  */
 
 document.addEventListener('DOMContentLoaded', () => {

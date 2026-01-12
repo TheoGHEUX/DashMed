@@ -1,16 +1,17 @@
 <?php
 
 /**
- * Vue : Connexion utilisateur
+ * Connexion
  *
- * Page de connexion publique. Affiche le formulaire sécurisé par CSRF,
- * messages d'erreur/succès et liens utiles (inscription, mot de passe oublié).
+ * Affiche le formulaire de connexion sécurisé par CSRF.
  *
- * Variables optionnelles :
- *  - $csrf_token (string)
- *  - $errors     (array)
- *  - $success    (string)
- *  - $old        (array)  Valeurs précédentes
+ * Propose les liens utiles (inscription, mot de passe oublié).
+ *
+ * Variables attendues :
+ *  - $csrf_token (string)  Token CSRF
+ *  - $errors     (array)   Liste d'erreurs
+ *  - $success    (string)  Message de succès
+ *  - $old        (array)   Valeurs précédentes
  *
  * @package Views
  */

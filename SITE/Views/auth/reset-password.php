@@ -1,20 +1,22 @@
 <?php
+
 /**
- * Vue : Réinitialisation du mot de passe
+ * Réinitialisation du mot de passe
  *
- * Page publique permettant à un utilisateur de définir un nouveau mot de passe
- * après avoir cliqué sur le lien de réinitialisation reçu par email.
+ * Permet de définir un nouveau mot de passe après réception du lien.
+ *
+ * Affiche le formulaire sécurisé par CSRF et les messages d'état.
  *
  * Variables attendues :
- * @var string $csrf_token        Token CSRF (généré via \Core\Csrf::token())
- * @var string $email             Email de l'utilisateur (hidden)
- * @var string $token             Token de réinitialisation (hidden)
- * @var array  $errors            Tableau d'erreurs de validation (optionnel)
- * @var string $success           Message de succès (optionnel)
- * @var string $pageTitle         Titre de la page (optionnel)
- * @var string $pageDescription   Meta description (optionnel)
- * @var array  $pageStyles        Styles spécifiques (optionnel)
- * @var array  $pageScripts       Scripts spécifiques (optionnel)
+ *  - $csrf_token      (string)  Token CSRF
+ *  - $email           (string)  Email de l'utilisateur (hidden)
+ *  - $token           (string)  Token de réinitialisation (hidden)
+ *  - $errors          (array)   Tableau d'erreurs de validation
+ *  - $success         (string)  Message de succès
+ *  - $pageTitle       (string)  Titre de la page
+ *  - $pageDescription (string)  Meta description
+ *  - $pageStyles      (array)   Styles spécifiques
+ *  - $pageScripts     (array)   Scripts spécifiques
  *
  * @package Views
  */

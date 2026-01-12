@@ -1,19 +1,17 @@
 <?php
+
 /**
- * Vue : Plan du site (Sitemap)
+ * Plan du site
  *
- * Page listant les pages publiques de l'application DashMed de façon hiérarchique
- * pour faciliter la navigation et l'indexation.
+ * Liste les pages publiques de façon hiérarchique.
+ *
+ * Facilite la navigation et l'indexation.
  *
  * Variables attendues :
- * @var string $pageTitle               Titre de la page ( "Plan du site")
- * @var string $pageDescription         Meta description
- * @var array<int,string> $pageStyles   Styles spécifiques (["/assets/style/map.css"])
- * @var array<int,string> $pageScripts  Scripts spécifiques ( ["/assets/script/header_responsive.js"])
- *
- * @see \SITE\Views\partials\head.php
- * @see \SITE\Views\partials\headerPublic.php
- * @see \SITE\Views\partials\footer.php
+ *  - $pageTitle       (string)  Titre de la page
+ *  - $pageDescription (string)  Meta description
+ *  - $pageStyles      (array)   Styles spécifiques
+ *  - $pageScripts     (array)   Scripts spécifiques
  *
  * @package Views
  */

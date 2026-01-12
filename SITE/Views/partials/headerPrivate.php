@@ -1,19 +1,18 @@
 <?php
 
 /**
- * Partial : Header privé (navigation pour utilisateurs authentifiés)
+ * Partial : Header pour utilisateurs connectés
  *
- * En-tête affiché pour les utilisateurs connectés : logo, navigation privée
- * (Accueil, Tableau de bord, Profil), toggle mode sombre, et bouton Déconnexion.
+ * Affiche le logo, la navigation privée et le bouton de déconnexion.
  *
- * @package    DashMed
- * @subpackage Views\Partials
- * @category   Frontend
- * @version    1.0
+ * Détecte la page active via REQUEST_URI.
  *
  * Variables attendues :
- * @var string $currentPath Chemin extrait de la requête
+ *  - $currentPath (string)  Chemin extrait de la requête
+ *
+ * @package Views
  */
+
 $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 ?>
 <header class="topbar">
@@ -28,7 +27,8 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
             <a href="/dashboard"<?= ($currentPath === '/dashboard' ? ' class="current"' : '') ?>>Tableau de bord</a>
             <a href="/profile"<?= ($currentPath === '/profile' ? ' class="current"' : '') ?>>Profil</a>
             <form action="/logout" method="POST" style="display:inline;margin:0">
-                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\Core\Csrf::token(), ENT_QUOTES, 'UTF-8'); ?>">
+                <?php $csrfToken = htmlspecialchars(\Core\Csrf::token(), ENT_QUOTES, 'UTF-8'); ?>
+                <input type="hidden" name="csrf_token" value="<?= $csrfToken; ?>">
                 <button type="submit" class="nav-login" aria-label="Déconnexion">Déconnexion</button>
             </form>
         </nav>
@@ -39,7 +39,8 @@ $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
         </button>
 
         <form action="/logout" method="POST" style="display:inline;margin:0">
-            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\Core\Csrf::token(), ENT_QUOTES, 'UTF-8'); ?>">
+            <?php $csrfToken2 = htmlspecialchars(\Core\Csrf::token(), ENT_QUOTES, 'UTF-8'); ?>
+            <input type="hidden" name="csrf_token" value="<?= $csrfToken2; ?>">
             <button type="submit" class="login-btn" aria-label="Déconnexion">Déconnexion</button>
         </form>
 

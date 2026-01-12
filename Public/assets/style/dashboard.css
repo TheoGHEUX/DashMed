@@ -1,11 +1,3 @@
-/*
- * dashboard.css
- * Description : Styles pour le tableau de bord (grilles, cartes, graphiques,
- * réorganisation par glisser-déposer). Variables utiles : --bg-card,
- * --accent-primary, --border-color, --shadow-lg
- */
-
-/* === Page Dashboard "À venir" === */
 .dashboard-coming-soon {
     display: flex;
     flex-direction: column;
@@ -41,7 +33,6 @@
     }
 }
 
-/* === New dashboard layout and cards === */
 .dashboard-main {
     padding: 24px 0px 60px;
 }
@@ -282,7 +273,6 @@
     font-variant-numeric: tabular-nums;
 }
 
-/* Badges de statut pour les valeurs */
 .value-badge {
     display: inline-flex;
     align-items: center;
@@ -311,7 +301,6 @@
     color: #dc2626;
 }
 
-/* Indicateurs de tendance */
 .trend-indicator {
     display: inline-flex;
     align-items: center;
@@ -475,7 +464,6 @@
     transition: color 0.3s ease;
 }
 
-/* Animations d'apparition progressive */
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -487,7 +475,6 @@
     }
 }
 
-/* Animation uniquement au chargement initial de la page */
 .dashboard-grid.initial-load .card {
     animation: fadeInUp 0.5s ease-out backwards;
 }
@@ -500,13 +487,11 @@
 .dashboard-grid.initial-load .card:nth-child(6) { animation-delay: 0.3s; }
 .dashboard-grid.initial-load .card:nth-child(7) { animation-delay: 0.35s; }
 
-/* Désactiver complètement l'animation pendant le réordonnement et après */
 .dashboard-grid:not(.initial-load) .card,
 .dashboard-grid.reordering .card {
     animation: none !important;
 }
 
-/* Effet de brillance sur les cartes */
 .card::after {
     content: '';
     position: absolute;
@@ -551,7 +536,6 @@
     transition: color 0.3s ease;
 }
 
-/* Add chart panel */
 .add-chart-panel {
     margin-top: 20px;
     padding: 20px;
@@ -568,7 +552,6 @@
     transition: all 0.3s ease;
 }
 
-/* Delete zone when dragging a chart */
 .add-chart-panel.delete-zone-active {
     background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.05));
     border: 3px dashed #ef4444;
@@ -626,7 +609,6 @@
     transform: none;
 }
 
-/* Drag & drop zone styling */
 .dashboard-grid.drag-over {
     outline: 3px dashed #0b6e4f;
     outline-offset: 8px;
@@ -634,14 +616,12 @@
     border-radius: 12px;
 }
 
-
-
 @media (max-width: 1100px) {
     .dashboard-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 
-    /* Améliorer la lisibilité sur tablette */
+    
     .page-title {
         font-size: 1.5rem;
         font-weight: 700;
@@ -698,7 +678,7 @@
         display: none !important;
     }
 
-    /* Améliorer le contraste des titres de cartes sur mobile */
+    
     .card-title {
         font-size: 0.95rem;
         font-weight: 600;
@@ -714,18 +694,12 @@
     }
 }
 
-/* =======================
- Haut de page du dashboard
- ========================= */
-
-/* Conteneur global du bouton */
 .dashboard-actions {
     display: flex;
     justify-content: center;
     margin-bottom: 20px;
 }
 
-/* Bouton de sélection de patient */
 .btn-patients {
     display: inline-flex;
     align-items: center;
@@ -745,7 +719,6 @@
     background: var(--accent-hover, #0a5d42);
 }
 
-/* Contenu de la page patient */
 .patient-active {
     display: flex;
     flex-direction: column;
@@ -755,7 +728,6 @@
     padding: 20px;
 }
 
-/* Titre de la section */
 .patient-active h2 {
     font-size: 1.5rem;
     font-weight: 600;
@@ -763,7 +735,6 @@
     margin-bottom: 10px;
 }
 
-/* Carte patient */
 .patient-card {
     background: var(--bg-card, #ffffff);
     border: 1px solid var(--border-light, #e6eef8);
@@ -774,7 +745,6 @@
     width: 100%;
 }
 
-/* Nom du patient */
 .patient-name {
     font-size: 1.25rem;
     font-weight: 600;
@@ -782,7 +752,6 @@
     color: var(--text-primary, #0f172a);
 }
 
-/* Liste des infos patient */
 .patient-meta {
     list-style: none;
     padding: 0;
@@ -801,13 +770,11 @@
     margin-right: 4px;
 }
 
-/* Message "Aucun patient sélectionné" */
 .patient-active > p {
     font-size: 1rem;
     color: var(--text-secondary, #64748b);
 }
 
-/* === Responsive === */
 @media (max-width: 768px) {
     .patient-active {
         padding: 16px;
@@ -831,8 +798,6 @@
         font-size: 0.9rem;
     }
 }
-
-/* === Overlay liste des patients === */
 
 .patients-list-overlay {
     position: fixed;
@@ -875,7 +840,6 @@
     margin-bottom: 16px;
 }
 
-/* === Empty State (Aucun patient) === */
 .dashboard-empty-state {
     margin: 40px auto 80px;
     max-width: 600px;
@@ -919,7 +883,6 @@
     transition: color 0.3s ease;
 }
 
-/* Responsive pour empty state */
 @media (max-width: 768px) {
     .dashboard-empty-state {
         margin: 40px 20px;
@@ -942,8 +905,6 @@
         font-size: 0.95rem;
     }
 }
-
-/* Légende des seuils */
 
 .thresholds-legend {
     max-width: 1200px;
@@ -1075,7 +1036,6 @@
     color: var(--text-primary, #1f2937);
 }
 
-/* Responsive */
 @media (max-width: 768px) {
     .legend-items {
         grid-template-columns: 1fr;

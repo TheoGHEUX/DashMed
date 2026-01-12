@@ -1,9 +1,14 @@
 /**
- * Partial JS : gestion du menu burger / navigation responsive
+ * Navigation responsive et menu burger
  *
- * - Initialise le bouton burger et gère l'ouverture/fermeture de la navigation.
- * - Supporte l'insertion tardive du DOM via MutationObserver.
- * - Gère la fermeture automatique au clic sur un lien, au clic hors nav et à la touche Escape.
+ * Initialise le bouton burger et gère l'ouverture/fermeture.
+ *
+ * Supporte l'insertion tardive du DOM via MutationObserver.
+ *
+ * Gère la fermeture automatique (clic hors nav, touche Escape).
+ *
+ * @module header_responsive
+ * @package Assets
  */
 document.addEventListener('DOMContentLoaded', () => {
     const burgerMenu = document.querySelector('.burger-menu');

@@ -1,15 +1,17 @@
 <?php
 
 /**
- * Vue : Inscription utilisateur
+ * Inscription
  *
- * Page d'inscription publique pour créer un compte DashMed.
+ * Permet de créer un compte DashMed.
  *
- * Variables optionnelles :
+ * Affiche le formulaire sécurisé par CSRF et les messages d'état.
+ *
+ * Variables attendues :
  *  - $csrf_token (string)  Token CSRF
- *  - $old (array)          Valeurs précédentes du formulaire (pour re-remplir)
- *  - $errors (array)       Liste d'erreurs de validation
- *  - $success (string)     Message de succès
+ *  - $old        (array)   Valeurs précédentes (pour re-remplir)
+ *  - $errors     (array)   Liste d'erreurs de validation
+ *  - $success    (string)  Message de succès
  *
  * @package Views
  */

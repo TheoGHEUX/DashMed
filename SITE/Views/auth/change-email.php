@@ -1,11 +1,13 @@
 <?php
 
 /**
- * Vue : Changement d'adresse email
+ * Cchangement d'adresse email
  *
- * Formulaire accessible aux utilisateurs connectés pour modifier leur adresse email.
+ * Permet aux utilisateurs connectés de modifier leur adresse email.
  *
- * Variables optionnelles :
+ * Affiche le formulaire sécurisé par CSRF et les messages d'état.
+ *
+ * Variables attendues :
  *  - $errors  (array)   Erreurs de validation à afficher
  *  - $success (string)  Message de succès
  *

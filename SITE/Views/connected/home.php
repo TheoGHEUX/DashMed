@@ -1,38 +1,32 @@
 <?php
+
 /**
- * Vue : Page d'accueil utilisateur (Accueil)
+ * Page connectée : Page d'accueil utilisateur
  *
- * Page d'accueil pour les utilisateurs authentifiés. Affiche une bannière de
- * bienvenue et un lien vers le tableau de bord.
+ * Affiche une bannière de bienvenue et un lien vers le tableau de bord.
+ *
+ * Nécessite une session utilisateur active.
  *
  * Variables attendues :
- * @var string $pageTitle               Titre de la page (défaut : "Accueil")
- * @var string $pageDescription         Meta description
- * @var array<int,string> $pageStyles   Styles spécifiques ( ["/assets/style/accueil.css"])
- * @var array<int,string> $pageScripts  Scripts spécifiques ( ["/assets/script/header_responsive.js"])
+ *  - $pageTitle       (string)  Titre de la page (défaut : "Accueil")
+ *  - $pageDescription (string)  Meta description
+ *  - $pageStyles      (array)   Styles spécifiques
+ *  - $pageScripts     (array)   Scripts spécifiques
  *
  * @package Views
  */
 
-// ============================================================================
-// SÉCURITÉ : session & CSRF
-// ============================================================================
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-// génère le token CSRF si la classe existe (silencieux sinon)
 $csrf_token = function_exists('\\Core\\Csrf::token') ? \Core\Csrf::token() : '';
 
-// contrôle d'accès : utilisateur requis
 if (empty($_SESSION['user'])) {
     header('Location: /login');
     exit;
 }
 
-// ============================================================================
-// CONFIGURATION : variables du template
-// ============================================================================
 $pageTitle       = $pageTitle ?? "Accueil";
 $pageDescription = $pageDescription ?? "Page d'accueil accessible une fois connecté";
 $pageStyles      = $pageStyles ?? ["/assets/style/accueil.css"];

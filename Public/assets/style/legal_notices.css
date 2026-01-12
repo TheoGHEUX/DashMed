@@ -1,4 +1,3 @@
-/* Force dark text on light background panels - override all other styles */
 .legal-grid .panel h3,
 .legal-grid .panel p,
 .legal-grid .panel ul li,
@@ -31,7 +30,6 @@ h1 {
     transition: color 0.3s ease;
 }
 
-/* Grid layout: two columns on desktop for the first row, full width for the .full panel. */
 .legal-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -93,12 +91,10 @@ h1 {
     transition: none;
 }
 
-/* Full width panel spans both columns */
 .panel.full {
     grid-column: 1 / -1;
 }
 
-/* More link (call to action) - ensure visited/active aren't purple and add focus outline */
 .more {
     color: var(--accent-primary, #386b8f);
     text-decoration: none;

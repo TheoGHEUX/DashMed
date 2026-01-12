@@ -1,7 +1,19 @@
 <?php
 
 /**
- * Partial : head commun
+ * Partial : En-tête HTML commun
+ *
+ * Génère la balise <head> avec meta, titre, styles et scripts.
+ *
+ * Charge automatiquement les styles communs et le dark mode.
+ *
+ * Variables attendues :
+ *  - $pageTitle       (string)  Titre de la page
+ *  - $pageDescription (string)  Meta description
+ *  - $pageStyles      (array)   Styles spécifiques
+ *  - $pageScripts     (array)   Scripts spécifiques
+ *
+ * @package Views
  */
 
 ?>

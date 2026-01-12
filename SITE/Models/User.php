@@ -6,11 +6,12 @@ use Core\Database;
 use PDO;
 
 /**
- * Modèle User - Gestion des utilisateurs (médecins)
+ * Utilisateurs & Authentification
  *
- * Fournit les opérations CRUD et la gestion des tokens de vérification d'email
- * pour la table 'medecin'. Toutes les comparaisons d'emails sont insensibles à la casse via LOWER().
+ * Fournit les opérations CRUD et la gestion des jetons de vérification d'email
+ * pour la table 'medecin'.
  *
+ * Note : Toutes les comparaisons d'emails sont insensibles à la casse via LOWER().
  *
  * @package Models
  */
@@ -19,11 +20,12 @@ final class User
     /**
      * Vérifie si une adresse email existe déjà.
      *
-     * Comparaison insensible à la casse via LOWER(). Utilisé lors de
-     * l'inscription pour éviter les doublons.
+     * Comparaison insensible à la casse via LOWER().
      *
-     * @param string $email Email à tester
-     * @return bool True si l'email existe, false sinon
+     * Utilisé lors de l'inscription pour éviter les doublons.
+     *
+     * @param string $email  Email à tester
+     * @return bool          True si l'email existe, false sinon
      */
     public static function emailExists(string $email): bool
     {
@@ -34,17 +36,17 @@ final class User
     }
 
     /**
-     * Crée un nouvel utilisateur (médecin).
+     * Crée un nouvel utilisateur.
      *
      * Insère un nouveau médecin dans la base avec compte actif par défaut.
      *
-     * @param string $name      Prénom
-     * @param string $lastName  Nom
-     * @param string $email     Email (sera trim + strtolower)
-     * @param string $hash      Hash du mot de passe
-     * @param string $sexe      Sexe (ex: 'M'/'F')
-     * @param string $specialite Spécialité
-     * @return bool True si l'insertion a réussi, false sinon
+     * @param string $name       Prénom
+     * @param string $lastName   Nom
+     * @param string $email      Email (sera trim + strtolower)
+     * @param string $hash       Hash du mot de passe
+     * @param string $sexe       Sexe ('M' ou 'F')
+     * @param string $specialite Spécialité médicale
+     * @return bool              True si l'insertion a réussi
      */
     public static function create(
         string $name,
@@ -66,11 +68,11 @@ final class User
     /**
      * Récupère un utilisateur par son adresse email.
      *
-     *  Retourne toutes les données nécessaires pour l'authentification et la
-     *  vérification d'email.
+     * Retourne toutes les données nécessaires pour l'authentification
+     * et la vérification d'email.
      *
      * @param string $email Email recherché
-     * @return array|null Tableau associatif de l'utilisateur ou null si non trouvé
+     * @return array|null   Tableau associatif ou null si non trouvé
      */
     public static function findByEmail(string $email): ?array
     {
@@ -99,11 +101,11 @@ final class User
     /**
      * Récupère un utilisateur par son identifiant.
      *
-     * Retourne toutes les données nécessaires pour l'affichage du profil et la
-     * gestion du compte.
+     * Retourne toutes les données nécessaires pour l'affichage du profil
+     * et la gestion du compte.
      *
-     * @param int $id Identifiant utilisateur
-     * @return array|null Tableau associatif de l'utilisateur ou null si non trouvé
+     * @param int $id      Identifiant utilisateur
+     * @return array|null  Tableau associatif ou null si non trouvé
      */
     public static function findById(int $id): ?array
     {
@@ -133,11 +135,12 @@ final class User
      * Met à jour le mot de passe d'un utilisateur.
      *
      * Utilisé lors du changement de mot de passe et de la réinitialisation.
+     *
      * Met également à jour le timestamp de dernière modification.
      *
      * @param int    $id   Identifiant utilisateur
      * @param string $hash Nouveau hash du mot de passe
-     * @return bool True si la mise à jour a réussi, false sinon
+     * @return bool        True si la mise à jour a réussi
      */
     public static function updatePassword(int $id, string $hash): bool
     {
@@ -152,8 +155,8 @@ final class User
      * Simple mise à jour sans réinitialisation de la vérification.
      *
      * @param int    $id       Identifiant utilisateur
-     * @param string $newEmail Nouvelle adresse email (sera trim + strtolower)
-     * @return bool True si la mise à jour a réussi, false sinon
+     * @param string $newEmail Nouvelle adresse (sera trim + strtolower)
+     * @return bool            True si la mise à jour a réussi
      */
     public static function updateEmail(int $id, string $newEmail): bool
     {
@@ -165,18 +168,18 @@ final class User
     /**
      * Met à jour l'email en forçant une nouvelle vérification.
      *
-     * Processus en :
-     *  1. Génère un nouveau token de vérification (64 hex chars)
-     *  2. Définit email_verified à 0
-     *  3. Définit une expiration à +24 heures
-     *  4. Met à jour l'email
+     * Processus :
+     * 1. Génère un nouveau jeton de vérification (64 hex chars)
+     * 2. Définit email_verified à 0
+     * 3. Définit une expiration à +24 heures
+     * 4. Met à jour l'email
      *
-     * Utilisé lors du changement d'email depuis le profil pour garantir que
-     *  le nouvel email appartient bien à l'utilisateur.
+     * Utilisé lors du changement d'email depuis le profil pour garantir
+     * que le nouvel email appartient bien à l'utilisateur.
      *
-     * @param int $id Identifiant utilisateur (med_id)
-     * @param string $newEmail Nouvelle adresse email (sera normalisée)
-     * @return string|null Token de vérification généré (à envoyer par email), ou null en cas d'échec
+     * @param int    $id       Identifiant utilisateur (med_id)
+     * @param string $newEmail Nouvelle adresse (sera normalisée)
+     * @return string|null     Jeton généré, ou null en cas d'échec
      */
     public static function updateEmailWithVerification(int $id, string $newEmail): ?string
     {
@@ -213,16 +216,16 @@ final class User
     }
 
     /**
-     * Génère et stocke un token de vérification d'email (valide 24h).
+     * Génère et stocke un jeton de vérification d'email (valide 24h).
      *
      * @param string $email Email de l'utilisateur
-     * @return string|null Token généré (64 hex chars) ou null si l'opération échoue
+     * @return string|null  Jeton généré (64 hex chars) ou null si échec
      */
     public static function generateEmailVerificationToken(string $email): ?string
     {
         $pdo = Database::getConnection();
 
-        // Génération d'un token sécurisé
+        // Génération d'un jeton sécurisé
         $token = bin2hex(random_bytes(32)); // 64 caractères hexadécimaux
         $expires = date('Y-m-d H:i:s', strtotime('+24 hours'));
 
@@ -242,22 +245,22 @@ final class User
     }
 
     /**
-     * Vérifie un token de vérification d'email et active le compte.
+     * Vérifie un jeton de vérification d'email et active le compte.
      *
      * Processus :
-     * 1. Recherche un utilisateur avec le token fourni, non expiré et non vérifié
+     * 1. Recherche un utilisateur avec le jeton (non expiré, non vérifié)
      * 2. Si trouvé, active le compte (email_verified = 1)
-     * 3. Supprime le token et sa date d'expiration
+     * 3. Supprime le jeton et sa date d'expiration
      * 4. Enregistre la date d'activation
      *
-     * @param string $token Token de vérification
-     * @return bool True si le token est valide et l'activation réussie, false sinon
+     * @param string $token Jeton de vérification
+     * @return bool         True si activation réussie
      */
     public static function verifyEmailToken(string $token): bool
     {
         $pdo = Database::getConnection();
 
-        // Recherche du token valide (non expiré)
+        // Recherche du jeton valide (non expiré)
         $st = $pdo->prepare('
         SELECT med_id 
         FROM medecin 
@@ -273,7 +276,7 @@ final class User
             return false;
         }
 
-        // Activation du compte et suppression du token
+        // Activation du compte et suppression du jeton
         $st = $pdo->prepare('
         UPDATE medecin 
         SET email_verified = 1,
@@ -288,13 +291,13 @@ final class User
     }
 
     /**
-     * Trouve un utilisateur par son token de vérification.
+     * Trouve un utilisateur par son jeton de vérification.
      *
-     * Retourne les données minimales nécessaires pour afficher la page de
-     * vérification d'email (nom, statut de vérification, expiration).
+     * Retourne les données minimales nécessaires pour afficher la page
+     * de vérification d'email (nom, statut, expiration).
      *
-     * @param string $token Token de vérification
-     * @return array|null Tableau associatif de l'utilisateur ou null si non trouvé
+     * @param string $token Jeton de vérification
+     * @return array|null   Tableau associatif ou null si non trouvé
      */
     public static function findByVerificationToken(string $token): ?array
     {

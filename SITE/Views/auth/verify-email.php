@@ -1,17 +1,19 @@
 <?php
 
 /**
- * Vue : Vérification d'email
+ * Vérification d'email
  *
- * Affiche le résultat de la vérification d'adresse email (succès, erreurs ou en cours).
+ * Affiche le résultat de la vérification (succès, erreurs ou en cours).
+ *
+ * Propose un lien pour renvoyer l'email si nécessaire.
  *
  * Variables attendues :
- *  - $pageTitle (string)       Titre de la page
- *  - $pageDescription (string) Meta description
- *  - $pageStyles (array)       Styles spécifiques
- *  - $pageScripts (array)      Scripts spécifiques
- *  - $success (string|null)    Message de succès (optionnel)
- *  - $errors (array|null)      Liste d'erreurs (optionnel)
+ *  - $pageTitle       (string)  Titre de la page
+ *  - $pageDescription (string)  Meta description
+ *  - $pageStyles      (array)   Styles spécifiques
+ *  - $pageScripts     (array)   Scripts spécifiques
+ *  - $success         (string)  Message de succès
+ *  - $errors          (array)   Liste d'erreurs
  *
  * @package Views
  */

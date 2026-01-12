@@ -1,19 +1,17 @@
 <?php
+
 /**
- * Vue : Mentions légales
+ * Mentions légales
  *
- * Page des mentions légales et d'information sur la gestion des données (RGPD),
- * conditions d'utilisation et droits des utilisateurs.
+ * Affiche les informations sur la gestion des données (RGPD).
+ *
+ * Présente les conditions d'utilisation et droits des utilisateurs.
  *
  * Variables attendues :
- * @var string $pageTitle               Titre de la page (défaut : "Mentions légales")
- * @var string $pageDescription         Meta description
- * @var array<int,string> $pageStyles   Styles spécifiques
- * @var array<int,string> $pageScripts  Scripts spécifiques
- *
- * @see \SITE\Views\partials\head.php
- * @see \SITE\Views\partials\headerPublic.php
- * @see \SITE\Views\partials\footer.php
+ *  - $pageTitle       (string)  Titre de la page
+ *  - $pageDescription (string)  Meta description
+ *  - $pageStyles      (array)   Styles spécifiques
+ *  - $pageScripts     (array)   Scripts spécifiques
  *
  * @package Views
  */

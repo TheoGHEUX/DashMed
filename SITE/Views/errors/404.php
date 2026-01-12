@@ -1,14 +1,15 @@
 <?php
+
 /**
- * Vue : Page d'erreur 404 (Page non trouvée)
+ * Page d'erreur
  *
- * Page simple affichant le code 404, un message et deux actions (accueil, dashboard).
+ * Affiche le code 404, un message et deux actions (accueil, dashboard).
  *
- * Variables optionnelles (définies par le contrôleur) :
- * @var string $pageTitle
- * @var string $pageDescription
- * @var array  $pageStyles
- * @var array  $pageScripts
+ * Variables attendues :
+ *  - $pageTitle       (string)  Titre de la page
+ *  - $pageDescription (string)  Meta description
+ *  - $pageStyles      (array)   Styles spécifiques
+ *  - $pageScripts     (array)   Scripts spécifiques
  *
  * @package Views
  */

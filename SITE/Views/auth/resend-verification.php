@@ -1,10 +1,16 @@
 <?php
 
 /**
- * Vue : Renvoyer l'email de vérification
+ * Renvoi d'email de vérification
  *
- * Page publique pour demander le renvoi d'un email de vérification.
- * Variables optionnelles : $success (string), $errors (array), $email (string)
+ * Permet de demander le renvoi d'un email de vérification.
+ *
+ * Affiche le formulaire sécurisé par CSRF et les messages d'état.
+ *
+ * Variables attendues :
+ *  - $success (string)  Message de succès
+ *  - $errors  (array)   Liste d'erreurs
+ *  - $email   (string)  Email pré-rempli
  *
  * @package Views
  */

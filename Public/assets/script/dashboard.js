@@ -1,3 +1,13 @@
+/**
+ * Initialisation du tableau de bord
+ *
+ * Gère le toggle de la liste des patients.
+ *
+ * Initialise les graphiques via window.initDashboardCharts.
+ *
+ * @module dashboard
+ * @package Assets
+ */
 document.addEventListener('DOMContentLoaded', () => {
     const chartData = window.patientChartData || {};
     const btn = document.getElementById('togglePatients');

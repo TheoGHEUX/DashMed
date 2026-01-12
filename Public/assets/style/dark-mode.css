@@ -1,8 +1,3 @@
-/* ===========================
-   DARK MODE STYLES
-   =========================== */
-
-/* Light mode variables (default) */
 :root {
     --bg-primary: #ffffff;
     --bg-secondary: #f8f9fa;
@@ -36,7 +31,6 @@
     --footer-text: #0f172a;
 }
 
-/* Dark mode variables */
 [data-theme="dark"] {
     --bg-primary: #0f172a;
     --bg-secondary: #1e293b;
@@ -70,14 +64,12 @@
     --footer-text: #f1f5f9;
 }
 
-/* Apply variables to common elements */
 body {
     background-color: var(--bg-secondary);
     color: var(--text-primary);
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Dark mode toggle button */
 .dark-mode-toggle {
     background: var(--bg-tertiary);
     border: 1px solid var(--border-color);
@@ -138,7 +130,6 @@ body {
     transform: rotate(0deg) scale(1);
 }
 
-/* Header dark mode */
 .topbar {
     background: var(--header-bg);
     border-bottom: 1px solid var(--border-color);
@@ -153,14 +144,12 @@ body {
     color: var(--accent-primary) !important;
 }
 
-/* Cards */
 .card {
     background: var(--bg-card);
     border-color: var(--border-light);
     box-shadow: var(--shadow-lg);
 }
 
-/* Inputs */
 input,
 textarea,
 select {
@@ -176,7 +165,6 @@ select:focus {
     background-color: var(--input-bg);
 }
 
-/* Buttons */
 .btn-edit-mode {
     background: var(--accent-primary);
     color: white;
@@ -186,7 +174,6 @@ select:focus {
     background: var(--accent-hover);
 }
 
-/* Footer */
 footer,
 .footer {
     background: var(--footer-bg);
@@ -200,7 +187,6 @@ footer a,
     color: var(--footer-text);
 }
 
-/* Dashboard specific */
 .page-title {
     color: var(--text-primary);
 }
@@ -217,7 +203,6 @@ footer a,
     color: var(--text-secondary);
 }
 
-/* Chart options */
 .chart-option {
     background: var(--bg-tertiary);
     border-color: var(--border-color);
@@ -230,7 +215,6 @@ footer a,
     border-color: var(--accent-primary);
 }
 
-/* Add chart panel */
 .add-chart-panel {
     background: var(--bg-card);
     border-color: var(--border-color);
@@ -240,19 +224,17 @@ footer a,
     color: var(--text-primary);
 }
 
-/* Canvas backgrounds (for charts to be visible in dark mode) */
 [data-theme="dark"] canvas {
     background: transparent;
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
     .dark-mode-toggle {
         order: -1;
         margin-right: 8px;
     }
 
-    /* Améliorer la visibilité des titres sur mobile en mode sombre */
+    
     [data-theme="dark"] .page-title {
         color: #ffffff;
         font-weight: 700;
@@ -274,7 +256,6 @@ footer a,
     }
 }
 
-/* Tablette */
 @media (max-width: 1100px) {
     [data-theme="dark"] .page-title {
         color: #ffffff;
@@ -292,14 +273,11 @@ footer a,
     }
 }
 
-/* Mode sombre pour la liste des patients */
-
 [data-theme="dark"] .patients-list-overlay .patients-list-content {
     background: var(--bg-card);
     color: var(--text-primary);
 }
 
-/* Mode sombre pour l'empty state */
 [data-theme="dark"] .empty-state-content {
     background: var(--bg-card, #1e293b);
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
@@ -316,8 +294,6 @@ footer a,
 [data-theme="dark"] .empty-state-description {
     color: var(--text-secondary, #94a3b8);
 }
-
-/* Légende des seuils */
 
 [data-theme="dark"] .thresholds-legend {
     background: var(--card-bg-dark, #1d2833);

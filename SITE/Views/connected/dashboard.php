@@ -1,12 +1,13 @@
 <?php
 
 /**
- * Vue : Tableau de bord médical (Dashboard)
+ * Page connectée : Tableau de bord médical
  *
- * Affiche une grille de cartes graphiques (Chart.js) pour le suivi des constantes
- * vitales. Accès réservé aux utilisateurs authentifiés.
+ * Affiche une grille de graphiques (Chart.js) pour le suivi des constantes.
  *
- * @package    Views
+ * Nécessite une session utilisateur active.
+ *
+ * @package Views
  */
 
 if (session_status() !== PHP_SESSION_ACTIVE) {

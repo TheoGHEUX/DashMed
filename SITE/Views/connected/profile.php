@@ -1,16 +1,18 @@
 <?php
+
 /**
- * Vue : Page Profil utilisateur
+ * Page connectée : Profil utilisateur
  *
- * Affiche les informations du compte pour l'utilisateur authentifié
- * et propose les actions de modification (email, mot de passe).
+ * Affiche les informations du compte et propose les actions de modification.
+ *
+ * Nécessite une session utilisateur active.
  *
  * Variables attendues :
- * @var array  $_SESSION['user']         Données utilisateur (name, last_name, sexe, specialite, email)
- * @var string $pageTitle               Titre de la page ("Profil")
- * @var string $pageDescription         Meta description
- * @var array<int,string> $pageStyles   Styles spécifiques (["/assets/style/profile.css"])
- * @var array<int,string> $pageScripts  Scripts spécifiques
+ *  - $_SESSION['user'] (array)   Données utilisateur
+ *  - $pageTitle        (string)  Titre de la page
+ *  - $pageDescription  (string)  Meta description
+ *  - $pageStyles       (array)   Styles spécifiques
+ *  - $pageScripts      (array)   Scripts spécifiques
  *
  * @package Views
  */
