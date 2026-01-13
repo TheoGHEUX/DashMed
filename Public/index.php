@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
- * Point d'entrée de l'application DashMed.
+ * Point d'entrée de l'application DashMed
  *
  * Ce fichier démarre l'application et configure la sécurité de base :
  * 1. Configure la session utilisateur de manière sécurisée
@@ -44,9 +44,15 @@ header('Permissions-Policy: geolocation=(), microphone=()');
 if ($isHttps) {
     header('Strict-Transport-Security: max-age=31536000; includeSubDomains; preload');
 }
-// Basic CSP - tightened with base-uri, form-action, and object-src
-header("Content-Security-Policy: default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data:;");
-// Remove PHP version header
+$csp = "default-src 'self'; "
+    . "base-uri 'self'; "
+    . "form-action 'self'; "
+    . "object-src 'none'; "
+    . "script-src 'self' 'unsafe-inline'; "
+    . "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+    . "font-src 'self' https://fonts.gstatic.com data:; "
+    . "img-src 'self' data:;";
+header("Content-Security-Policy: " . $csp);
 header('X-Powered-By:');
 // Chargement de l'autoloader
 $siteDir = __DIR__ . '/../SITE';
