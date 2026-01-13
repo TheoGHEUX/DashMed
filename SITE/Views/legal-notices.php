@@ -47,9 +47,9 @@ include __DIR__ . '/partials/head.php';
                 <h3>Conditions d'utilisation</h3>
                 <p>
                     Ces conditions définissent l'usage professionnel de la
-                    plateforme MedDash par les établissements de santé.
+                    plateforme DashMed par les établissements de santé.
                     Elles couvrent les obligations de l'établissement
-                    utilisatrice, les engagements de MedDash en matière
+                    utilisatrice, les engagements de DashMed en matière
                     de sécurité et les limites de responsabilité.
                 </p>
                 <ul>
@@ -70,7 +70,7 @@ include __DIR__ . '/partials/head.php';
                     <li>
                         <strong>Responsabilités</strong> — l'établissement
                         reste responsable du contenu clinique et des décisions
-                        médicales ; MedDash assure la plateforme et son
+                        médicales ; DashMed assure la plateforme et son
                         intégrité technique.
                     </li>
                 </ul>
