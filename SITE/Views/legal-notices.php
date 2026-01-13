@@ -109,7 +109,7 @@ include __DIR__ . '/partials/head.php';
                     <li>
                         <strong>Procédure de demande :</strong> les demandes
                         doivent être adressées au DPO ou contact indiqué par
-                        l'établissement ; MedDash assiste techniquement le
+                        l'établissement ; DashMed assiste techniquement le
                         traitement de ces demandes.
                     </li>
                 </ul>
