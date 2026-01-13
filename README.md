@@ -87,14 +87,16 @@ vendor/bin/phpcs --standard=PSR12 SITE
 vendor/bin/phpcbf --standard=PSR12 SITE
 ```
 
-### Génération de la documentation
+### Génération et consultation de la documentation
 
 ```bash
 # Documentation PHP
 php phpDocumentor.phar -d SITE -t docs/php --title="DashMed - Documentation PHP"
+xdg-open docs/php/index.html
 
 # Documentation JavaScript
 npx jsdoc Public/assets/script -d docs/javascript -R README.md
+xdg-open docs/javascript/index.html
 ```
 
 ---
