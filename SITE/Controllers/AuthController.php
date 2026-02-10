@@ -2,375 +2,181 @@
 
 namespace Controllers;
 
-use Models\User;
+use Models\Repositories\UserRepository;
 use Core\Csrf;
 use Core\Mailer;
+use Core\View;
 
-/**
- * Authentification
- *
- * Gère le cycle complet d'authentification des praticiens.
- *
- * Inclut l'inscription (avec vérification d'email),
- * la connexion sécurisée (avec limitation de débit) et la gestion de session.
- *
- * @package Controllers
- */
 final class AuthController
 {
-    /**
-     * Liste des spécialités médicales valides.
-     *
-     * Note : Utilisée pour la validation côté serveur lors de l'inscription.
-     *
-     * @var array<int,string>
-     */
+    private UserRepository $userRepo;
+
     private const SPECIALITES_VALIDES = [
-        'Addictologie',
-        'Algologie',
-        'Allergologie',
-        'Anesthésie-Réanimation',
-        'Cancérologie',
-        'Cardio-vasculaire HTA',
-        'Chirurgie',
-        'Dermatologie',
-        'Diabétologie-Endocrinologie',
-        'Génétique',
-        'Gériatrie',
-        'Gynécologie-Obstétrique',
-        'Hématologie',
-        'Hépato-gastro-entérologie',
-        'Imagerie médicale',
-        'Immunologie',
-        'Infectiologie',
-        'Médecine du sport',
-        'Médecine du travail',
-        'Médecine générale',
-        'Médecine légale',
-        'Médecine physique et de réadaptation',
-        'Néphrologie',
-        'Neurologie',
-        'Nutrition',
-        'Ophtalmologie',
-        'ORL',
-        'Pédiatrie',
-        'Pneumologie',
-        'Psychiatrie',
-        'Radiologie',
-        'Rhumatologie',
-        'Sexologie',
-        'Toxicologie',
-        'Urologie',
+        'Addictologie', 'Algologie', 'Allergologie', 'Anesthésie-Réanimation',
+        'Cancérologie', 'Cardio-vasculaire HTA', 'Chirurgie', 'Dermatologie',
+        'Diabétologie-Endocrinologie', 'Génétique', 'Gériatrie', 'Gynécologie-Obstétrique',
+        'Hématologie', 'Hépato-gastro-entérologie', 'Imagerie médicale', 'Immunologie',
+        'Infectiologie', 'Médecine du sport', 'Médecine du travail', 'Médecine générale',
+        'Médecine légale', 'Médecine physique et de réadaptation', 'Néphrologie',
+        'Neurologie', 'Nutrition', 'Ophtalmologie', 'ORL', 'Pédiatrie',
+        'Pneumologie', 'Psychiatrie', 'Radiologie', 'Rhumatologie', 'Sexologie',
+        'Toxicologie', 'Urologie',
     ];
 
-    /**
-     * Affiche le formulaire d'inscription.
-     */
-    public function showRegister(): void
+    public function __construct()
     {
-        $errors = [];
-        $success = '';
-        $old = [
-            'name' => '',
-            'last_name' => '',
-            'email' => '',
-            'sexe' => '',
-            'specialite' => '',
-        ];
-        $specialites = self::SPECIALITES_VALIDES;
-        require __DIR__ . '/../Views/auth/register.php';
+        $this->userRepo = new UserRepository();
     }
 
-    /**
-     * Traite l'inscription d'un nouveau praticien.
-     *
-     * Validations effectuées :
-     * - Jeton CSRF : protection contre l'usurpation de requête
-     * - Nom et prénom
-     * - Sexe (M ou F)
-     * - Email (format et unicité)
-     * - Spécialité (doit apparaitre dans la liste SPECIALITES_VALIDES)
-     * - Mot de passe (12+ car., maj, min, chiffre...)
-     *
-     * Processus en cas de succès :
-     * 1. Initialisation du compte avec hachage du mot de passe
-     * (le compte est actif mais en attente de vérification)
-     * 2. Génération d'un jeton de vérification d'email (64 hex chars, valide 24h)
-     * 3. Envoi de l'email de vérification
-     * 4. Affichage du message de succès
-     *
-     * Variables transmises à la vue :
-     * - array  $errors      Liste des messages d'erreur de validation.
-     * - string $success     Message de confirmation de création.
-     * - array  $old         Données de formulaire pour persistance en cas d'erreur.
-     * - array  $specialites Liste des choix pour le champ spécialité.
-     *
-     * @return void
-     */
-    public function register(): void
-    {
-        $errors = [];
-        $success = '';
-        $old = [
-            'name'       => trim((string)($_POST['name'] ?? '')),
-            'last_name'  => trim((string)($_POST['last_name'] ?? '')),
-            'email'      => trim((string)($_POST['email'] ?? '')),
-            'sexe'       => trim((string)($_POST['sexe'] ?? '')),
-            'specialite' => trim((string)($_POST['specialite'] ?? '')),
-        ];
-        $password         = (string)($_POST['password'] ?? '');
-        $password_confirm = (string)($_POST['password_confirm'] ?? '');
-        $csrf             = (string)($_POST['csrf_token'] ?? '');
-
-        if (!Csrf::validate($csrf)) {
-            $errors[] = 'Session expirée ou jeton CSRF invalide.';
-        }
-
-        if (empty($old['name'])) {
-            $errors[] = 'Le prénom est obligatoire.';
-        }
-
-        if (empty($old['last_name'])) {
-            $errors[] = 'Le nom est obligatoire.';
-        }
-
-        if (!filter_var($old['email'], FILTER_VALIDATE_EMAIL)) {
-            $errors[] = 'Adresse email invalide.';
-        }
-
-        if (empty($old['sexe']) || !in_array($old['sexe'], ['M', 'F'], true)) {
-            $errors[] = 'Veuillez sélectionner un sexe valide.';
-        }
-
-        if (empty($old['specialite']) || !in_array($old['specialite'], self::SPECIALITES_VALIDES, true)) {
-            $errors[] = 'Veuillez sélectionner une spécialité médicale valide.';
-        }
-
-        if ($password !== $password_confirm) {
-            $errors[] = 'Les mots de passe ne correspondent pas.';
-        }
-
-        // Complexité du mot de passe
-        if (
-            strlen($password) < 12
-            || !preg_match('/[A-Z]/', $password)
-            || !preg_match('/[a-z]/', $password)
-            || !preg_match('/\d/', $password)
-            || !preg_match('/[^A-Za-z0-9]/', $password)
-        ) {
-            $errors[] = 'Le mot de passe doit contenir au moins 12 caractères, avec majuscules, '
-                . 'minuscules, chiffres et un caractère spécial.';
-        }
-
-        // Vérification de l'existence de l'email pour l'unicité
-        if (!$errors && User::emailExists($old['email'])) {
-            $errors[] = 'Un compte existe déjà avec cette adresse email.';
-        }
-
-        // Création du compte si aucune erreur
-        if (
-            !$errors
-            && User::create(
-                $old['name'],
-                $old['last_name'],
-                $old['email'],
-                password_hash($password, PASSWORD_DEFAULT),
-                $old['sexe'],
-                $old['specialite']
-            )
-        ) {
-            // Génération du jeton de vérification d'email
-            $verificationToken = User::generateEmailVerificationToken($old['email']);
-
-            if ($verificationToken) {
-                // Envoi de l'email de vérification
-                $mailSent = Mailer::sendEmailVerification(
-                    $old['email'],
-                    $old['name'],
-                    $verificationToken
-                );
-
-                $success = $mailSent
-                    ? 'Compte créé avec succès ! Un email de vérification a été envoyé. '
-                        . 'Veuillez vérifier votre boîte de réception pour activer votre compte.'
-                    : 'Compte créé avec succès. (Attention: l\'email de vérification n\'a pas pu être envoyé. '
-                        . 'Vous pouvez demander un nouveau lien.)';
-            } else {
-                $success = 'Compte créé mais erreur lors de la génération du lien de vérification. '
-                    . 'Contactez le support.';
-            }
-
-            // Réinitialisation des champs après succès
-            $old = [
-                'name' => '',
-                'last_name' => '',
-                'email' => '',
-                'sexe' => '',
-                'specialite' => '',
-            ];
-        } elseif (!$errors) {
-            $errors[] = 'L\'insertion en base de données a échoué.';
-        }
-
-        $specialites = self::SPECIALITES_VALIDES;
-        require __DIR__ . '/../Views/auth/register.php';
-    }
-
-    /**
-     * Affiche le formulaire de connexion.
-     */
     public function showLogin(): void
     {
         $errors = [];
-        $success = (isset($_GET['reset']) && $_GET['reset'] === '1')
-            ? 'Votre mot de passe a été réinitialisé. Vous pouvez vous connecter.'
-            : '';
+        $success = (isset($_GET['reset']) && $_GET['reset'] === '1') ? 'Mot de passe réinitialisé.' : '';
         $old = ['email' => ''];
         require __DIR__ . '/../Views/auth/login.php';
     }
 
-    /**
-     * Traite la connexion d'un practicien.
-     *
-     * Validations effectuées :
-     * - Jeton CSRF
-     * - Identifiants corrects : email + mot de passe
-     * - Email vérifié
-     *
-     * Processus en cas de succès :
-     * 1. Régénération de l'ID de session (prévient session fixation)
-     * 2. Stockage des données utilisateur en session
-     * 3. Redirection vers l'accueil connecté (/home)
-     *
-     * En cas d'échec, la tentative est loggée pour le rate-limiting.
-     *
-     * @return void
-     */
     public function login(): void
     {
         $errors = [];
-        $success = '';
-        $old = [
-            'email' => trim((string)($_POST['email'] ?? '')),
-        ];
-        $password = (string)($_POST['password'] ?? '');
-        $csrf     = (string)($_POST['csrf_token'] ?? '');
-
-        // Limitation basique des tentatives de connexion par IP (5 tentatives max par IP sur 5 minutes)
-        $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-        if (!isset($_SESSION['login_attempts'])) {
-            $_SESSION['login_attempts'] = [];
-        }
-        $now = time();
-        $windowSeconds = 300; // Durée avant de recommencer
-        $maxAttempts   = 5;
-        // Purge des anciennes tentatives hors fenêtre
-        $attempts = array_filter(
-            (array)($_SESSION['login_attempts'][$ip] ?? []),
-            function ($ts) use ($now, $windowSeconds) {
-                return ($now - (int)$ts) <= $windowSeconds;
-            }
-        );
-        $_SESSION['login_attempts'][$ip] = $attempts;
-        if (count($attempts) >= $maxAttempts) {
-            http_response_code(429);
-            $errors[] = 'Trop de tentatives. Réessayez dans quelques minutes.';
-        }
+        $old = ['email' => trim($_POST['email'] ?? '')];
+        $password = $_POST['password'] ?? '';
+        $csrf = $_POST['csrf_token'] ?? '';
 
         if (!Csrf::validate($csrf)) {
-            $errors[] = 'Session expirée ou jeton CSRF invalide.';
+            $errors[] = 'Session expirée.';
         }
 
-        if (!filter_var($old['email'], FILTER_VALIDATE_EMAIL)) {
-            $errors[] = 'Adresse email invalide.';
-        }
-
-        // Vérification des identifiants
         if (!$errors) {
-            try {
-                $user = User::findByEmail($old['email']);
+            // Appel REPOSITORY
+            $user = $this->userRepo->findByEmail($old['email']);
 
-                if (!$user || !password_verify($password, $user['password'])) {
-                    $errors[] = 'Identifiants incorrects.';
-                    // Enregistrer la tentative échouée
-                    $_SESSION['login_attempts'][$ip][] = $now;
-                } elseif (!$user['email_verified']) {
-                    $errors[] = 'Adresse email non vérifiée. '
-                        . 'Consultez votre boîte de réception et cliquez sur le lien de vérification.';
-                    $_SESSION['login_attempts'][$ip][] = $now;
-                } else {
-                    if (session_status() !== PHP_SESSION_ACTIVE) {
-                        session_start();
-                    }
-                    session_regenerate_id(true);
+            if (!$user || !password_verify($password, $user->getPasswordHash())) {
+                $errors[] = 'Identifiants incorrects.';
+            } elseif (!$user->isEmailVerified()) {
+                $errors[] = 'Adresse email non vérifiée. Vérifiez vos spams.';
+            } else {
+                // Succès : Mise en session
+                if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+                session_regenerate_id(true);
 
-                    $_SESSION['user'] = [
-                        'id'         => $user['user_id'],
-                        'email'      => $user['email'],
-                        'name'       => $user['name'],
-                        'last_name'  => $user['last_name'],
-                        'sexe'       => $user['sexe'],
-                        'specialite' => $user['specialite'],
-                        'email_verified' => (bool) $user['email_verified'],
-                    ];
+                $_SESSION['user'] = $user->toSessionArray();
 
-                    header('Location: /home');
-                    exit;
-                }
-            } catch (\Throwable $e) {
-                error_log(sprintf(
-                    '[LOGIN] Erreur: %s dans %s:%d',
-                    $e->getMessage(),
-                    $e->getFile(),
-                    $e->getLine()
-                ));
-                $errors[] = 'Erreur lors de la connexion. Veuillez réessayer.';
-                $_SESSION['login_attempts'][$ip][] = $now;
+                header('Location: /dashboard');
+                exit;
             }
         }
 
         require __DIR__ . '/../Views/auth/login.php';
     }
 
-    /**
-     * Déconnecte l'utilisateur et détruit la session active.
-     *
-     * Processus :
-     * - Validation du jeton CSRF pour prévenir les déconnexions forcées par des tiers
-     * - Restriction d'accès avec la méthode POST (défini dans Router:: POST_ONLY)
-     * - Supprime les variables de session et réinitialise le cookie côté client
-     * - Redirige vers la page de connexion (/login)
-     *
-     * @return void
-     */
-    public function logout(): void
+    public function showRegister(): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_start();
+        $errors = [];
+        $success = '';
+        $old = ['name' => '', 'last_name' => '', 'email' => '', 'sexe' => '', 'specialite' => ''];
+        $specialites = self::SPECIALITES_VALIDES;
+        require __DIR__ . '/../Views/auth/register.php';
+    }
+
+    public function register(): void
+    {
+        $errors = [];
+        $success = '';
+
+        $old = [
+            'name' => trim($_POST['name'] ?? ''),
+            'last_name' => trim($_POST['last_name'] ?? ''),
+            'email' => trim($_POST['email'] ?? ''),
+            'sexe' => trim($_POST['sexe'] ?? ''),
+            'specialite' => trim($_POST['specialite'] ?? ''),
+        ];
+        $password = $_POST['password'] ?? '';
+        $confirm = $_POST['password_confirm'] ?? '';
+        $csrf = $_POST['csrf_token'] ?? '';
+
+
+        if (!Csrf::validate($csrf)) {
+            $errors[] = 'Session expirée.';
+        }
+        if (empty($old['name']) || empty($old['last_name'])) {
+            $errors[] = 'Nom et prénom obligatoires.';
+        }
+        if (!filter_var($old['email'], FILTER_VALIDATE_EMAIL)) {
+            $errors[] = 'Email invalide.';
+        }
+        if ($password !== $confirm) {
+            $errors[] = 'Les mots de passe ne correspondent pas.';
+        }
+        // Complexité mot de passe (12 chars + Maj + Min + Chiffre + Spécial)
+        if (strlen($password) < 12
+            || !preg_match('/[A-Z]/', $password)
+            || !preg_match('/[a-z]/', $password)
+            || !preg_match('/\d/', $password)
+            || !preg_match('/[^A-Za-z0-9]/', $password)) {
+            $errors[] = 'Le mot de passe doit faire 12 caractères min. avec Maj, Min, Chiffre et Caractère spécial.';
         }
 
-        $csrf = (string)($_POST['csrf_token'] ?? '');
-        if (!\Core\Csrf::validate($csrf)) {
-            http_response_code(405);
-            header('Location: /login');
-            exit;
+        if (!$errors && $this->userRepo->emailExists($old['email'])) {
+            $errors[] = 'Cet email est déjà utilisé.';
+        }
+
+
+
+        if (!$errors) {
+            $created = $this->userRepo->create([
+                'prenom' => $old['name'],
+                'nom' => $old['last_name'],
+                'email' => $old['email'],
+                'password_hash' => password_hash($password, PASSWORD_DEFAULT),
+                'sexe' => $old['sexe'],
+                'specialite' => $old['specialite']
+            ]);
+
+            if ($created) {
+                // Gestion du token
+                $token = bin2hex(random_bytes(32));
+                $expires = date('Y-m-d H:i:s', strtotime('+24 hours'));
+
+                $this->userRepo->setVerificationToken($old['email'], $token, $expires);
+
+                // Envoi email
+                $mailSent = Mailer::sendEmailVerification($old['email'], $old['name'], $token);
+
+                if ($mailSent) {
+                    $success = "Compte créé ! Un lien de vérification a été envoyé à " . htmlspecialchars($old['email']);
+                } else {
+                    $success = "Compte créé, mais l'envoi du mail a échoué. Contactez le support.";
+                }
+
+                // Reset form
+                $old = ['name' => '', 'last_name' => '', 'email' => '', 'sexe' => '', 'specialite' => ''];
+            } else {
+                $errors[] = "Erreur technique lors de la création du compte.";
+            }
+        }
+
+        $specialites = self::SPECIALITES_VALIDES;
+        require __DIR__ . '/../Views/auth/register.php';
+    }
+
+    public function logout(): void
+    {
+        if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+
+
+        $csrf = $_POST['csrf_token'] ?? '';
+        if (!Csrf::validate($csrf)) {
         }
 
         $_SESSION = [];
-
         if (ini_get('session.use_cookies')) {
             $params = session_get_cookie_params();
-            setcookie(
-                session_name(),
-                '',
-                time() - 42000,
-                $params['path'],
-                $params['domain'],
-                $params['secure'],
-                $params['httponly']
+            setcookie(session_name(), '', time() - 42000,
+                $params['path'], $params['domain'],
+                $params['secure'], $params['httponly']
             );
         }
-
         session_destroy();
 
         header('Location: /login');
