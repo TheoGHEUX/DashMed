@@ -6,23 +6,28 @@
  * Génère la balise <head> avec meta, titre, styles et scripts.
  *
  * Variables attendues :
- *  - $pageTitle, $pageDescription, $pageStyles, $pageScripts
+ *  - $pageTitle       (string)  Titre de la page
+ *  - $pageDescription (string)  Meta description
+ *  - $pageStyles      (array)   Styles spécifiques
+ *  - $pageScripts     (array)   Scripts spécifiques
  *
  * @package Views
  */
 
-$pageTitle       = $pageTitle ?? 'DashMed';
-$pageDescription = $pageDescription ?? '';
-$pageStyles      = $pageStyles ?? [];
-$pageScripts     = $pageScripts ?? [];
+// Définition de la description par défaut si elle n'est pas fournie
+$pageDescription = $pageDescription ?? "Page d'accueil de DashMed : votre tableau de bord santé simple et moderne pour la médecine";
+
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Utilisation de la variable PHP définie plus haut -->
     <meta name="description" content="<?= htmlspecialchars($pageDescription, ENT_QUOTES) ?>">
-    <title><?= htmlspecialchars($pageTitle, ENT_QUOTES) ?></title>
+
+    <title><?= htmlspecialchars($pageTitle ?? 'DashMed', ENT_QUOTES) ?></title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -34,16 +39,25 @@ $pageScripts     = $pageScripts ?? [];
     <link rel="stylesheet" href="/assets/style/footer.css">
     <link rel="stylesheet" href="/assets/style/dark-mode.css">
 
-    <?php foreach ($pageStyles as $href): ?>
-        <link rel="stylesheet" href="<?= htmlspecialchars($href, ENT_QUOTES) ?>">
-    <?php endforeach; ?>
+    <?php
+    // Styles spécifiques
+    foreach ($pageStyles ?? [] as $href) {
+        echo '<link rel="stylesheet" href="' . htmlspecialchars($href, ENT_QUOTES) . '">' . PHP_EOL;
+    }
+    ?>
 
     <link rel="icon" href="/assets/images/logo.png">
 
-    <?php foreach ($pageScripts as $src): ?>
-        <script src="<?= htmlspecialchars($src, ENT_QUOTES) ?>" defer></script>
-    <?php endforeach; ?>
+    <?php
+    // Scripts spécifiques
+    foreach ($pageScripts ?? [] as $src) {
+        echo '<script src="' . htmlspecialchars($src, ENT_QUOTES) . '" defer></script>' . PHP_EOL;
+    }
 
-    <script src="/assets/script/dark-mode.js"></script>
-    <script src="/assets/script/header_responsive.js" defer></script>
+    // dark mode (sans defer pour éviter le flash blanc)
+    echo '<script src="/assets/script/dark-mode.js"></script>' . PHP_EOL;
+
+    // header responsive
+    echo '<script src="/assets/script/header_responsive.js" defer></script>' . PHP_EOL;
+    ?>
 </head>

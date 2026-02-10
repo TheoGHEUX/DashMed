@@ -1,14 +1,26 @@
 <?php
 
 /**
- * Page connectée : Accueil utilisateur
- *
+ * Page connectée : Page d'accueil utilisateur
  * @package Views
  */
 
-use Core\Domain\Services\AuthenticationService;
+// 1. Démarrage session classique
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
 
-AuthenticationService::ensureUserIsAuthenticated();
+// 2. Vérification manuelle (Pas besoin de Service pour l'instant si ça plante)
+if (empty($_SESSION['user'])) {
+    header('Location: /login');
+    exit;
+}
+
+// 3. Récupération CSRF classique
+$csrf_token = '';
+if (class_exists('Core\Csrf') && method_exists('Core\Csrf', 'token')) {
+    $csrf_token = \Core\Csrf::token();
+}
 
 $pageTitle       = $pageTitle ?? "Accueil";
 $pageDescription = $pageDescription ?? "Page d'accueil accessible une fois connecté";
@@ -18,6 +30,7 @@ $pageScripts     = $pageScripts ?? ["/assets/script/header_responsive.js"];
 include __DIR__ . '/../partials/head.php';
 ?>
 <body>
+<!-- Attention : Vérifie aussi que headerPrivate.php n'appelle pas de classe introuvable -->
 <?php include __DIR__ . '/../partials/headerPrivate.php'; ?>
 
 <main>

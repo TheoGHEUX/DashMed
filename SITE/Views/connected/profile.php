@@ -1,7 +1,19 @@
+
 <?php
 
 /**
  * Page connectée : Profil utilisateur
+ *
+ * Affiche les informations du compte et propose les actions de modification.
+ *
+ * Nécessite une session utilisateur active.
+ *
+ * Variables attendues :
+ *  - $_SESSION['user'] (array)   Données utilisateur
+ *  - $pageTitle        (string)  Titre de la page
+ *  - $pageDescription  (string)  Meta description
+ *  - $pageStyles       (array)   Styles spécifiques
+ *  - $pageScripts      (array)   Scripts spécifiques
  *
  * @package Views
  */

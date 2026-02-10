@@ -3,22 +3,10 @@ declare(strict_types=1);
 
 /**
  * Point d'entrée de l'application DashMed
- *
- * Ce fichier démarre l'application et configure la sécurité de base :
- * 1. Configure la session utilisateur de manière sécurisée
- * 2. Active les protections de sécurité du navigateur
- * 3. Charge l'autoloader pour les classes PHP
- * 4. Lance le routeur qui dirige vers la bonne page
- *
- * Sécurité appliquée :
- * - Session protégée contre le vol de cookies
- * - Headers sécurisés pour bloquer les attaques courantes
- * - Force HTTPS en production
- * - Masque les informations sensibles du serveur
- *
  * @package DashMed
  */
-// Configuration sécurisée de la session
+
+// 1. Configuration sécurisée de la session
 $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
 session_set_cookie_params([
     'lifetime' => 0,
@@ -34,8 +22,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// En-têtes HTTP de sécurité (définis avant toute sortie)
-// Ajuster HSTS uniquement si HTTPS est détecté en production
+// 2. En-têtes HTTP de sécurité
 $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
 header('X-Frame-Options: DENY');
 header('X-Content-Type-Options: nosniff');
@@ -54,24 +41,59 @@ $csp = "default-src 'self'; "
     . "img-src 'self' data:;";
 header("Content-Security-Policy: " . $csp);
 header('X-Powered-By:');
-// Chargement de l'autoloader
-$siteDir = __DIR__ . '/../SITE';
-$autoLoader = $siteDir . '/Core/AutoLoader.php';
 
-if (is_file($autoLoader)) {
-    require $autoLoader;
-} else {
-    // Autoloader de secours
-    spl_autoload_register(function (string $class) use ($siteDir): void {
-        $file = $siteDir . '/' . str_replace('\\', '/', $class) . '.php';
-        if (is_file($file)) {
-            require $file;
+
+// =========================================================================
+// 3. CHARGEMENT DE L'AUTOLOADER (CORRECTIF ARCHITECTURE PROPRE)
+// =========================================================================
+
+$siteDir = dirname(__DIR__) . '/SITE';
+
+// On enregistre une fonction qui va chercher les classes automatiquement
+spl_autoload_register(function (string $class) use ($siteDir): void {
+
+    // Définition des dossiers correspondants aux namespaces
+    // Namespace => Dossier dans SITE/
+    $prefixes = [
+        'Core\\'           => '/Core/',
+        'Models\\'         => '/Models/',
+        'Controllers\\'    => '/Controllers/',
+        'Domain\\'         => '/Domain/',         // NOUVEAU
+        'Infrastructure\\' => '/Infrastructure/', // NOUVEAU
+        'Application\\'    => '/Application/',    // NOUVEAU
+        'Views\\'          => '/Views/'
+    ];
+
+    foreach ($prefixes as $prefix => $dir) {
+        // Vérifie si la classe demandée utilise ce namespace (ex: Domain\Repositories\User...)
+        $len = strlen($prefix);
+        if (strncmp($prefix, $class, $len) === 0) {
+
+            // On enlève le préfixe (Domain\) pour garder le reste (Repositories\User...)
+            $relativeClass = substr($class, $len);
+
+            // On construit le chemin du fichier : SITE/Domain/Repositories/User... .php
+            $file = $siteDir . $dir . str_replace('\\', '/', $relativeClass) . '.php';
+
+            // Si le fichier existe, on le charge
+            if (file_exists($file)) {
+                require $file;
+                return;
+            }
         }
-    });
-}
+    }
+});
 
-// Dispatch des routes
+// =========================================================================
+// 4. LANCEMENT DU ROUTEUR
+// =========================================================================
+
 use Core\Router;
+
+// Vérification basique pour éviter une erreur fatale si Router n'est pas trouvé
+if (!class_exists(Router::class)) {
+    die("Erreur Critique : La classe Core\Router est introuvable. Vérifiez que le fichier SITE/Core/Router.php existe.");
+}
 
 $router = new Router($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']);
 $router->dispatch();
