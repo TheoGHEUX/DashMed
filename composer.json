@@ -10,13 +10,16 @@
         "squizlabs/php_codesniffer": "^4.0",
         "phpstan/phpstan": "^2.1"
     },
-    "autoload": {
-        "psr-4": {
-            "Core\\": "SITE/Core/",
-            "Models\\": "SITE/Models/",
-            "Controllers\\": "SITE/Controllers/"
-        }
-    },
+  "autoload": {
+    "psr-4": {
+      "Core\\": "SITE/Core/",
+      "Models\\": "SITE/Models/",
+      "Controllers\\": "SITE/Controllers/",
+      "Domain\\": "SITE/Domain/",
+      "Infrastructure\\": "SITE/Infrastructure/",
+      "Application\\": "SITE/Application/"
+    }
+  },
     "autoload-dev": {
         "psr-4": {
             "Tests\\": "tests/"

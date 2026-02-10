@@ -3,36 +3,17 @@
 /**
  * Page connectée : Profil utilisateur
  *
- * Affiche les informations du compte et propose les actions de modification.
- *
- * Nécessite une session utilisateur active.
- *
- * Variables attendues :
- *  - $_SESSION['user'] (array)   Données utilisateur
- *  - $pageTitle        (string)  Titre de la page
- *  - $pageDescription  (string)  Meta description
- *  - $pageStyles       (array)   Styles spécifiques
- *  - $pageScripts      (array)   Scripts spécifiques
- *
  * @package Views
  */
 
-// SÉCURITÉ : Contrôle d'authentification
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
+use Core\Domain\Services\AuthenticationService;
 
-if (empty($_SESSION['user'])) {
-    header('Location: /login');
-    exit;
-}
+AuthenticationService::ensureUserIsAuthenticated();
 
-// RÉCUPÉRATION DES DONNÉES UTILISATEUR
-$user  = $_SESSION['user'];
+$user  = AuthenticationService::getCurrentUser();
 $first = $user['name'] ?? '';
 $last  = $user['last_name'] ?? '';
 
-// CONFIGURATION : Variables du template
 $pageTitle       = $pageTitle ?? "Profil";
 $pageDescription = $pageDescription ?? "Consultez votre profil DashMed une fois connecté";
 $pageStyles      = $pageStyles ?? ["/assets/style/profile.css"];
@@ -47,12 +28,11 @@ include __DIR__ . '/../partials/head.php';
         <h1 class="profile-title">Profil</h1>
 
         <div class="profile-card">
-            <!-- Avatar symbolique de l'utilisateur -->
             <div class="avatar">
                 <div class="avatar-circle" aria-hidden="true">👤</div>
             </div>
 
-            <table class="info-table" aria-describedby="profil-infos">
+            <table class="info-table">
                 <tbody>
                 <tr>
                     <th scope="row">Prénom</th>
@@ -78,18 +58,14 @@ include __DIR__ . '/../partials/head.php';
                     <th scope="row">Adresse email</th>
                     <td class="email-cell">
                         <span><?= htmlspecialchars($user['email'] ?? '', ENT_QUOTES, 'UTF-8') ?></span>
-                        <a class="btn-edit"
-                           href="/change-email"
-                           title="Changer votre adresse email (connexion requise)">Changer</a>
+                        <a class="btn-edit" href="/change-email">Changer</a>
                     </td>
                 </tr>
                 <tr>
                     <th scope="row">Mot de passe</th>
                     <td class="email-cell">
                         <span aria-label="Mot de passe masqué">••••••••</span>
-                        <a class="btn-edit"
-                           href="/change-password"
-                           title="Changer votre mot de passe (connexion requise)">Changer</a>
+                        <a class="btn-edit" href="/change-password">Changer</a>
                     </td>
                 </tr>
                 </tbody>

@@ -3,22 +3,11 @@
 /**
  * Page d'accueil publique
  *
- * Présente le hero, les CTA et les fonctionnalités principales.
- *
- * Invite à l'inscription ou la connexion.
- *
- * Variables attendues :
- *  - $pageTitle       (string)  Titre de la page (défaut : "Accueil")
- *  - $pageDescription (string)  Meta description
- *  - $pageStyles      (array)   Styles spécifiques
- *  - $pageScripts     (array)   Scripts spécifiques
- *
  * @package Views
  */
 
 $pageTitle       = $pageTitle ?? "Accueil";
-$pageDescription = $pageDescription
-    ?? "Page d'accueil de DashMed : votre tableau de bord santé simple et moderne pour la médecine";
+$pageDescription = $pageDescription ?? "Page d'accueil de DashMed : votre tableau de bord santé simple et moderne";
 $pageStyles      = $pageStyles ?? ["/assets/style/index.css"];
 $pageScripts     = $pageScripts ?? ["/assets/script/header_responsive.js"];
 

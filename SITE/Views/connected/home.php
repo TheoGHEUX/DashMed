@@ -1,31 +1,14 @@
 <?php
 
 /**
- * Page connectée : Page d'accueil utilisateur
- *
- * Affiche une bannière de bienvenue et un lien vers le tableau de bord.
- *
- * Nécessite une session utilisateur active.
- *
- * Variables attendues :
- *  - $pageTitle       (string)  Titre de la page (défaut : "Accueil")
- *  - $pageDescription (string)  Meta description
- *  - $pageStyles      (array)   Styles spécifiques
- *  - $pageScripts     (array)   Scripts spécifiques
+ * Page connectée : Accueil utilisateur
  *
  * @package Views
  */
 
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
+use Core\Domain\Services\AuthenticationService;
 
-$csrf_token = function_exists('\\Core\\Csrf::token') ? \Core\Csrf::token() : '';
-
-if (empty($_SESSION['user'])) {
-    header('Location: /login');
-    exit;
-}
+AuthenticationService::ensureUserIsAuthenticated();
 
 $pageTitle       = $pageTitle ?? "Accueil";
 $pageDescription = $pageDescription ?? "Page d'accueil accessible une fois connecté";
