@@ -2,18 +2,14 @@
 
 namespace Controllers;
 
-/**
- * Page d'accueil
- *
- * Affiche la page d'accueil publique du site (sans authentification).
- *
- * @package Controllers
- */
+use Core\View;
+
 final class HomeController
 {
     public function index(): void
     {
-        // Page d'accueil (ex-index.html) rendue via View::render('home') -> fichier Views/home.php
-        \Core\View::render('home');
+        View::render('home', [
+            'pageTitle' => 'Accueil - DashMed'
+        ]);
     }
 }

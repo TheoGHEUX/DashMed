@@ -2,255 +2,150 @@
 
 namespace Core;
 
-use Controllers\ConnectedHomeController;
+// Importation des classes nécessaires
+use Core\Database;
+use Core\View;
+
+// Importation de TOUS tes contrôleurs (même ceux qui n'existent pas encore, commente ceux qui manquent)
+use Controllers\HomeController;
 use Controllers\AuthController;
 use Controllers\DashboardController;
-use Controllers\ForgottenPasswordController;
-use Controllers\HomeController;
-use Controllers\LegalNoticesController;
-use Controllers\MapController;
-use Controllers\ProfileController;
-use Controllers\ResetPasswordController;
-use Controllers\ChangePasswordController;
-use Controllers\ChangeEmailController;
-use Core\Database;
+// use Controllers\ConnectedHomeController;   // <-- Commente si le fichier n'existe pas encore
+// use Controllers\ForgottenPasswordController; // <-- Commente si le fichier n'existe pas encore
+// use Controllers\LegalNoticesController;      // <-- Commente si le fichier n'existe pas encore
+// use Controllers\MapController;               // <-- Commente si le fichier n'existe pas encore
+// use Controllers\ProfileController;           // <-- Commente si le fichier n'existe pas encore
+// use Controllers\ResetPasswordController;     // <-- Commente si le fichier n'existe pas encore
+// use Controllers\ChangePasswordController;    // <-- Commente si le fichier n'existe pas encore
+// use Controllers\ChangeEmailController;       // <-- Commente si le fichier n'existe pas encore
+// use Controllers\VerifyEmailController;       // <-- Commente si le fichier n'existe pas encore
 
 /**
- * Router principal de l'application
- *
- * Objectif : Orienter les visiteurs vers la bonne page.
- *
- * Analyse l'adresse tapée (URL) et la méthode (GET ou POST)
- * pour appeler le bon contrôleur.
- *
- * Vérifie au passage si l'utilisateur est bien connecté
- * et gère les redirections automatiques.
- *
- * @package Core
+ * Router principal - Version Clean MVC (Compatible Windows/XAMPP)
  */
 final class Router
 {
     private string $path;
     private string $method;
 
-    /**
-     *
-     * Liste les pages accessibles uniquement en envoi de données (POST).
-     *
-     * Sécurise les actions sensibles (comme la déconnexion) pour empêcher
-     * qu'elles ne soient déclenchées par un simple lien ou une image cachée.
-     *
-     * @var array<string,bool>
-     */
+    // Routes accessibles uniquement en POST
     private const POST_ONLY = [
         '/logout' => true,
         '/deconnexion' => true,
     ];
 
     /**
-     * Catalogue central de toutes les adresses du site
-     *
-     * Organise les pages en trois catégories :
-     * - Public : Accessible à tout le monde (visiteurs)
-     * - Auth : Pages de passage (connexion, inscription)
-     * - Protected : Pages réservées aux praticiens connectés
-     *
-     * Format : 'adresse' => [ClasseControleur, 'méthodePOST', 'méthodeGET']
-     *
-     * @var array<string,array<string,array<int,string>>>
+     * CONFIGURATION DES ROUTES
+     * Si une page renvoie 404, vérifie qu'elle est bien listée ici.
      */
     private const ROUTES = [
         'public' => [
             '/' => [HomeController::class, 'index'],
             '/index.php' => [HomeController::class, 'index'],
-            '/map' => [MapController::class, 'show'],
-            '/legal-notices' => [LegalNoticesController::class, 'show'],
-            '/mentions-legales' => [LegalNoticesController::class, 'show'],
+            // '/map' => [MapController::class, 'show'],
+            // '/legal-notices' => [LegalNoticesController::class, 'show'],
         ],
         'auth' => [
-            '/register' => [AuthController::class, 'register', 'showRegister'],
-            '/inscription' => [AuthController::class, 'register', 'showRegister'],
-            '/login' => [AuthController::class, 'login', 'showLogin'],
-            '/connexion' => [AuthController::class, 'login', 'showLogin'],
+            '/login' => [AuthController::class, 'loginPost', 'login'], // POST=loginPost, GET=login
+            '/connexion' => [AuthController::class, 'loginPost', 'login'],
             '/logout' => [AuthController::class, 'logout'],
-            '/deconnexion' => [AuthController::class, 'logout'],
-            '/forgotten-password' => [ForgottenPasswordController::class, 'submit', 'showForm'],
-            '/mot-de-passe-oublie' => [ForgottenPasswordController::class, 'submit', 'showForm'],
-            '/reset-password' => [ResetPasswordController::class, 'submit', 'showForm'],
-            '/verify-email' => [\Controllers\VerifyEmailController::class, 'verify'],
-            '/resend-verification' => [\Controllers\VerifyEmailController::class, 'resend', 'resend'],
+            // '/register' => [AuthController::class, 'register', 'showRegister'],
         ],
         'protected' => [
-            '/home' => [ConnectedHomeController::class, 'index'],
             '/dashboard' => [DashboardController::class, 'index'],
             '/tableau-de-bord' => [DashboardController::class, 'index'],
-            '/profile' => [ProfileController::class, 'show'],
-            '/profil' => [ProfileController::class, 'show'],
-            '/change-password' => [ChangePasswordController::class, 'submit', 'showForm'],
-            '/changer-mot-de-passe' => [ChangePasswordController::class, 'submit', 'showForm'],
-            '/change-email' => [ChangeEmailController::class, 'submit', 'showForm'],
-            '/changer-email' => [ChangeEmailController::class, 'submit', 'showForm'],
-            '/api/log-graph-action' => [DashboardController::class, 'logGraphAction'],
+            '/api/graph' => [DashboardController::class, 'apiGetChart'],
+            // '/profile' => [ProfileController::class, 'show'],
         ],
     ];
 
     /**
-     * Construit une instance du routeur.
-     *
-     * Processus :
-     * 1. Reçoit l'adresse tapée (URI) et la nettoie proprement.
-     * 2. Extrait uniquement le chemin (ex: retire les paramètres après le "?").
-     * 3. S'assure que l'adresse finit sans slash inutile pour éviter les doublons.
-     * 4. Enregistre si l'utilisateur veut lire (GET) ou envoyer (POST) des données.
-     *
-     * @param string $uri     Adresse brute de la page (ex: /profil?id=1)
-     * @param string $method  Méthode HTTP (GET, POST...)
+     * Constructeur avec nettoyage automatique du sous-dossier (Correction Windows)
      */
     public function __construct(string $uri, string $method)
     {
-        $this->path = parse_url($uri, PHP_URL_PATH) ?: '/';
-        $this->path = rtrim($this->path, '/');
+        // 1. Récupération du chemin sans les paramètres (?id=1)
+        $path = parse_url($uri, PHP_URL_PATH);
+
+        // 2. Détection du dossier d'installation (ex: /Dashmed/Public)
+        $scriptDir = dirname($_SERVER['SCRIPT_NAME']);
+
+        // Correction des antislashes Windows (\ -> /)
+        $scriptDir = str_replace('\\', '/', $scriptDir);
+
+        // 3. Suppression du dossier racine de l'URL si nécessaire
+        // Si l'URL est "/Dashmed/Public/dashboard", on veut juste "/dashboard"
+        if ($scriptDir !== '/' && strpos($path, $scriptDir) === 0) {
+            $path = substr($path, strlen($scriptDir));
+        }
+
+        // 4. Nettoyage final
+        $this->path = rtrim($path, '/');
+
+        // Si vide, c'est la racine
         if ($this->path === '') {
             $this->path = '/';
         }
+
         $this->method = strtoupper($method);
     }
 
     /**
-     * Résout la route et exécute le contrôleur associé.
-     *
-     * Processus :
-     * 1. Traite les tests de santé (health checks) pour vérifier que le site répond.
-     * 2. Redirige d'office vers l'accueil privé
-     *    si un utilisateur connecté tente d'aller sur l'index.
-     * 3. Parcourt la liste des pages publiques (Aide, Mentions légales).
-     * 4. Parcourt la liste des pages d'accès (Connexion, Inscription).
-     * 5. Parcourt la liste des pages privées (Profil, Dashboard) en vérifiant l'identité.
-     * 6. Affiche l'erreur 404 si aucune page ne correspond à l'adresse.
-     *
-     * @return void
+     * Méthode principale qui lance le contrôleur
      */
     public function dispatch(): void
     {
-        // Endpoint simple pour vérifier que l'application répond
+        // 1. Health check (utile pour les hébergeurs)
         if ($this->path === '/health') {
-            header('Content-Type: text/plain; charset=utf-8');
-            echo 'OK';
-            exit;
+            header('Content-Type: text/plain'); echo 'OK'; exit;
         }
 
-        // Diagnostic DB restreint (réduit l'exposition en debug)
-        if ($this->path === '/health/db') {
-            // Lecture minimale de .env pour APP_DEBUG/HEALTH_KEY
-            $root = dirname(__DIR__, 2);
-            $envFile = $root . DIRECTORY_SEPARATOR . '.env';
-            $env = [];
-            if (is_file($envFile) && is_readable($envFile)) {
-                $lines = @file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-                if ($lines !== false) {
-                    foreach ($lines as $line) {
-                        $line = trim($line);
-                        if ($line === '' || str_starts_with($line, '#') || str_starts_with($line, ';')) {
-                            continue;
-                        }
-                        if (strpos($line, '=') === false) {
-                            continue;
-                        }
-                        [$k, $v] = explode('=', $line, 2);
-                        $k = trim($k);
-                        $v = trim($v);
-                        $isDoubleQuoted = ($v !== '' && $v[0] === '"' && substr($v, -1) === '"');
-                        $isSingleQuoted = ($v !== '' && $v[0] === "'" && substr($v, -1) === "'");
-                        if ($isDoubleQuoted || $isSingleQuoted) {
-                            $v = substr($v, 1, -1);
-                        }
-                        $env[$k] = $v;
-                    }
-                }
-            }
-
-            $debug = ($env['APP_DEBUG'] ?? '') === '1';
-            $keyOk = isset($_GET['key']) && ($_GET['key'] === ($env['HEALTH_KEY'] ?? ''));
-            // Ne pas exposer en production : seulement si APP_DEBUG=1 ET clé correcte
-            if (!$debug) {
-                http_response_code(404);
-                exit;
-            }
-            if (!$keyOk) {
-                http_response_code(403);
-                header('Content-Type: text/plain; charset=utf-8');
-                echo 'Forbidden';
-                exit;
-            }
-
-            header('Content-Type: application/json; charset=utf-8');
-            try {
-                $pdo = Database::getConnection();
-                $dbName = $pdo->query('SELECT DATABASE()')->fetchColumn() ?: null;
-                echo json_encode([
-                    'status'   => 'ok',
-                    'database' => $dbName,
-                ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-            } catch (\Throwable $e) {
-                http_response_code(500);
-                echo json_encode(['error' => 'db_unavailable']);
-            }
-            exit;
-        }
-
-        // Redirection automatique si l'utilisateur est connecté et visite la page publique d'accueil
+        // 2. Redirection page d'accueil si déjà connecté
         if (($this->path === '/' || $this->path === '/index.php') && $this->isAuthenticated()) {
-            $this->redirect('/home');
+            $this->redirect('/dashboard');
         }
 
-        // Tentative de résolution de la route
-        if ($this->tryRoute(self::ROUTES['public'])) {
-            return;
-        }
+        // 3. Tentative de correspondance avec les routes
+        if ($this->tryRoute(self::ROUTES['public'])) return;
+        if ($this->tryRoute(self::ROUTES['auth'])) return;
+        if ($this->tryRoute(self::ROUTES['protected'], true)) return;
 
-        if ($this->tryRoute(self::ROUTES['auth'])) {
-            return;
-        }
-
-        if ($this->tryRoute(self::ROUTES['protected'], true)) {
-            return;
-        }
-
+        // 4. Si on arrive ici, c'est une 404
         $this->handle404();
     }
 
     /**
-     * Tente d'associer l'adresse à une page existante.
-     *
-     * Supporte deux formats de routes :
-     * - Route simple : [Controller::class, 'method'] → méthode unique pour GET et POST
-     * - Route double : [Controller::class, 'postMethod', 'getMethod']
-     *                  → méthode selon HTTP verb
-     *
-     * Pour les routes listées dans POST_ONLY, seule la méthode POST est acceptée.
-     *
-     * Les autres méthodes HTTP reçoivent une erreur 405 Method Not Allowed.
-     *
-     * @param array $routes       Table des routes
-     * @param bool $requiresAuth  True → redirige vers la page de login si non authentifié
-     * @return bool               Vrai si la route a été trouvée et exécutée
+     * Tente de charger une route d'un groupe donné
      */
     private function tryRoute(array $routes, bool $requiresAuth = false): bool
     {
+        // Si la route n'existe pas dans ce groupe, on s'arrête tout de suite
         if (!isset($routes[$this->path])) {
             return false;
         }
 
+        // Vérification de sécurité (connexion requise)
         if ($requiresAuth && !$this->isAuthenticated()) {
             $this->redirect('/login');
         }
 
+        // Récupération de la config de la route
         $route = $routes[$this->path];
-        [$controllerClass, $postMethod, $getMethod] = array_pad($route, 3, null);
+        $controllerClass = $route[0];
+        $postMethod = $route[1];
+        $getMethod = $route[2] ?? null;
 
+        // VERIFICATION CRITIQUE : La classe existe-t-elle ?
+        if (!class_exists($controllerClass)) {
+            // En mode dev, on affiche une erreur explicite pour t'aider
+            die("ERREUR FATALE : Le contrôleur <strong>$controllerClass</strong> n'existe pas ou n'est pas importé (use) en haut du fichier Router.php.");
+        }
+
+        // Instanciation du contrôleur
         $controller = new $controllerClass();
 
-        // Route avec une seule méthode (ex: logout, show)
+        // ROUTAGE METHODE (GET vs POST)
+        // Cas 1: Méthode unique (ex: logout)
         if ($getMethod === null) {
             if (isset(self::POST_ONLY[$this->path]) && $this->method !== 'POST') {
                 $this->methodNotAllowed(['POST']);
@@ -259,75 +154,50 @@ final class Router
             exit;
         }
 
-        // Route distinguant POST et GET
+        // Cas 2: Distinction GET / POST
         if ($this->method === 'POST') {
+            if (!method_exists($controller, $postMethod)) {
+                die("Erreur : La méthode $postMethod n'existe pas dans $controllerClass");
+            }
             $controller->$postMethod();
         } else {
+            if (!method_exists($controller, $getMethod)) {
+                die("Erreur : La méthode $getMethod n'existe pas dans $controllerClass");
+            }
             $controller->$getMethod();
         }
         exit;
     }
 
-    /**
-     * Vérifie si un utilisateur est authentifié.
-     *
-     * Un utilisateur est considéré authentifié si :
-     * - $_SESSION['user'] existe et n'est pas vide
-     * - $_SESSION['user']['email_verified'] est défini et truthy
-     *
-     * @return bool True si l'utilisateur est authentifié avec email vérifié, False sinon
-     */
     private function isAuthenticated(): bool
     {
-        return !empty($_SESSION['user'])
-            && !empty($_SESSION['user']['email_verified']);
+        // Adapte selon ta logique de session (ici on vérifie juste user_id)
+        return !empty($_SESSION['user_id']);
     }
 
-    /**
-     * Redirection HTTP et termine l'exécution.
-     *
-     * @param string $path Chemin vers lequel rediriger
-     * @return void
-     */
     private function redirect(string $path): void
     {
         header("Location: $path");
         exit;
     }
 
-    /**
-     * Affiche la page 404 et termine l'exécution.
-     *
-     * Tente de charger la vue 'errors/404.php'.
-     *
-     * Si celle-ci n'existe pas, affiche un message HTML simple.
-     *
-     * @return void
-     */
     private function handle404(): void
     {
         http_response_code(404);
-        if (file_exists(__DIR__ . '/../Views/errors/404.php')) {
-            \Core\View::render('errors/404');
-        } else {
-            echo '404 - Page non trouvée';
+        // Essaie d'afficher la vue 404, sinon message simple
+        try {
+            View::render('errors/404');
+        } catch (\Exception $e) {
+            echo "<h1>404 - Page non trouvée</h1><p>Le chemin '{$this->path}' n'existe pas.</p>";
         }
         exit;
     }
 
-    /**
-     * Renvoie une erreur 405 Method Not Allowed et termine l'exécution.
-     *
-     * Utilisé lorsqu'une route est définie en POST_ONLY mais que la requête
-     * utilise une autre méthode HTTP.
-     *
-     * @param array<int,string> $allowed Liste des méthodes acceptées
-     * @return void
-     */
     private function methodNotAllowed(array $allowed): void
     {
         http_response_code(405);
         header('Allow: ' . implode(', ', $allowed));
+        echo "Méthode non autorisée. Méthodes permises : " . implode(', ', $allowed);
         exit;
     }
 }

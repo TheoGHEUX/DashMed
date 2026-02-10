@@ -1,106 +1,23 @@
-<?php
-
-/**
- * Connexion
- *
- * Affiche le formulaire de connexion sécurisé par CSRF.
- *
- * Propose les liens utiles (inscription, mot de passe oublié).
- *
- * Variables attendues :
- *  - $csrf_token (string)  Jeton CSRF
- *  - $errors     (array)   Liste d'erreurs
- *  - $success    (string)  Message de succès
- *  - $old        (array)   Valeurs précédentes
- *
- * @package Views
- */
-
-$csrf_token = '';
-if (class_exists('\Core\Csrf')) {
-    if (method_exists('\Core\Csrf', 'token')) {
-        $csrf_token = \Core\Csrf::token();
-    } elseif (method_exists('\Core\Csrf', 'generate')) {
-        $csrf_token = \Core\Csrf::generate();
-    }
-}
-
-$old     = $old ?? [];
-$errors  = $errors ?? [];
-$success = $success ?? '';
-
-$pageTitle       = $pageTitle ?? "Connexion";
-$pageDescription = $pageDescription ?? "Connectez-vous à DashMed";
-$pageStyles      = $pageStyles ?? ["/assets/style/authentication.css"];
-$pageScripts     = $pageScripts ?? [];
-
-include __DIR__ . '/../partials/head.php';
-?>
+<?php include __DIR__ . '/../partials/head.php'; ?>
 <body>
 <?php include __DIR__ . '/../partials/headerPublic.php'; ?>
 
-<main class="main">
-    <section class="hero" aria-labelledby="login-title">
-        <h1 id="login-title">Bienvenue dans DashMed</h1>
-        <p class="subtitle">Connectez-vous pour continuer</p>
+<main class="container">
+    <h1>Connexion</h1>
 
-        <?php if (!empty($errors)) : ?>
-            <div class="alert alert-error" role="alert" aria-live="assertive">
-                <ul class="errors" style="margin:0; padding-left:20px;">
-                    <?php foreach ((array)$errors as $err) : ?>
-                        <li><?= htmlspecialchars($err ?? '', ENT_QUOTES, 'UTF-8') ?></li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
-        <?php endif; ?>
+    <!-- L'action doit pointer vers la route du routeur, pas vers un fichier php -->
+    <form action="login" method="POST">
+        <div>
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        <div>
+            <label for="password">Mot de passe</label>
+            <input type="password" id="password" name="password" required>
+        </div>
 
-        <?php if (!empty($success)) : ?>
-            <div class="alert alert-success" role="status" aria-live="polite">
-                <?= nl2br(htmlspecialchars($success, ENT_QUOTES, 'UTF-8')) ?>
-            </div>
-        <?php endif; ?>
-
-        <form class="form" action="/login" method="post" autocomplete="on" novalidate>
-            <input type="hidden"
-                   name="csrf_token"
-                   value="<?= htmlspecialchars($csrf_token ?? '', ENT_QUOTES, 'UTF-8') ?>" />
-
-            <div class="field">
-                <input
-                        id="email"
-                        type="email"
-                        name="email"
-                        placeholder="Adresse email"
-                        required
-                        value="<?= htmlspecialchars($old['email'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
-                        autocomplete="email"
-                />
-            </div>
-
-            <div class="field">
-                <input
-                        id="password"
-                        type="password"
-                        name="password"
-                        placeholder="Mot de passe"
-                        required
-                        autocomplete="current-password"
-                />
-            </div>
-
-            <button class="btn" type="submit">Se connecter</button>
-
-            <p class="muted small mt-16">
-                Pas de compte ? <a href="/inscription" class="link-strong">Inscrivez-vous</a>
-            </p>
-
-            <p class="muted small">ou</p>
-
-            <p class="small">
-                <a href="/forgotten-password" class="link-strong">Mot de passe oublié ?</a>
-            </p>
-        </form>
-    </section>
+        <button type="submit">Se connecter</button>
+    </form>
 </main>
 
 <?php include __DIR__ . '/../partials/footer.php'; ?>

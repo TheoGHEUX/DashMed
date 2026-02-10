@@ -2,18 +2,14 @@
 
 namespace Controllers;
 
-/**
- * Plan du site
- *
- * Affiche la page du plan du site pour faciliter la navigation.
- * Page accessible publiquement (sans authentification).
- *
- * @package Controllers
- */
+use Core\View; // INDISPENSABLE
+
 final class MapController
 {
     public function show(): void
     {
-        \Core\View::render('map');
+        View::render('map', [
+            'pageTitle' => 'Plan du site - DashMed'
+        ]);
     }
 }
