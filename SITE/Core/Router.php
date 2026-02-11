@@ -91,6 +91,8 @@ final class Router
             '/change-email' => [ChangeEmailController::class, 'submit', 'showForm'],
             '/changer-email' => [ChangeEmailController::class, 'submit', 'showForm'],
             '/api/log-graph-action' => [DashboardController::class, 'logGraphAction'],
+            '/api/dashboard-layout' => [DashboardController::class, 'getLayout', 'getLayout'],
+            '/api/save-dashboard-layout' => [DashboardController::class, 'saveLayout'],
         ],
     ];
 

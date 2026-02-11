@@ -98,4 +98,74 @@ class PatientRepository
             return max(0, min(1, ((float)$v['valeur'] - $min) / ($max - $min)));
         }, $valeurs);
     }
+
+    /**
+     * Récupère l'agencement du dashboard pour un patient spécifique
+     * 
+     * @param int $patientId ID du patient
+     * @param int $medId ID du médecin
+     * @return array|null Configuration de l'agencement ou null si aucun agencement personnalisé
+     */
+    public function getDashboardLayout(int $patientId, int $medId): ?array
+    {
+        $stmt = $this->db->prepare('
+            SELECT layout_config FROM dashboard_layouts
+            WHERE pt_id = ? AND med_id = ?
+            LIMIT 1
+        ');
+        $stmt->execute([$patientId, $medId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$row) {
+            return null;
+        }
+
+        // Décoder le JSON
+        $config = json_decode($row['layout_config'], true);
+        return is_array($config) ? $config : null;
+    }
+
+    /**
+     * Sauvegarde l'agencement du dashboard pour un patient
+     * 
+     * @param int $patientId ID du patient
+     * @param int $medId ID du médecin
+     * @param array $config Configuration de l'agencement {visible: [...], sizes: {...}}
+     * @return bool True si la sauvegarde a réussi
+     */
+    public function saveDashboardLayout(int $patientId, int $medId, array $config): bool
+    {
+        try {
+            // Vérifier que le médecin suit bien ce patient
+            $stmt = $this->db->prepare('
+                SELECT COUNT(*) as count FROM suivre
+                WHERE pt_id = ? AND med_id = ?
+            ');
+            $stmt->execute([$patientId, $medId]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$row || $row['count'] == 0) {
+                // Le médecin ne suit pas ce patient
+                error_log("[PATIENT_REPO] Médecin $medId ne suit pas le patient $patientId");
+                return false;
+            }
+
+            // Encoder la configuration en JSON
+            $jsonConfig = json_encode($config);
+
+            // Insérer ou mettre à jour l'agencement (UPSERT)
+            $stmt = $this->db->prepare('
+                INSERT INTO dashboard_layouts (pt_id, med_id, layout_config)
+                VALUES (?, ?, ?)
+                ON DUPLICATE KEY UPDATE 
+                    layout_config = VALUES(layout_config),
+                    date_modification = CURRENT_TIMESTAMP
+            ');
+
+            return $stmt->execute([$patientId, $medId, $jsonConfig]);
+        } catch (\Throwable $e) {
+            error_log('[PATIENT_REPO] Erreur saveDashboardLayout: ' . $e->getMessage());
+            return false;
+        }
+    }
 }
