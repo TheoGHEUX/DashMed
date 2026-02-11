@@ -3,12 +3,14 @@
 require_once __DIR__ . '/../Core/AutoLoader.php';
 use Core\Database;
 
-// --- Configuration ---
-$nb_valeurs = 5;       // nombre de valeurs à générer
-$interval_seconds = 3;  // intervalle entre chaque ajout en secondes
+// Configuration :
+$nb_valeurs = 5; // nombre de valeurs à générer
+$interval_seconds = 3; // intervalle entre chaque ajout en secondes
+$patientId = 50; // ID du patient
 
-// Plages réalistes par type de mesure
-$plages = [
+// 2 Plages : celle qui ne sera PAS utilisée par le script est suivie d'un underscore
+// Plages réalistes par type de mesure sans anomalie :
+$plages_ = [
     "Température corporelle" => [36.4, 37.8],
     "Tension artérielle" => [110, 140],
     "Fréquence cardiaque" => [55, 100],
@@ -18,7 +20,19 @@ $plages = [
     "Saturation en oxygène" => [95, 100],
 ];
 
-// Variations max réalistes pour chaque mesure
+// Plage avec anomalies possibles :
+$plages = [
+    "Température corporelle" => [31, 42],
+    "Tension artérielle" => [80, 160],
+    "Fréquence cardiaque" => [35, 130],
+    "Poids" => [35, 110],
+    "Glycémie" => [2, 10],
+    "Fréquence respiratoire" => [0, 30],
+    "Saturation en oxygène" => [72, 100],
+];
+
+// 2 Variations : celle qui ne sera PAS utilisée par le script est suivie d'un underscore
+// Variations max réalistes pour chaque mesure :
 $deltas = [
     "Poids" => 0.5,
     "Température corporelle" => 0.1,
@@ -29,11 +43,19 @@ $deltas = [
     "Saturation en oxygène" => 0.5,
 ];
 
+// Variations plus grandes pour plus de chanche d'avoir des anomalies :
+$deltas_ = [
+    "Poids" => 2,
+    "Température corporelle" => 0.3,
+    "Tension artérielle" => 2.5,
+    "Fréquence cardiaque" => 4,
+    "Glycémie" => 0.3,
+    "Fréquence respiratoire" => 2,
+    "Saturation en oxygène" => 0.7,
+];
+
 // Connexion
 $pdo = Database::getConnection();
-
-// ID du patient
-$patientId = 25;
 
 // Récupérer les mesures du patient
 $stmt = $pdo->prepare("SELECT * FROM mesures WHERE pt_id = ?");
@@ -90,4 +112,4 @@ for ($i = 0; $i < $nb_valeurs; $i++) {
     sleep($interval_seconds);
 }
 
-echo "✅ Génération terminée : $nb_valeurs valeurs par mesure pour pt_id = $patientId\n";
+echo "FIN DU SCRIPT : $nb_valeurs valeurs par mesure pour pt_id = $patientId\n";
