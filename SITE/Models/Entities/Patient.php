@@ -14,6 +14,11 @@ class Patient
     private ?string $sexe;
     private ?string $groupeSanguin;
     private ?string $dateNaissance;
+    private ?string $telephone;
+    private ?string $adresse;
+    private ?string $codePostal;
+    private ?string $ville;
+
 
     public function __construct(array $data)
     {
@@ -24,6 +29,10 @@ class Patient
         $this->sexe = $data['sexe'] ?? null;
         $this->groupeSanguin = $data['groupe_sanguin'] ?? null;
         $this->dateNaissance = $data['date_naissance'] ?? null;
+        $this->telephone = $data['telephone'] ?? null;
+        $this->adresse = $data['adresse'] ?? null;
+        $this->codePostal = $data['code_postal'] ?? null;
+        $this->ville = $data['ville'] ?? null;
     }
 
     // Getters
@@ -41,7 +50,11 @@ class Patient
             'email' => $this->email,
             'sexe' => $this->sexe,
             'groupe_sanguin' => $this->groupeSanguin,
-            'date_naissance' => $this->dateNaissance
+            'date_naissance' => $this->dateNaissance,
+            'telephone' => $this->telephone,
+            'adresse' => $this->adresse,
+            'code_postal' => $this->codePostal,
+            'ville' => $this->ville
         ];
     }
 }

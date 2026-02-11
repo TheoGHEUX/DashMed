@@ -3,7 +3,6 @@
 /**
  * Page connectée : Tableau de bord médical
  *
- * Affiche une grille de graphiques (Chart.js) pour le suivi des constantes.
  *
  * Nécessite une session utilisateur active.
  *
@@ -28,7 +27,6 @@ $pageScripts     = $pageScripts ?? [
         '/assets/script/dashboard_charts.js',
         '/assets/script/dashboard.js'
 ];
-
 include __DIR__ . '/../partials/head.php';
 ?>
 
@@ -36,7 +34,6 @@ include __DIR__ . '/../partials/head.php';
 
 <?php include __DIR__ . '/../partials/headerPrivate.php'; ?>
 
-<!-- Données du patient pour les scripts -->
 <script>
     window.patientChartData = <?= json_encode($chartData ?? [], JSON_UNESCAPED_UNICODE) ?>;
     window.activePatient = <?= json_encode($patient ?? [], JSON_UNESCAPED_UNICODE) ?>;
