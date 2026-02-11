@@ -251,4 +251,99 @@ final class DashboardController
         }
         exit;
     }
+
+    /**
+     * Endpoint API pour récupérer l'agencement du dashboard d'un patient
+     */
+    public function getLayout(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        if (empty($_SESSION['user'])) {
+            http_response_code(401);
+            echo json_encode(['error' => 'Non authentifié']);
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+            http_response_code(405);
+            echo json_encode(['error' => 'Méthode non autorisée']);
+            exit;
+        }
+
+        $ptId = isset($_GET['ptId']) ? (int)$_GET['ptId'] : null;
+        $medId = (int) $_SESSION['user']['id'];
+
+        if (!$ptId) {
+            http_response_code(400);
+            echo json_encode(['error' => 'ID patient manquant']);
+            exit;
+        }
+
+        $layout = $this->patientRepo->getDashboardLayout($ptId, $medId);
+
+        if ($layout === null) {
+            // Aucun agencement personnalisé, renvoyer la configuration par défaut
+            echo json_encode([
+                'success' => true,
+                'layout' => null,
+                'isDefault' => true
+            ]);
+        } else {
+            echo json_encode([
+                'success' => true,
+                'layout' => $layout,
+                'isDefault' => false
+            ]);
+        }
+        exit;
+    }
+
+    /**
+     * Endpoint API pour sauvegarder l'agencement du dashboard d'un patient
+     */
+    public function saveLayout(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        if (empty($_SESSION['user'])) {
+            http_response_code(401);
+            echo json_encode(['error' => 'Non authentifié']);
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['error' => 'Méthode non autorisée']);
+            exit;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        $ptId = isset($input['ptId']) ? (int)$input['ptId'] : null;
+        $config = $input['config'] ?? null;
+        $medId = (int) $_SESSION['user']['id'];
+
+        if (!$ptId || !is_array($config)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Données invalides']);
+            exit;
+        }
+
+        // Valider la structure de config
+        if (!isset($config['visible']) || !is_array($config['visible'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Configuration invalide']);
+            exit;
+        }
+
+        $success = $this->patientRepo->saveDashboardLayout($ptId, $medId, $config);
+
+        if ($success) {
+            echo json_encode(['success' => true]);
+        } else {
+            http_response_code(500);
+            echo json_encode(['error' => 'Échec de la sauvegarde']);
+        }
+        exit;
+    }
 }

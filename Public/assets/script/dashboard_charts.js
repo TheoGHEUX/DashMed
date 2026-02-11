@@ -21,7 +21,7 @@
  * @package Assets
  */
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
 	const DPR = window.devicePixelRatio || 1;
 
 	// Ajouter la classe initial-load pour les animations de chargement
@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	// Reset config if requested via URL parameter
 	const urlParams = new URLSearchParams(window.location.search);
 	if (urlParams.get('reset') === '1') {
+		// Supprimer l'ancien localStorage si présent
 		localStorage.removeItem('dashboardChartConfig');
 		// Remove the reset parameter from URL
 		window.history.replaceState({}, '', window.location.pathname);
@@ -212,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
 	let editMode = false;
-	let chartConfig = loadChartConfig();
+	let chartConfig = null; // Sera chargé de manière asynchrone
 
     /**
      * Configure un canvas pour avoir un bon rendu.
@@ -980,43 +981,68 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
     /**
-     * Charge la configuration des graphiques depuis localStorage.
+     * Charge la configuration des graphiques depuis l'API (par patient).
      *
      * Ajoute automatiquement les nouveaux graphiques définis dans CHART_DEFINITIONS.
      * Supprime les graphiques obsolètes non présents dans CHART_DEFINITIONS.
      *
      * @returns {{visible: string[], sizes: Object.<string, number>}}
      */
-	function loadChartConfig() {
+	async function loadChartConfig() {
 		// Liste complète de tous les graphiques disponibles
 		const allCharts = ['blood-pressure', 'heart-rate', 'respiration', 'temperature', 'glucose-trend', 'weight', 'oxygen-saturation'];
 
-		const saved = localStorage.getItem('dashboardChartConfig');
-		if (saved) {
-			try {
-				const config = JSON.parse(saved);
+		// Récupérer l'ID du patient actuel
+		const ptId = window.activePatient?.pt_id || null;
 
-				// Vérifier que tous les graphiques définis existent dans la config
-				// Ajouter les graphiques manquants
-				allCharts.forEach(chartId => {
-					if (!config.visible.includes(chartId)) {
-						config.visible.push(chartId);
-					}
-				});
+		if (!ptId) {
+			// Pas de patient actif, retourner la config par défaut
+			return {
+				visible: allCharts,
+				sizes: {}
+			};
+		}
+
+		try {
+			const response = await fetch(`/api/dashboard-layout?ptId=${ptId}`);
+			if (!response.ok) {
+				console.warn('Failed to load dashboard layout, using default');
+				return {
+					visible: allCharts,
+					sizes: {}
+				};
+			}
+
+			const data = await response.json();
+
+			if (data.success && data.layout) {
+				const config = data.layout;
 
 				// Supprimer les graphiques qui n'existent plus dans CHART_DEFINITIONS
+				// (graphiques obsolètes suite à une mise à jour du code)
 				config.visible = config.visible.filter(chartId => allCharts.includes(chartId));
 
+				// S'assurer que sizes existe
+				if (!config.sizes) {
+					config.sizes = {};
+				}
+
 				return config;
-			} catch (e) {
-				console.error('Failed to parse chart config', e);
+			} else {
+				// Aucun agencement personnalisé, retourner config par défaut
+				return {
+					visible: allCharts,
+					sizes: {}
+				};
 			}
+		} catch (error) {
+			console.error('Error loading chart config:', error);
+			// En cas d'erreur, retourner la config par défaut
+			return {
+				visible: allCharts,
+				sizes: {}
+			};
 		}
-		// Default config - tous les graphiques visibles
-		return {
-			visible: allCharts,
-			sizes: {}
-		};
 	}
 
     /**
@@ -1063,14 +1089,46 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 
-    //Sauvegarde la configuration dans localStorage.
+    //Sauvegarde la configuration via l'API (par patient).
 	function saveChartConfig() {
-		localStorage.setItem('dashboardChartConfig', JSON.stringify(chartConfig));
+		const ptId = window.activePatient?.pt_id || null;
+
+		if (!ptId) {
+			console.warn('Cannot save chart config: no active patient');
+			return;
+		}
+
+		fetch('/api/save-dashboard-layout', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				ptId: ptId,
+				config: chartConfig
+			})
+		})
+		.then(response => {
+			if (!response.ok) {
+				return response.json().then(data => {
+					throw new Error(data.error || 'Erreur serveur');
+				});
+			}
+			return response.json();
+		})
+		.then(data => {
+			// Configuration sauvegardée avec succès
+			console.log('Dashboard layout saved successfully');
+		})
+		.catch(err => {
+			console.error('Error saving dashboard layout:', err);
+		});
 	}
 
 
     //Applique la configuration sauvegardée (visibilité + taille des graphiques).
 	function applyChartConfig() {
+		if (!chartConfig) return;
 		const grid = document.getElementById('dashboardGrid');
 		if (!grid) return;
 
@@ -1280,6 +1338,8 @@ document.addEventListener('DOMContentLoaded', () => {
 			e.preventDefault();
 			e.stopPropagation();
 
+			if (!chartConfig) return;
+
 			const dropClasses = ['drop-before', 'drop-after', 'drop-left', 'drop-right'];
 			const activeDropClass = dropClasses.find(cls => card.classList.contains(cls));
 
@@ -1331,6 +1391,7 @@ document.addEventListener('DOMContentLoaded', () => {
      * les disparitions de canvas pendant la réorganisation.
      */
 	function reorderChartsInDOMSmooth() {
+		if (!chartConfig) return;
 		const dashboardGrid = document.getElementById('dashboardGrid');
 		if (!dashboardGrid) return;
 
@@ -1368,6 +1429,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 	function reorderChartsInDOM() {
+		if (!chartConfig) return;
 		const dashboardGrid = document.getElementById('dashboardGrid');
 		if (!dashboardGrid) return;
 
@@ -1448,6 +1510,7 @@ document.addEventListener('DOMContentLoaded', () => {
      * Affiche uniquement les graphiques non visibles, avec drag & drop activé.
      */
 	function updateAvailableCharts() {
+		if (!chartConfig) return;
 		const container = document.getElementById('availableCharts');
 		if (!container) return;
 
@@ -1501,6 +1564,10 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {string} chartId - ID du graphique à ajouter
      */
 	function addChart(chartId) {
+		if (!chartConfig) {
+			console.error('chartConfig not loaded yet');
+			return;
+		}
 		if (chartConfig.visible.includes(chartId)) return;
 
 		logGraphiqueAction('ajouter', chartId); // Log l'ajout/restauration du graphique
@@ -1552,6 +1619,10 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {string} chartId - ID du graphique à supprimer
      */
 	function removeChart(chartId) {
+		if (!chartConfig) {
+			console.error('chartConfig not loaded yet');
+			return;
+		}
 		const index = chartConfig.visible.indexOf(chartId);
 		if (index > -1) {
 			logGraphiqueAction('supprimer', chartId); // Log la suppression
@@ -1571,6 +1642,10 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {number} colSpan - Nombre de colonnes (3-12)
      */
 	function resizeChart(chartId, colSpan) {
+		if (!chartConfig) {
+			console.error('chartConfig not loaded yet');
+			return;
+		}
 		// Clamp between 3 and 12 columns
 		colSpan = Math.max(3, Math.min(12, colSpan));
 		chartConfig.sizes[chartId] = colSpan;
@@ -1869,13 +1944,13 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	// Apply saved configuration
-	applyChartConfig();
+	// applyChartConfig();
 
 	// Reorder charts in DOM based on saved order
-	reorderChartsInDOM();
+	// reorderChartsInDOM();
 
 	// initial resize
-	resizeAllCanvases();
+	// resizeAllCanvases();
 
 	// Fonction pour redessiner tous les graphiques
 	let isReordering = false;
@@ -1892,8 +1967,26 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 	}
 
-	// start animations for all charts present in the DOM
-	redrawAllCharts();
+	// Initialisation asynchrone de la configuration
+	async function initializeDashboard() {
+		// Charger la configuration depuis l'API
+		chartConfig = await loadChartConfig();
+
+		// Apply saved configuration
+		applyChartConfig();
+
+		// Reorder charts in DOM based on saved order
+		reorderChartsInDOM();
+
+		// initial resize
+		resizeAllCanvases();
+
+		// start animations for all charts present in the DOM
+		redrawAllCharts();
+	}
+
+	// Lancer l'initialisation
+	initializeDashboard();
 
 	// resize handler (debounced) to keep canvases crisp when viewport changes
 	window.addEventListener('resize', debounce(() => {
