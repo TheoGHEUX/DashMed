@@ -152,6 +152,10 @@ class PatientRepository
 
             // Encoder la configuration en JSON
             $jsonConfig = json_encode($config);
+            
+            error_log("[PATIENT_REPO] Sauvegarde layout - Patient: $patientId, Médecin: $medId");
+            error_log("[PATIENT_REPO] Config JSON: " . $jsonConfig);
+            error_log("[PATIENT_REPO] JSON valide: " . (json_last_error() === JSON_ERROR_NONE ? 'OUI' : 'NON - ' . json_last_error_msg()));
 
             // Insérer ou mettre à jour l'agencement (UPSERT)
             $stmt = $this->db->prepare('
@@ -162,7 +166,10 @@ class PatientRepository
                     date_modification = CURRENT_TIMESTAMP
             ');
 
-            return $stmt->execute([$patientId, $medId, $jsonConfig]);
+            $result = $stmt->execute([$patientId, $medId, $jsonConfig]);
+            error_log("[PATIENT_REPO] Résultat execute: " . ($result ? 'SUCCESS' : 'FAILED'));
+            
+            return $result;
         } catch (\Throwable $e) {
             error_log('[PATIENT_REPO] Erreur saveDashboardLayout: ' . $e->getMessage());
             return false;

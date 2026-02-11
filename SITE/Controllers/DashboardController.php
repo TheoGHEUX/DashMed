@@ -341,8 +341,9 @@ final class DashboardController
         if ($success) {
             echo json_encode(['success' => true]);
         } else {
+            error_log("[DASHBOARD] Échec sauvegarde layout - Patient: $ptId, Médecin: $medId");
             http_response_code(500);
-            echo json_encode(['error' => 'Échec de la sauvegarde']);
+            echo json_encode(['error' => 'Échec de la sauvegarde - Le médecin ne suit peut-être pas ce patient']);
         }
         exit;
     }
