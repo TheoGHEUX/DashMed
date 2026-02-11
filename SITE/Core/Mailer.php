@@ -3,210 +3,133 @@
 namespace Core;
 
 /**
- * Gestionnaire d'envoi d'emails
+ * Gestionnaire d'envoi d'emails.
  *
- * Fournit des méthodes pour envoyer des emails automatiques (vérification d'email,
- * réinitialisation de mot de passe, etc.).
+ * Responsable de l'expédition des courriels transactionnels (inscription, mot de passe).
+ * Sépare la logique PHP du design en chargeant des templates HTML depuis `Views/emails/`.
  *
  * @package Core
  */
 final class Mailer
 {
+    private const FROM_EMAIL = 'dashmed-site@alwaysdata.net';
+
     /**
-     * Envoie un email de vérification d'adresse email.
+     * Envoie l'email de confirmation d'inscription.
      *
-     * Génère un email HTML avec lien de vérification valide 24 heures.
+     * Génère l'URL de validation et charge le template HTML associé.
      *
-     * Utilise SERVER_NAME pour construire l'URL.
-     *
-     * @param string $to                 Destinataire
-     * @param string $name               Prénom du destinataire
-     * @param string $verificationToken  Jeton de vérification
-     * @return bool
+     * @param string $to                Email du destinataire
+     * @param string $name              Prénom de l'utilisateur
+     * @param string $verificationToken Token unique de validation
+     * @return bool                     Succès de l'envoi
      */
     public static function sendEmailVerification(string $to, string $name, string $verificationToken): bool
     {
-        $from = 'dashmed-site@alwaysdata.net';
-        $subject = 'Vérifiez votre adresse email - DashMed';
+        // Construction de l'URL absolue vers le contrôleur de vérification
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = $_SERVER['SERVER_NAME'] ?? 'dashmed-site.alwaysdata.net';
+        $url = $protocol . '://' . $host . '/verify-email?token=' . urlencode($verificationToken);
 
-        $headers = [
-            'From: DashMed <' . $from . '>',
-            'Reply-To: ' . $from,
-            'MIME-Version:  1.0',
-            'Content-Type: text/html; charset=UTF-8',
-        ];
+        // Chargement du design HTML
+        $htmlBody = self::loadTemplate('emails/verify-email', [
+            'name' => $name,
+            'url' => $url
+        ]);
 
-        // Construction de l'URL de vérification (éviter l'utilisation de HTTP_HOST contrôlable)
-        $protocol = (! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        $serverName = $_SERVER['SERVER_NAME'] ?? '';
-        $host = $serverName !== '' ? $serverName : 'dashmed-site.alwaysdata.net';
-        $verificationUrl = $protocol . '://' . $host . '/verify-email?token=' . urlencode($verificationToken);
+        if (!$htmlBody) return false;
 
-        $safeName = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
-        $safeUrl = htmlspecialchars($verificationUrl, ENT_QUOTES, 'UTF-8');
-
-        $body = '<!doctype html><html>'
-            . '<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">'
-            . '<div style="max-width: 600px; margin: 0 auto; padding: 20px; '
-            . 'border: 1px solid #ddd; border-radius: 5px;">'
-            . '<h2 style="color: #2c5282;">Bienvenue sur DashMed !</h2>'
-            . '<p>Bonjour ' . $safeName . ',</p>'
-            . '<p>Merci de vous être inscrit sur DashMed. Pour activer votre compte '
-            . 'et commencer à utiliser notre plateforme, '
-            . 'veuillez vérifier votre adresse email en cliquant ci-dessous :</p>'
-            . '<div style="text-align: center; margin: 30px 0;">'
-            . '<a href="' . $safeUrl . '" style="display: inline-block; padding: 12px 30px; '
-            . 'background-color: #2c5282; color: white; text-decoration: none; '
-            . 'border-radius: 5px; font-weight: bold;">Vérifier mon adresse email</a>'
-            .  '</div>'
-            . '<p>Ou copiez ce lien dans votre navigateur :</p>'
-            . '<p style="word-break: break-all; color: #666; font-size:  12px;">'
-            . $safeUrl .  '</p>'
-            . '<p style="color: #e53e3e; margin-top: 20px;">'
-            . '<strong>⚠️ Ce lien expire dans 24 heures.</strong></p>'
-            . '<p style="color: #666; font-size: 12px; margin-top: 30px;">'
-            . 'Si vous n\'êtes pas à l\'origine de cette inscription, '
-            . 'vous pouvez ignorer cet email en toute sécurité.</p>'
-            . '<hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">'
-            . '<p style="color: #999; font-size:  11px; text-align:  center;">'
-            . 'L\'équipe DashMed</p>'
-            . '</div>'
-            . '</body></html>';
-
-        return self::send($to, $subject, $body, $headers, $from);
+        return self::send($to, 'Vérifiez votre adresse email - DashMed', $htmlBody);
     }
 
     /**
-     * Envoie un email de réinitialisation de mot de passe.
+     * Envoie l'email de réinitialisation de mot de passe.
      *
-     * Génère un email HTML avec lien de réinitialisation valide 60 minutes.
-     *
-     * Utilise SERVER_NAME pour construire l'URL.
-     *
-     * @param string $to           Destinataire
-     * @param string $displayName  Nom affiché
-     * @param string $resetUrl     URL de réinitialisation
-     * @return bool
+     * @param string $to          Email du destinataire
+     * @param string $displayName Nom affiché dans le mail
+     * @param string $resetUrl    Lien complet de réinitialisation
+     * @return bool               Succès de l'envoi
      */
     public static function sendPasswordResetEmail(string $to, string $displayName, string $resetUrl): bool
     {
-        $from = 'dashmed-site@alwaysdata.net';
-        $subject = 'Réinitialisation de votre mot de passe - DashMed';
+        $htmlBody = self::loadTemplate('emails/reset-password', [
+            'name' => $displayName,
+            'url' => $resetUrl
+        ]);
 
+        if (!$htmlBody) return false;
+
+        return self::send($to, 'Réinitialisation de votre mot de passe - DashMed', $htmlBody);
+    }
+
+    /**
+     * Charge un fichier de vue et retourne son contenu HTML sous forme de chaîne.
+     *
+     * Utilise la temporisation de sortie (Output Buffering) pour capturer le rendu.
+     *
+     * @param string $viewPath Chemin relatif (ex: 'emails/verify-email')
+     * @param array  $data     Données à extraire dans la vue ($name, $url...)
+     * @return string|null     Le HTML généré ou null si fichier introuvable
+     */
+    private static function loadTemplate(string $viewPath, array $data = []): ?string
+    {
+        $file = dirname(__DIR__) . '/Views/' . $viewPath . '.php';
+
+        if (!file_exists($file)) {
+            error_log("[MAILER] Template introuvable : $file");
+            return null;
+        }
+
+        extract($data); // Transforme les clés du tableau en variables locales
+
+        ob_start();
+        include $file;
+        return ob_get_clean();
+    }
+
+    /**
+     * Envoi interne via la fonction mail() de PHP.
+     *
+     * Gère les headers MIME pour le HTML et le fallback fichier en cas d'échec (local).
+     */
+    private static function send(string $to, string $subject, string $htmlBody): bool
+    {
         $headers = [
-            'From: DashMed <' . $from . '>',
-            'Reply-To: ' .  $from,
+            'From: DashMed <' . self::FROM_EMAIL . '>',
+            'Reply-To: ' . self::FROM_EMAIL,
             'MIME-Version: 1.0',
             'Content-Type: text/html; charset=UTF-8',
         ];
 
-        $safeName = htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8');
-        $safeUrl = htmlspecialchars($resetUrl, ENT_QUOTES, 'UTF-8');
-
-        $body = '<!doctype html><html>'
-            . '<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">'
-            . '<div style="max-width: 600px; margin: 0 auto; padding: 20px; '
-            . 'border: 1px solid #ddd; border-radius: 5px;">'
-            . '<h2 style="color: #2c5282;">Réinitialisation de votre mot de passe</h2>'
-            . '<p>Bonjour ' . $safeName . ',</p>'
-            . '<p>Vous avez demandé la réinitialisation de votre mot de passe DashMed. '
-            .  'Pour définir un nouveau mot de passe, cliquez sur le bouton ci-dessous :</p>'
-            . '<div style="text-align: center; margin:  30px 0;">'
-            . '<a href="' .  $safeUrl . '" style="display: inline-block; padding: 12px 30px; '
-            . 'background-color: #2c5282; color: white; text-decoration:  none; '
-            . 'border-radius: 5px; font-weight: bold;">Réinitialiser mon mot de passe</a>'
-            . '</div>'
-            . '<p>Ou copiez ce lien dans votre navigateur :</p>'
-            . '<p style="word-break: break-all; color: #666; font-size:  12px;">'
-            .  $safeUrl . '</p>'
-            . '<p style="color: #e53e3e; margin-top: 20px;">'
-            . '<strong>⚠️ Ce lien expire dans 60 minutes.</strong></p>'
-            . '<p style="color: #666; font-size: 12px; margin-top: 30px;">'
-            . 'Si vous n\'êtes pas à l\'origine de cette demande, '
-            . 'vous pouvez ignorer cet email en toute sécurité.  '
-            . 'Votre mot de passe actuel reste inchangé.</p>'
-            .  '<hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">'
-            .  '<p style="color: #999; font-size: 11px; text-align: center;">'
-            . 'L\'équipe DashMed</p>'
-            . '</div>'
-            . '</body></html>';
-
-        return self::send($to, $subject, $body, $headers, $from);
-    }
-
-    /**
-     * Envoi centralisé : tente mail() puis fallback vers un fichier .eml si nécessaire.
-     *
-     * @param string $to
-     * @param string $subject
-     * @param string $htmlBody
-     * @param array $headers
-     * @param string $from
-     * @return bool
-     */
-    private static function send(string $to, string $subject, string $htmlBody, array $headers, string $from): bool
-    {
         $headersStr = implode("\r\n", $headers);
 
-        $isWindows = (PHP_OS_FAMILY === 'Windows');
-
-        $ok = false;
-        if ($isWindows) {
+        // Adaptation Windows/Linux
+        if (PHP_OS_FAMILY === 'Windows') {
             $ok = @mail($to, $subject, $htmlBody, $headersStr);
         } else {
-            $ok = @mail($to, $subject, $htmlBody, $headersStr, '-f ' . $from);
+            $ok = @mail($to, $subject, $htmlBody, $headersStr, '-f ' . self::FROM_EMAIL);
         }
 
+        // Si l'envoi échoue, log dans un fichier
         if (!$ok) {
-            $fileOk = self::writeMailToFile($to, $from, $subject, $headers, $htmlBody);
-            error_log('[MAILER] mail() failed, fallback to file: ' . ($fileOk ? 'OK' : 'KO'));
-            return $fileOk;
+            return self::writeMailToFile($to, self::FROM_EMAIL, $subject, $headers, $htmlBody);
         }
 
         return true;
     }
 
     /**
-     * Sauvegarde un email dans un fichier .eml.
+     * Sauvegarde l'email dans un fichier .eml pour le débug en local.
      *
-     * Crée le dossier SITE/storage/mails/ s'il n'existe pas.
-     *
-     * Génère un fichier .eml avec timestamp et identifiant unique.
-     *
-     * @param string $to
-     * @param string $from
-     * @param string $subject
-     * @param array $headers
-     * @param string $body
-     * @return bool
+     * @return bool True si l'écriture a réussi
      */
-    private static function writeMailToFile(
-        string $to,
-        string $from,
-        string $subject,
-        array $headers,
-        string $body
-    ): bool {
-        $dir = \Core\Constant::rootDirectory()
-            . DIRECTORY_SEPARATOR . 'storage'
-            . DIRECTORY_SEPARATOR . 'mails';
-        if (!is_dir($dir)) {
-            @mkdir($dir, 0755, true);
-        }
-        if (!is_dir($dir)) {
-            return false;
-        }
+    private static function writeMailToFile(string $to, string $from, string $subject, array $headers, string $body): bool
+    {
+        $dir = dirname(__DIR__) . '/../storage/mails';
+        if (!is_dir($dir)) { @mkdir($dir, 0755, true); }
 
-        $filename = $dir . '/mail_' . date('YmdHis') . '_' . uniqid() . '.eml';
-
-        $content = "To: {$to}\r\n";
-        $content .= "From: {$from}\r\n";
-        $content .= "Subject: {$subject}\r\n";
-        foreach ($headers as $h) {
-            $content .= $h . "\r\n";
-        }
-        $content .= "\r\n";
-        $content .= $body;
+        $filename = $dir . '/mail_' . date('Ymd_His') . '_' . uniqid() . '.eml';
+        $content = "To: $to\r\nSubject: $subject\r\n" . implode("\r\n", $headers) . "\r\n\r\n" . $body;
 
         return (bool) file_put_contents($filename, $content);
     }
