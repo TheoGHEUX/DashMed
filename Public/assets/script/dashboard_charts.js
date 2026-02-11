@@ -913,72 +913,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             drawChart();
         });
     }    // Bar chart - Version statique
-	function animateBarChart(canvasId, data, color) {
-		const canvas = document.getElementById(canvasId); if (!canvas) return;
-		function draw() {
-			const {ctx, width, height} = setupCanvas(canvas);
-			ctx.clearRect(0, 0, width, height);
-			const padding = 12; const available = width - padding * 2; const barW = available / data.length * 0.7; const gap = (available - barW * data.length) / Math.max(1, data.length - 1);
-			data.forEach((v, i) => {
-				const x = padding + i * (barW + gap);
-				const h = (height - padding * 2) * v;
-				ctx.fillStyle = color;
-				roundRect(ctx, x, height - padding - h, barW, h, 4);
-			});
-		}
-		draw();
-	}
-
-	// Dual-line chart (pour systolique/diastolique) - Version statique
-	function animateDualLineChart(canvasId, seriesA, seriesB, colorA, colorB) {
-		const canvas = document.getElementById(canvasId); if (!canvas) return;
-		function draw() {
-			const {ctx, width, height} = setupCanvas(canvas);
-			const padding = 12;
-			ctx.clearRect(0, 0, width, height);
-
-			// grid
-			ctx.strokeStyle = 'rgba(60,80,100,0.06)'; ctx.lineWidth = 1;
-			for (let i = 0; i < 4; i++) {
-				const y = padding + (height - padding * 2) * (i / 3);
-				ctx.beginPath(); ctx.moveTo(padding, y); ctx.lineTo(width - padding, y); ctx.stroke();
-			}
-
-			const step = (width - padding * 2) / (Math.max(seriesA.length, seriesB.length) - 1);
-
-			// draw series A
-			ctx.beginPath(); ctx.lineWidth = 2.4; ctx.strokeStyle = colorA;
-			seriesA.forEach((v, i) => {
-				const x = padding + i * step; const y = padding + (1 - v) * (height - padding * 2);
-				if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-			}); ctx.stroke();
-
-			// draw series B
-			ctx.beginPath(); ctx.lineWidth = 2; ctx.strokeStyle = colorB;
-			seriesB.forEach((v, i) => {
-				const x = padding + i * step; const y = padding + (1 - v) * (height - padding * 2);
-				if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-			}); ctx.stroke();
-
-			// small legend dots
-			ctx.fillStyle = colorA; ctx.fillRect(width - padding - 90, padding, 10, 10); ctx.fillStyle = '#081e2b'; ctx.font = '12px sans-serif'; ctx.fillText('Systolique', width - padding - 72, padding + 9);
-			ctx.fillStyle = colorB; ctx.fillRect(width - padding - 90, padding + 16, 10, 10); ctx.fillStyle = '#081e2b'; ctx.fillText('Diastolique', width - padding - 72, padding + 25);
-		}
-		draw();
-	}
-
-	// aide : rectangle arrondi (helper)
-	function roundRect(ctx, x, y, w, h, r) {
-		const radius = r || 0;
-		ctx.beginPath();
-		ctx.moveTo(x + radius, y);
-		ctx.arcTo(x + w, y, x + w, y + h, radius);
-		ctx.arcTo(x + w, y + h, x, y + h, radius);
-		ctx.arcTo(x, y + h, x, y, radius);
-		ctx.arcTo(x, y, x + w, y, radius);
-		ctx.closePath();
-		ctx.fill();
-	}
 
     /**
      * Charge la configuration des graphiques depuis l'API (par patient).
@@ -1633,34 +1567,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 		}
 	}
 
-    /**
-     * Redimensionne un graphique (3-12 colonnes).
-     *
-     * Déclenche un redraw complet après 50ms pour éviter les bugs.
-     *
-     * @param {string} chartId - ID du graphique
-     * @param {number} colSpan - Nombre de colonnes (3-12)
-     */
-	function resizeChart(chartId, colSpan) {
-		if (!chartConfig) {
-			console.error('chartConfig not loaded yet');
-			return;
-		}
-		// Clamp between 3 and 12 columns
-		colSpan = Math.max(3, Math.min(12, colSpan));
-		chartConfig.sizes[chartId] = colSpan;
-
-		const card = document.querySelector(`[data-chart-id="${chartId}"]`);
-		if (card) {
-			card.setAttribute('data-col-span', colSpan);
-		}
-
-		saveChartConfig();
-		setTimeout(() => {
-			resizeAllCanvases();
-			redrawAllCharts();
-		}, 50);
-	}
 
     /**
      * Configure les handles de redimensionnement pour tout les graphiques.
