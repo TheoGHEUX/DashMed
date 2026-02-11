@@ -168,4 +168,132 @@ class PatientRepository
             return false;
         }
     }
+
+    /**
+     * Trouve des patients similaires en utilisant l'algorithme KNN
+     * @param int $patientId ID du patient de référence
+     * @param int $medId ID du médecin
+     * @param int $k Nombre de voisins à trouver
+     * @return array Liste des patients similaires avec leur distance
+     */
+    public function findSimilarPatients(int $patientId, int $medId, int $k = 5): array
+    {
+        try {
+            // Récupérer les caractéristiques du patient cible
+            $targetStmt = $this->db->prepare('
+                SELECT 
+                    p.pt_id,
+                    TIMESTAMPDIFF(YEAR, p.date_naissance, CURDATE()) as age,
+                    p.sexe,
+                    p.groupe_sanguin,
+                    AVG(CASE WHEN m.type_mesure = "Tension artérielle" THEN vm.valeur END) as avg_tension,
+                    AVG(CASE WHEN m.type_mesure = "Fréquence cardiaque" THEN vm.valeur END) as avg_fc,
+                    AVG(CASE WHEN m.type_mesure = "Température corporelle" THEN vm.valeur END) as avg_temp,
+                    AVG(CASE WHEN m.type_mesure = "Saturation en oxygène" THEN vm.valeur END) as avg_spo2
+                FROM patient p
+                LEFT JOIN mesures m ON p.pt_id = m.pt_id
+                LEFT JOIN valeurs_mesures vm ON m.id_mesure = vm.id_mesure
+                WHERE p.pt_id = ?
+                GROUP BY p.pt_id
+            ');
+            $targetStmt->execute([$patientId]);
+            $target = $targetStmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$target) {
+                return [];
+            }
+
+            // Récupérer tous les autres patients du médecin avec un layout enregistré
+            $candidatesStmt = $this->db->prepare('
+                SELECT DISTINCT
+                    p.pt_id,
+                    TIMESTAMPDIFF(YEAR, p.date_naissance, CURDATE()) as age,
+                    p.sexe,
+                    p.groupe_sanguin,
+                    AVG(CASE WHEN m.type_mesure = "Tension artérielle" THEN vm.valeur END) as avg_tension,
+                    AVG(CASE WHEN m.type_mesure = "Fréquence cardiaque" THEN vm.valeur END) as avg_fc,
+                    AVG(CASE WHEN m.type_mesure = "Température corporelle" THEN vm.valeur END) as avg_temp,
+                    AVG(CASE WHEN m.type_mesure = "Saturation en oxygène" THEN vm.valeur END) as avg_spo2
+                FROM patient p
+                INNER JOIN suivre s ON p.pt_id = s.pt_id
+                INNER JOIN dashboard_layouts dl ON p.pt_id = dl.pt_id AND dl.med_id = s.med_id
+                LEFT JOIN mesures m ON p.pt_id = m.pt_id
+                LEFT JOIN valeurs_mesures vm ON m.id_mesure = vm.id_mesure
+                WHERE s.med_id = ? AND p.pt_id != ?
+                GROUP BY p.pt_id
+                HAVING COUNT(DISTINCT dl.layout_id) > 0
+            ');
+            $candidatesStmt->execute([$medId, $patientId]);
+            $candidates = $candidatesStmt->fetchAll(PDO::FETCH_ASSOC);
+
+            error_log("[KNN] Patient cible: #$patientId, Médecin: #$medId");
+            error_log("[KNN] Nombre de candidats trouvés: " . count($candidates));
+            
+            if (empty($candidates)) {
+                error_log("[KNN] Aucun patient candidat trouvé avec un layout enregistré");
+                return [];
+            }
+
+            // Calculer les distances euclidiennes normalisées
+            $distances = [];
+            foreach ($candidates as $candidate) {
+                $distance = 0;
+
+                // Distance d'âge (normalisée sur 100 ans)
+                $ageDiff = ($target['age'] - $candidate['age']) / 100;
+                $distance += $ageDiff * $ageDiff;
+
+                // Distance de sexe (0 ou 1)
+                if ($target['sexe'] !== $candidate['sexe']) {
+                    $distance += 1;
+                }
+
+                // Distance de groupe sanguin (0 ou 1)
+                if ($target['groupe_sanguin'] !== $candidate['groupe_sanguin']) {
+                    $distance += 0.5; // Poids réduit
+                }
+
+                // Distances des moyennes de constantes vitales (normalisées)
+                if ($target['avg_tension'] && $candidate['avg_tension']) {
+                    $tensionDiff = ($target['avg_tension'] - $candidate['avg_tension']) / 80; // Plage ~80-160
+                    $distance += $tensionDiff * $tensionDiff;
+                }
+
+                if ($target['avg_fc'] && $candidate['avg_fc']) {
+                    $fcDiff = ($target['avg_fc'] - $candidate['avg_fc']) / 95; // Plage ~35-130
+                    $distance += $fcDiff * $fcDiff;
+                }
+
+                if ($target['avg_temp'] && $candidate['avg_temp']) {
+                    $tempDiff = ($target['avg_temp'] - $candidate['avg_temp']) / 5; // Plage ~35-40
+                    $distance += $tempDiff * $tempDiff;
+                }
+
+                if ($target['avg_spo2'] && $candidate['avg_spo2']) {
+                    $spo2Diff = ($target['avg_spo2'] - $candidate['avg_spo2']) / 10; // Plage ~90-100
+                    $distance += $spo2Diff * $spo2Diff;
+                }
+
+                $distances[] = [
+                    'pt_id' => $candidate['pt_id'],
+                    'distance' => sqrt($distance)
+                ];
+            }
+
+            // Trier par distance croissante et prendre les k plus proches
+            usort($distances, fn($a, $b) => $a['distance'] <=> $b['distance']);
+            $result = array_slice($distances, 0, $k);
+            
+            error_log("[KNN] Patients similaires trouvés: " . count($result));
+            if (!empty($result)) {
+                error_log("[KNN] Patient le plus proche: #" . $result[0]['pt_id'] . " (distance: " . round($result[0]['distance'], 2) . ")");
+            }
+            
+            return $result;
+
+        } catch (\Throwable $e) {
+            error_log('[PATIENT_REPO] Erreur findSimilarPatients: ' . $e->getMessage());
+            return [];
+        }
+    }
 }

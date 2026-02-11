@@ -93,6 +93,8 @@ final class Router
             '/api/log-graph-action' => [DashboardController::class, 'logGraphAction'],
             '/api/dashboard-layout' => [DashboardController::class, 'getLayout', 'getLayout'],
             '/api/save-dashboard-layout' => [DashboardController::class, 'saveLayout'],
+            '/api/suggest-layout' => [DashboardController::class, 'suggestLayout', 'suggestLayout'],
+            '/api/check-ai-availability' => [DashboardController::class, 'checkAIAvailability', 'checkAIAvailability'],
         ],
     ];
 

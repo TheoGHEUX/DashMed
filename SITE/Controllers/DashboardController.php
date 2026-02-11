@@ -346,4 +346,92 @@ final class DashboardController
         }
         exit;
     }
+
+    /**
+     * Endpoint API pour suggérer un layout via KNN (Intelligence Artificielle)
+     * Implémentation en PHP pur, sans dépendances externes
+     */
+    public function suggestLayout(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        if (empty($_SESSION['user'])) {
+            http_response_code(401);
+            echo json_encode(['error' => 'Non authentifié']);
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+            http_response_code(405);
+            echo json_encode(['error' => 'Méthode non autorisée']);
+            exit;
+        }
+
+        $ptId = isset($_GET['ptId']) ? (int)$_GET['ptId'] : null;
+        $medId = (int) $_SESSION['user']['id'];
+
+        if (!$ptId) {
+            http_response_code(400);
+            echo json_encode(['error' => 'ID patient manquant']);
+            exit;
+        }
+
+        $patient = $this->patientRepo->findById($ptId);
+        if (!$patient) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Patient non trouvé']);
+            exit;
+        }
+
+        // Utiliser l'algorithme KNN implémenté en PHP
+        $similarPatients = $this->patientRepo->findSimilarPatients($ptId, $medId, 5);
+
+        if (empty($similarPatients)) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Aucun patient similaire trouvé avec un agencement personnalisé'
+            ]);
+            exit;
+        }
+
+        // Récupérer le layout du patient le plus similaire (premier dans la liste)
+        $mostSimilar = $similarPatients[0];
+        $suggestedLayout = $this->patientRepo->getDashboardLayout($mostSimilar['pt_id'], $medId);
+
+        if (!$suggestedLayout) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Aucun agencement trouvé pour les patients similaires'
+            ]);
+            exit;
+        }
+
+        echo json_encode([
+            'success' => true,
+            'suggestion' => [
+                'similar_patient_id' => $mostSimilar['pt_id'],
+                'distance' => round($mostSimilar['distance'], 2),
+                'all_similar_patients' => array_map(fn($p) => $p['pt_id'], $similarPatients),
+                'layout' => $suggestedLayout
+            ]
+        ]);
+        exit;
+    }
+
+
+    /**
+     * Endpoint API pour vérifier si l'IA est disponible
+     * Toujours disponible car implémentée en PHP pur
+     */
+    public function checkAIAvailability(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        echo json_encode([
+            'available' => true,
+            'implementation' => 'PHP KNN Algorithm',
+            'message' => 'IA intégrée, aucune installation requise'
+        ]);
+        exit;
+    }
 }

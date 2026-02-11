@@ -1029,7 +1029,32 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 				return config;
 			} else {
-				// Aucun agencement personnalisé, retourner config par défaut
+				// Aucun agencement personnalisé enregistré
+				// Essayer d'utiliser l'IA pour suggérer un agencement automatiquement
+				console.log('Premier chargement du patient, tentative de suggestion IA...');
+				
+				try {
+					const aiResponse = await fetch(`/api/suggest-layout?ptId=${ptId}`);
+					if (aiResponse.ok) {
+						const aiData = await aiResponse.json();
+						
+						if (aiData.success && aiData.suggestion && aiData.suggestion.layout) {
+							console.log(`IA: Agencement suggéré basé sur ${aiData.suggestion.all_similar_patients.length} patient(s) similaire(s)`);
+							console.log(`IA: Patient de référence #${aiData.suggestion.similar_patient_id} (distance: ${aiData.suggestion.distance})`);
+							
+							return {
+								visible: aiData.suggestion.layout.visible || allCharts,
+								sizes: aiData.suggestion.layout.sizes || {}
+							};
+						} else {
+							console.log('IA: Aucune suggestion disponible, utilisation du layout par défaut');
+						}
+					}
+				} catch (aiError) {
+					console.warn('Erreur lors de la suggestion IA:', aiError);
+				}
+				
+				// Pas de suggestion IA ou IA non disponible, retourner config par défaut
 				return {
 					visible: allCharts,
 					sizes: {}
