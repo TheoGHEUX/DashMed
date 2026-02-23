@@ -1084,6 +1084,127 @@
     color: var(--text-primary, #1f2937);
 }
 
+/* NOTIFICATIONS */
+
+.notification-container {
+    position: fixed;
+    top: 80px; /* Un peu en dessous du header */
+    right: 20px;
+    width: 350px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.notification-toast {
+    background: #fff;
+    border-left: 6px solid #ccc;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 4px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    animation: slideIn 0.5s ease-out;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.notification-toast.closing {
+    opacity: 0;
+    transform: translateX(100%);
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.notification-title {
+    font-weight: bold;
+    font-size: 1rem;
+    color: #333;
+}
+
+.notification-message {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 12px;
+}
+
+.notification-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+}
+
+.btn-notif {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.btn-notif-view {
+    color: #2c5282;
+    background-color: #ebf8ff;
+}
+
+.btn-notif-view:hover {
+    background-color: #bee3f8;
+}
+
+.btn-notif-ignore {
+    color: #718096;
+}
+
+.btn-notif-ignore:hover {
+    background-color: #edf2f7;
+    color: #2d3748;
+}
+
+/* Couleurs selon la priorité */
+
+.notification-toast.critique {
+    border-left-color: #e53e3e;
+    background-color: #fff5f5;
+}
+.notification-toast.critique .notification-title {
+    color: #c53030;
+}
+
+.notification-toast.urgent {
+    border-left-color: #dd6b20;
+    background-color: #fffaf0;
+}
+.notification-toast.urgent .notification-title {
+    color: #c05621;
+}
+
+.notification-toast.preoccupant {
+    border-left-color: #d69e2e;
+    background-color: #fffff0;
+}
+.notification-toast.preoccupant .notification-title {
+    color: #b7791f;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
 @media (max-width: 768px) {
     .legend-items {
         grid-template-columns: 1fr;

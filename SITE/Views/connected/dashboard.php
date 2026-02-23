@@ -25,7 +25,8 @@ $pageDescription = $pageDescription ?? "Tableau de bord - Suivi médical";
 $pageStyles      = $pageStyles ?? ['/assets/style/dashboard.css'];
 $pageScripts     = $pageScripts ?? [
         '/assets/script/dashboard_charts.js',
-        '/assets/script/dashboard.js'
+        '/assets/script/dashboard.js',
+        '/assets/script/dashboard_notifications.js'
 ];
 include __DIR__ . '/../partials/head.php';
 ?>
@@ -33,6 +34,9 @@ include __DIR__ . '/../partials/head.php';
 <body>
 
 <?php include __DIR__ . '/../partials/headerPrivate.php'; ?>
+
+
+<div id="notification-container" class="notification-container"></div>
 
 <script>
     window.patientChartData = <?= json_encode($chartData ?? [], JSON_UNESCAPED_UNICODE) ?>;
