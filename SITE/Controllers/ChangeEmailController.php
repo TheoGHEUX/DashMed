@@ -90,12 +90,10 @@ final class ChangeEmailController
                     $token = bin2hex(random_bytes(32));
                     $expires = (new \DateTime('+24 hours'))->format('Y-m-d H:i:s');
 
-                    // 1️⃣ changer l’email
                     $updated = $this->users->updateEmail($userId, $newEmail);
 
                     if ($updated) {
 
-                        // 2️⃣ créer un token de vérification
                         $this->users->setVerificationToken($newEmail, $token, $expires);
 
                         $_SESSION['user']['email'] = $newEmail;
