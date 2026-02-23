@@ -36,6 +36,7 @@ class User
     public function getEmail(): string { return $this->email; }
     public function getPasswordHash(): string { return $this->passwordHash; }
     public function isEmailVerified(): bool { return $this->emailVerified; }
+    public function getVerificationExpires(): ?string { return $this->verificationExpires;}
 
     public function toSessionArray(): array
     {
