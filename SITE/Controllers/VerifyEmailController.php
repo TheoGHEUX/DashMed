@@ -2,7 +2,7 @@
 
 namespace Controllers;
 
-use Models\User;
+use Models\Entities\User;
 
 /**
  * Vérification d'email
