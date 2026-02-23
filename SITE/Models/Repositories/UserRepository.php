@@ -118,6 +118,17 @@ class UserRepository
         return $stmt->execute([$hash, $id]);
     }
 
+    public function updateEmail(int $id, string $email): bool
+    {
+        $stmt = $this->db->prepare('
+        UPDATE medecin
+        SET email = ?, email_verified = 0, date_derniere_maj = NOW()
+        WHERE med_id = ?
+    ');
+
+        return $stmt->execute([$email, $id]);
+    }
+
     // VÉRIFICATION EMAIL
 
     public function setVerificationToken(string $email, string $token, string $expires): bool

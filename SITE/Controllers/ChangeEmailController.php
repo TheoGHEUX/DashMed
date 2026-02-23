@@ -4,26 +4,24 @@ namespace Controllers;
 
 use Core\Csrf;
 use Core\Mailer;
-use Models\User;
+use Core\View;
+use Models\Repositories\UserRepository;
 
-/**
- * Changement d'adresse email
- *
- * Gère le changement d'email pour un utilisateur authentifié
- * avec revérification obligatoire de la nouvelle adresse.
- *
- * Envoie des notifications aux deux adresses (ancienne et nouvelle)
- * pour des raisons de sécurité.
- *
- * @package Controllers
- */
 final class ChangeEmailController
 {
+    private UserRepository $users;
+
+    public function __construct()
+    {
+        $this->users = new UserRepository();
+    }
+
     public function showForm(): void
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
         }
+
         if (empty($_SESSION['user'])) {
             header('Location: /login');
             exit;
@@ -31,28 +29,16 @@ final class ChangeEmailController
 
         $errors = [];
         $success = '';
-        \Core\View::render('auth/change-email', compact('errors', 'success'));
+
+        View::render('auth/change-email', compact('errors', 'success'));
     }
 
-    /**
-     * Traite la demande de changement d'adresse.
-     *
-     * Étapes de validation :
-     * 1. Vérification du mot de passe actuel pour confirmer l'identité
-     * 2. Contrôle de l'unicité et du format de la nouvelle adresse
-     *
-     * Logique de sécurité :
-     * 1. Enregistre la nouvelle adresse mais la définit comme "non vérifiée"
-     * 2. Génère un nouveau jeton de vérification d'adresse email
-     * 3. Envoie une notification à l'ancienne adresse ET un mail de validation
-     *    à la nouvelle
-     * 4. Actualise l'adresse en session mais force la revérification
-     */
     public function submit(): void
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
         }
+
         if (empty($_SESSION['user'])) {
             header('Location: /login');
             exit;
@@ -75,95 +61,98 @@ final class ChangeEmailController
         }
 
         if (!filter_var($newEmail, FILTER_VALIDATE_EMAIL)) {
-            $errors[] = 'L\'adresse email n\'est pas valide.';
+            $errors[] = 'Adresse email invalide.';
         }
 
         if (!$errors) {
-            $userId = (int)($_SESSION['user']['id'] ?? 0);
-            $user   = User::findById($userId);
 
-            // Vérification du mot de passe actuel
-            if (!$user || empty($user['password']) || !password_verify($currentPassword, $user['password'])) {
+            $userId = (int)($_SESSION['user']['id'] ?? 0);
+            $user = $this->users->findById($userId);
+
+            if (!$user) {
+                $errors[] = 'Utilisateur introuvable.';
+            } elseif (!password_verify($currentPassword, $user->getPasswordHash())) {
                 $errors[] = 'Mot de passe incorrect.';
             } else {
-                $oldEmail = $user['email'];
+
+                $oldEmail = $user->getEmail();
 
                 if (strtolower($oldEmail) === strtolower($newEmail)) {
-                    $errors[] = 'La nouvelle adresse email est identique à l\'ancienne.';
-                } elseif (User::emailExists($newEmail)) {
-                    $errors[] = 'Cette adresse email est déjà utilisée par un autre compte.';
-                } else {
-                    // Mise à jour de l'email + nouvelle vérification obligatoire
-                    $token = User::updateEmailWithVerification($userId, $newEmail);
+                    $errors[] = 'La nouvelle adresse email est identique à l’ancienne.';
+                }
 
-                    if ($token) {
-                        // Mise à jour de la session et forcer la revérification
+                elseif ($this->users->emailExists($newEmail)) {
+                    $errors[] = 'Cette adresse email est déjà utilisée.';
+                }
+
+                else {
+
+                    $token = bin2hex(random_bytes(32));
+                    $expires = (new \DateTime('+24 hours'))->format('Y-m-d H:i:s');
+
+                    // 1️⃣ changer l’email
+                    $updated = $this->users->updateEmail($userId, $newEmail);
+
+                    if ($updated) {
+
+                        // 2️⃣ créer un token de vérification
+                        $this->users->setVerificationToken($newEmail, $token, $expires);
+
                         $_SESSION['user']['email'] = $newEmail;
                         $_SESSION['user']['email_verified'] = false;
 
-                        $mailSent = Mailer::sendEmailVerification($newEmail, $user['name'], $token);
-                        $this->sendEmailNotifications($oldEmail, $newEmail, $user['name']);
+                        $mailSent = Mailer::sendEmailVerification(
+                            $newEmail,
+                            $user->getPrenom(),
+                            $token
+                        );
+
+                        $this->sendEmailNotifications(
+                            $oldEmail,
+                            $newEmail,
+                            $user->getPrenom()
+                        );
 
                         if ($mailSent) {
-                            $success = 'Adresse mise à jour. Vérifiez le mail envoyé pour réactiver votre compte.';
+                            $success = 'Adresse mise à jour. Vérifiez votre email pour réactiver votre compte.';
                         } else {
-                            $errors[] = 'Adresse mise à jour, mais l\'email de vérification n\'a pas pu être envoyé.';
+                            $errors[] = 'Adresse mise à jour mais email non envoyé.';
                         }
+
                     } else {
-                        $errors[] = 'Impossible de mettre à jour l\'adresse email pour le moment.';
+                        $errors[] = 'Impossible de modifier l’adresse email.';
                     }
                 }
             }
         }
 
-        \Core\View::render('auth/change-email', compact('errors', 'success'));
+        View::render('auth/change-email', compact('errors', 'success'));
     }
 
-    /**
-     * Envoie des emails de notification à l'ancienne et à la nouvelle adresse.
-     *
-     * Contenu des emails selon l'adresse :
-     * - L'ancienne : notification du changement +
-     *   contact support si tentative non autorisée
-     * - La nouvelle : confirmation du changement +
-     *   contact support si tentative non autorisée
-     *
-     * @param string $oldEmail  Ancienne adresse email
-     * @param string $newEmail  Nouvelle adresse email
-     * @param string $userName  Prénom de l'utilisateur
-     * @return void
-     */
     private function sendEmailNotifications(string $oldEmail, string $newEmail, string $userName): void
     {
-        // Email à l'ancienne adresse
-        $oldEmailSubject = "Modification de votre adresse email - DashMed";
-        $oldEmailMessage = "Bonjour " . htmlspecialchars($userName) . ",\n\n";
-        $oldEmailMessage .= "Votre adresse email associée à votre compte DashMed a été modifiée.\n\n";
-        $oldEmailMessage .= "Si vous n'êtes pas à l'origine de cette modification, "
-            . "veuillez contacter immédiatement notre service client pour sécuriser votre compte.\n\n";
-        $oldEmailMessage .= "Cordialement,\n";
-        $oldEmailMessage .= "L'équipe DashMed";
+        $subjectOld = "Modification de votre adresse email - DashMed";
+        $messageOld = "Bonjour $userName,
 
-        $oldEmailHeaders = "From: noreply@dashmed.com\r\n";
-        $oldEmailHeaders .= "Reply-To: support@dashmed.com\r\n";
-        $oldEmailHeaders .= "Content-Type: text/plain; charset=UTF-8\r\n";
+        Votre adresse email DashMed a été modifiée.
 
-        mail($oldEmail, $oldEmailSubject, $oldEmailMessage, $oldEmailHeaders);
+        Si vous n'êtes pas à l'origine de cette action, contactez immédiatement le support.
 
-        // Email à la nouvelle adresse
-        $newEmailSubject = "Confirmation de votre nouvelle adresse email - DashMed";
-        $newEmailMessage = "Bonjour " . htmlspecialchars($userName) . ",\n\n";
-        $newEmailMessage .= "Votre adresse email a été modifiée avec succès.\n\n";
-        $newEmailMessage .= "Cette adresse (" . $newEmail . ") est maintenant associée à votre compte DashMed.\n\n";
-        $newEmailMessage .= "Si vous n'êtes pas à l'origine de cette modification, "
-            . "veuillez contacter immédiatement notre service client pour sécuriser votre compte.\n\n";
-        $newEmailMessage .= "Cordialement,\n";
-        $newEmailMessage .= "L'équipe DashMed";
+        L'équipe DashMed";
 
-        $newEmailHeaders = "From: noreply@dashmed.com\r\n";
-        $newEmailHeaders .= "Reply-To: support@dashmed.com\r\n";
-        $newEmailHeaders .= "Content-Type: text/plain; charset=UTF-8\r\n";
+        mail($oldEmail, $subjectOld, $messageOld);
 
-        mail($newEmail, $newEmailSubject, $newEmailMessage, $newEmailHeaders);
+        $subjectNew = "Confirmation de votre nouvelle adresse email - DashMed";
+        $messageNew = "Bonjour $userName,
+
+        Votre adresse email a été modifiée avec succès.
+
+        Nouvelle adresse : $newEmail
+
+        Si ce n'est pas vous, contactez le support.
+
+        L'équipe DashMed";
+
+        mail($newEmail, $subjectNew, $messageNew);
     }
 }
