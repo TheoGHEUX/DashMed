@@ -35,10 +35,7 @@ final class ProfileController
             header('Location: /login');
             exit;
         }
-        $user = $_SESSION['user']; // id, email, name
-        $parts = preg_split('/\s+/', trim($user['name'] ?? ''), 2);
-        $first = $parts[0] ?? '';
-        $last  = $parts[1] ?? '';
-        require __DIR__ . '/../Views/connected/profile.php';
+        $user = $_SESSION['user'];
+        \Core\View::render('connected/profile', compact('user'));
     }
 }

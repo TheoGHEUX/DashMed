@@ -164,9 +164,10 @@ final class AuthController
     {
         if (session_status() !== PHP_SESSION_ACTIVE) session_start();
 
-
         $csrf = $_POST['csrf_token'] ?? '';
         if (!Csrf::validate($csrf)) {
+            header('Location: /dashboard');
+            exit;
         }
 
         $_SESSION = [];
