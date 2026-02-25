@@ -70,6 +70,30 @@ if (is_file($autoLoader)) {
     });
 }
 
+$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$method = $_SERVER['REQUEST_METHOD'];
+
+if ($uri === '/generate-data' && $method === 'POST') {
+
+    header('Content-Type: application/json');
+
+    // 🔐 Sécurité (à adapter selon ton système)
+    if (!isset($_SESSION['user'])) {
+        http_response_code(403);
+        echo json_encode(['error' => 'Accès refusé']);
+        exit;
+    }
+
+    require_once __DIR__ . '/../SITE/Scripts/generate_data_online.php';
+
+    $patientId = $_POST['patient'] ?? 25;
+
+    generatePatientData((int)$patientId, 5);
+
+    echo json_encode(['success' => true]);
+    exit;
+}
+
 // Dispatch des routes
 use Core\Router;
 

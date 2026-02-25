@@ -26,6 +26,6 @@ final class ConnectedHomeController
             header('Location: /login');
             exit;
         }
-        require __DIR__ . '/../Views/connected/home.php';
+        \Core\View::render('connected/home');
     }
 }

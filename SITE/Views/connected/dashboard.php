@@ -3,22 +3,10 @@
 /**
  * Page connectée : Tableau de bord médical
  *
- *
  * Nécessite une session utilisateur active.
  *
  * @package Views
  */
-
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
-
-if (empty($_SESSION['user'])) {
-    header('Location: /login');
-    exit;
-}
-
-use Core\Database;
 
 $pageTitle       = $pageTitle ?? "Dashboard";
 $pageDescription = $pageDescription ?? "Tableau de bord - Suivi médical";
@@ -26,7 +14,8 @@ $pageStyles      = $pageStyles ?? ['/assets/style/dashboard.css'];
 $pageScripts     = $pageScripts ?? [
         '/assets/script/dashboard_charts.js',
         '/assets/script/dashboard.js',
-        '/assets/script/dashboard_notifications.js'
+        '/assets/script/dashboard_notifications.js',
+        '/assets/script/dashboard_generate_data.js'
 ];
 include __DIR__ . '/../partials/head.php';
 ?>
@@ -269,6 +258,14 @@ include __DIR__ . '/../partials/head.php';
 <?php endif; ?>
 
 <?php include __DIR__ . '/../partials/footer.php'; ?>
+
+<?php if (!empty($patient) && $patient['pt_id'] == 25) : ?>
+    <div class="dashboard-actions">
+        <button id="generateDataBtn" class="btn-small">
+            Générer 5 mesures
+        </button>
+    </div>
+<?php endif; ?>
 
 </body>
 </html>

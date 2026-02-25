@@ -55,7 +55,7 @@ final class AuthController
         $errors = [];
         $success = (isset($_GET['reset']) && $_GET['reset'] === '1') ? 'Mot de passe réinitialisé.' : '';
         $old = ['email' => ''];
-        require __DIR__ . '/../Views/auth/login.php';
+        \Core\View::render('auth/login', compact('errors', 'success', 'old'));
     }
 
     /**
@@ -102,7 +102,7 @@ final class AuthController
             }
         }
 
-        require __DIR__ . '/../Views/auth/login.php';
+        \Core\View::render('auth/login', compact('errors', 'old'));
     }
 
     /**
@@ -116,7 +116,7 @@ final class AuthController
         $success = '';
         $old = ['name' => '', 'last_name' => '', 'email' => '', 'sexe' => '', 'specialite' => ''];
         $specialites = self::SPECIALITES_VALIDES;
-        require __DIR__ . '/../Views/auth/register.php';
+        \Core\View::render('auth/register', compact('errors', 'success', 'old', 'specialites'));
     }
 
     /**
@@ -214,7 +214,7 @@ final class AuthController
         }
 
         $specialites = self::SPECIALITES_VALIDES;
-        require __DIR__ . '/../Views/auth/register.php';
+        \Core\View::render('auth/register', compact('errors', 'success', 'old', 'specialites'));
     }
 
     /**
@@ -229,9 +229,10 @@ final class AuthController
     {
         if (session_status() !== PHP_SESSION_ACTIVE) session_start();
 
-
         $csrf = $_POST['csrf_token'] ?? '';
         if (!Csrf::validate($csrf)) {
+            header('Location: /dashboard');
+            exit;
         }
 
         $_SESSION = [];
