@@ -7,10 +7,27 @@ use Core\Csrf;
 use Core\Mailer;
 use Core\View;
 
+/**
+ * Authentification
+ *
+ * Gère le cycle complet d'authentification des praticiens.
+ *
+ * Inclut l'inscription (avec vérification d'email),
+ * la connexion sécurisée (avec limitation de débit) et la gestion de session.
+ *
+ * @package Controllers
+ */
 final class AuthController
 {
     private UserRepository $userRepo;
 
+    /**
+     * Liste des spécialités médicales valides.
+     *
+     * Note : Utilisée pour la validation côté serveur lors de l'inscription.
+     *
+     * @var array<int,string>
+     */
     private const SPECIALITES_VALIDES = [
         'Addictologie', 'Algologie', 'Allergologie', 'Anesthésie-Réanimation',
         'Cancérologie', 'Cardio-vasculaire HTA', 'Chirurgie', 'Dermatologie',
@@ -28,6 +45,11 @@ final class AuthController
         $this->userRepo = new UserRepository();
     }
 
+    /**
+     * Affiche le formulaire de connexion.
+     *
+     * @return void
+     */
     public function showLogin(): void
     {
         $errors = [];
@@ -36,6 +58,19 @@ final class AuthController
         require __DIR__ . '/../Views/auth/login.php';
     }
 
+    /**
+     * Traite la soumission du formulaire de connexion.
+     *
+     * Validations effectuées :
+     * - Jeton CSRF
+     * - Existence de l'utilisateur
+     * - Vérification du mot de passe
+     * - Email vérifié
+     *
+     * En cas de succès, régénère l'ID de session et redirige vers /dashboard.
+     *
+     * @return void
+     */
     public function login(): void
     {
         $errors = [];
@@ -70,6 +105,11 @@ final class AuthController
         require __DIR__ . '/../Views/auth/login.php';
     }
 
+    /**
+     * Affiche le formulaire d'inscription.
+     *
+     * @return void
+     */
     public function showRegister(): void
     {
         $errors = [];
@@ -79,6 +119,23 @@ final class AuthController
         require __DIR__ . '/../Views/auth/register.php';
     }
 
+    /**
+     * Traite l'inscription d'un nouveau praticien.
+     *
+     * Validations effectuées :
+     * - Jeton CSRF : protection contre l'usurpation de requête
+     * - Nom et prénom
+     * - Email (format et unicité)
+     * - Mot de passe (12+ car., maj, min, chiffre, spécial)
+     *
+     * Processus en cas de succès :
+     * 1. Création du compte avec hachage du mot de passe
+     * 2. Génération d'un jeton de vérification d'email (64 hex chars, valide 24h)
+     * 3. Envoi de l'email de vérification
+     * 4. Affichage du message de succès
+     *
+     * @return void
+     */
     public function register(): void
     {
         $errors = [];
@@ -160,6 +217,14 @@ final class AuthController
         require __DIR__ . '/../Views/auth/register.php';
     }
 
+    /**
+     * Déconnecte l'utilisateur.
+     *
+     * Détruit la session et supprime le cookie de session,
+     * puis redirige vers la page de connexion.
+     *
+     * @return void
+     */
     public function logout(): void
     {
         if (session_status() !== PHP_SESSION_ACTIVE) session_start();

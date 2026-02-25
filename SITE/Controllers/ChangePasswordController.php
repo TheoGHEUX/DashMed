@@ -5,6 +5,16 @@ namespace Controllers;
 use Core\Csrf;
 use Models\Repositories\UserRepository;
 
+/**
+ * Changement de mot de passe
+ *
+ * Gère l'affichage et le traitement du formulaire de modification de mot de
+ * passe pour un utilisateur connecté.
+ *
+ * Vérifie l'ancien mot de passe et applique les règles de complexité.
+ *
+ * @package Controllers
+ */
 final class ChangePasswordController
 {
     private UserRepository $users;
@@ -14,6 +24,13 @@ final class ChangePasswordController
         $this->users = new UserRepository();
     }
 
+    /**
+     * Affiche le formulaire de modification de mot de passe.
+     *
+     * Nécessite une session utilisateur active.
+     *
+     * @return void
+     */
     public function showForm(): void
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {
@@ -31,6 +48,17 @@ final class ChangePasswordController
         \Core\View::render('auth/change-password', compact('errors', 'success'));
     }
 
+    /**
+     * Traite la soumission du formulaire de modification.
+     *
+     * Validations effectuées :
+     * - Jeton CSRF
+     * - Ancien mot de passe correct
+     * - Nouveau mot de passe conforme (12+ car., maj/min/chiffre/spécial)
+     * - Confirmation correspondante
+     *
+     * @return void
+     */
     public function submit(): void
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {

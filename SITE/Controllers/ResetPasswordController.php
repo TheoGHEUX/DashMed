@@ -8,6 +8,14 @@ use Core\View;
 use Models\Repositories\PasswordResetRepository;
 use Models\Repositories\UserRepository;
 
+/**
+ * Réinitialisation du mot de passe
+ *
+ * Gère l'affichage du formulaire de réinitialisation et le traitement
+ * de la soumission avec validation du jeton et mise à jour du mot de passe.
+ *
+ * @package Controllers
+ */
 final class ResetPasswordController
 {
     private PasswordResetRepository $resetRepo;
@@ -19,6 +27,14 @@ final class ResetPasswordController
         $this->userRepo = new UserRepository();
     }
 
+    /**
+     * Affiche le formulaire de réinitialisation.
+     *
+     * Vérifie la validité du jeton avant d'afficher le formulaire.
+     * Si le jeton est invalide ou expiré, affiche un message d'erreur.
+     *
+     * @return void
+     */
     public function showForm(): void
     {
         $errors = [];
@@ -34,6 +50,25 @@ final class ResetPasswordController
         View::render('auth/reset-password', compact('errors', 'success', 'email', 'token'));
     }
 
+    /**
+     * Traite la soumission du formulaire de réinitialisation.
+     *
+     * Validations effectuées :
+     * - Jeton CSRF
+     * - Jeton de reset valide et non expiré
+     * - Nouveau mot de passe conforme (12+ car., maj/min/chiffre/spécial)
+     * - Confirmation correspondante
+     *
+     * Processus en transaction :
+     * 1. Récupère l'email associé au jeton
+     * 2. Met à jour le mot de passe de l'utilisateur
+     * 3. Invalide le jeton (used_at = NOW())
+     * 4. Commit et redirection vers /login?reset=1
+     *
+     * En cas d'erreur, rollback et affichage du message d'erreur.
+     *
+     * @return void
+     */
     public function submit(): void
     {
         $errors = [];

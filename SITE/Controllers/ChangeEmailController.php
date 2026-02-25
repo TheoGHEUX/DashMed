@@ -7,6 +7,17 @@ use Core\Mailer;
 use Core\View;
 use Models\Repositories\UserRepository;
 
+/**
+ * Changement d'adresse email
+ *
+ * Gère le changement d'email pour un utilisateur authentifié
+ * avec revérification obligatoire de la nouvelle adresse.
+ *
+ * Envoie des notifications aux deux adresses (ancienne et nouvelle)
+ * pour des raisons de sécurité.
+ *
+ * @package Controllers
+ */
 final class ChangeEmailController
 {
     private UserRepository $users;
@@ -16,6 +27,11 @@ final class ChangeEmailController
         $this->users = new UserRepository();
     }
 
+    /**
+     * Affiche le formulaire de changement d'email.
+     *
+     * @return void
+     */
     public function showForm(): void
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {
@@ -33,6 +49,22 @@ final class ChangeEmailController
         View::render('auth/change-email', compact('errors', 'success'));
     }
 
+    /**
+     * Traite la demande de changement d'adresse.
+     *
+     * Étapes de validation :
+     * 1. Vérification du mot de passe actuel pour confirmer l'identité
+     * 2. Contrôle de l'unicité et du format de la nouvelle adresse
+     *
+     * Logique de sécurité :
+     * 1. Enregistre la nouvelle adresse mais la définit comme "non vérifiée"
+     * 2. Génère un nouveau jeton de vérification d'adresse email
+     * 3. Envoie une notification à l'ancienne adresse ET un mail de validation
+     *    à la nouvelle
+     * 4. Actualise l'adresse en session mais force la revérification
+     *
+     * @return void
+     */
     public function submit(): void
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {
@@ -127,6 +159,20 @@ final class ChangeEmailController
         View::render('auth/change-email', compact('errors', 'success'));
     }
 
+    /**
+     * Envoie des emails de notification à l'ancienne et à la nouvelle adresse.
+     *
+     * Contenu des emails selon l'adresse :
+     * - L'ancienne : notification du changement +
+     *   contact support si tentative non autorisée
+     * - La nouvelle : confirmation du changement +
+     *   contact support si tentative non autorisée
+     *
+     * @param string $oldEmail  Ancienne adresse email
+     * @param string $newEmail  Nouvelle adresse email
+     * @param string $userName  Prénom de l'utilisateur
+     * @return void
+     */
     private function sendEmailNotifications(string $oldEmail, string $newEmail, string $userName): void
     {
         $subjectOld = "Modification de votre adresse email - DashMed";

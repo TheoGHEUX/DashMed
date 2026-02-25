@@ -6,10 +6,11 @@ use Models\Repositories\PatientRepository;
 use Models\Repositories\ConsoleRepository;
 
 /**
- * Tableau de bord - DashboardController
+ * Tableau de bord
  *
- * Version Architecture Propre (Clean Architecture).
- * Utilise des Repositories pour l'accès aux données.
+ * Prépare et affiche les données des patients suivis par le médecin connecté
+ * avec leurs graphiques (température, tension, fréquence cardiaque, etc.)
+ * incluant les seuils d'alerte.
  *
  * @package Controllers
  */
@@ -18,7 +19,15 @@ final class DashboardController
     private PatientRepository $patientRepo;
 
     /**
-     * Configuration des métriques médicales avec leurs plages de valeurs
+     * Configuration des métriques médicales avec leurs plages de valeurs.
+     *
+     * Chaque métrique contient :
+     * - label    : nom affiché de la métrique
+     * - labelAlt : nom alternatif (fallback)
+     * - min      : valeur minimale pour la normalisation des graphiques
+     * - max      : valeur maximale pour la normalisation des graphiques
+     *
+     * @var array<string,array>
      */
     private const METRICS_CONFIG = [
         'temperature' => [
@@ -69,6 +78,15 @@ final class DashboardController
 
     /**
      * Affiche la page du tableau de bord avec graphiques et infos patients.
+     *
+     * Fonctionnement :
+     * 1. Vérifie l'authentification (redirige vers /login sinon)
+     * 2. Récupère les patients suivis par le médecin
+     * 3. Si aucun patient → affiche une icône SVG avec message
+     * 4. Détermine le patient sélectionné (URL, session ou premier de la liste)
+     * 5. Vérifie que le patient est autorisé pour ce médecin
+     * 6. Récupère les données de toutes les métriques avec seuils d'alerte
+     * 7. Affiche la vue dashboard.php
      *
      * @return void
      */
@@ -146,7 +164,21 @@ final class DashboardController
     }
 
     /**
-     * Récupère les données d'une métrique avec ses seuils via le Repository.
+     * Récupère les données d'une métrique avec ses seuils.
+     *
+     * Processus :
+     * 1. Récupère les 50 dernières valeurs de la métrique
+     * 2. Tente un repli (fallback) sur le label alternatif si pas de données
+     * 3. Normalise les valeurs entre 0 et 1 selon min/max
+     * 4. Récupère les seuils d'alerte (préoccupant, urgent, critique)
+     * 5. Retourne un tableau formaté pour Chart.js
+     *
+     * @param int         $patientId   ID du patient
+     * @param string      $metricLabel Nom de la métrique
+     * @param string|null $labelAlt    Nom alternatif (fallback)
+     * @param float       $minValue    Valeur minimale pour normalisation
+     * @param float       $maxValue    Valeur maximale pour normalisation
+     * @return array|null Données formatées ou null si pas de données
      */
     private function getMetricChartData(
         int $patientId,
