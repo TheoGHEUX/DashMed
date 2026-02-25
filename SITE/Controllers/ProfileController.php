@@ -6,17 +6,17 @@ namespace Controllers;
  * Profil utilisateur
  *
  * Affiche les informations du compte pour un utilisateur authentifié et propose
- * les actions de modification (email, mot de passe).
+ * les actions de modification (email et mot de passe).
  *
  * @package Controllers
  */
 final class ProfileController
 {
     /**
-     * Affiche la page de profil utilisateur.
+     * Affiche la page du profil.
      *
      * Vérifie l'authentification avant d'afficher la vue.
-     * Redirige vers /login si l'utilisateur n'est pas connecté.
+     * Redirige vers la page de connexion (/login) si l'utilisateur n'est pas connecté.
      *
      * Processus :
      * 1. Démarre la session si nécessaire

@@ -29,8 +29,8 @@ if (empty($_SESSION['user'])) {
 
 // RÉCUPÉRATION DES DONNÉES UTILISATEUR
 $user  = $_SESSION['user'];
-$first = $user['name'] ?? '';
-$last  = $user['last_name'] ?? '';
+$first = mb_convert_case($user['name'] ?? '', MB_CASE_TITLE, 'UTF-8');
+$last  = mb_convert_case($user['last_name'] ?? '', MB_CASE_TITLE, 'UTF-8');
 
 // CONFIGURATION : Variables du template
 $pageTitle       = $pageTitle ?? "Profil";

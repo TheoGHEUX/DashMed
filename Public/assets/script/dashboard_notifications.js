@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <span class="notification-title">⚠️ ${titleMap[level]}</span>
             </div>
             <div class="notification-message">
-                <strong>${cleanTitle}</strong> est à <strong>${value} ${unit}</strong>.
+                <strong>${cleanTitle}</strong> à <strong>${value} ${unit}</strong>.
             </div>
             <div class="notification-actions">
                 <button class="btn-notif btn-notif-view">Voir l'alerte</button>
