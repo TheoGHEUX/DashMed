@@ -90,7 +90,7 @@ final class DashboardController
         if (empty($patients)) {
             $noPatient = true;
             $chartData = [];
-            require __DIR__ . '/../Views/connected/dashboard.php';
+            \Core\View::render('connected/dashboard', compact('noPatient', 'chartData'));
             return;
         }
 
@@ -139,7 +139,7 @@ final class DashboardController
         }
 
         // Affichage
-        require __DIR__ . '/../Views/connected/dashboard.php';
+        \Core\View::render('connected/dashboard', compact('patients', 'patient', 'chartData', 'noPatient'));
     }
 
     /**

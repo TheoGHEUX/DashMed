@@ -45,7 +45,7 @@ final class VerifyEmailController
             }
         }
 
-        require __DIR__ . '/../Views/auth/verify-email.php';
+        \Core\View::render('auth/verify-email', compact('errors', 'success'));
     }
 
     public function resend(): void
@@ -85,6 +85,6 @@ final class VerifyEmailController
             }
         }
 
-        require __DIR__ . '/../Views/auth/resend-verification.php';
+        \Core\View::render('auth/resend-verification', compact('errors', 'success'));
     }
 }

@@ -33,7 +33,7 @@ final class AuthController
         $errors = [];
         $success = (isset($_GET['reset']) && $_GET['reset'] === '1') ? 'Mot de passe réinitialisé.' : '';
         $old = ['email' => ''];
-        require __DIR__ . '/../Views/auth/login.php';
+        \Core\View::render('auth/login', compact('errors', 'success', 'old'));
     }
 
     public function login(): void
@@ -67,7 +67,7 @@ final class AuthController
             }
         }
 
-        require __DIR__ . '/../Views/auth/login.php';
+        \Core\View::render('auth/login', compact('errors', 'old'));
     }
 
     public function showRegister(): void
@@ -76,7 +76,7 @@ final class AuthController
         $success = '';
         $old = ['name' => '', 'last_name' => '', 'email' => '', 'sexe' => '', 'specialite' => ''];
         $specialites = self::SPECIALITES_VALIDES;
-        require __DIR__ . '/../Views/auth/register.php';
+        \Core\View::render('auth/register', compact('errors', 'success', 'old', 'specialites'));
     }
 
     public function register(): void
@@ -157,7 +157,7 @@ final class AuthController
         }
 
         $specialites = self::SPECIALITES_VALIDES;
-        require __DIR__ . '/../Views/auth/register.php';
+        \Core\View::render('auth/register', compact('errors', 'success', 'old', 'specialites'));
     }
 
     public function logout(): void
