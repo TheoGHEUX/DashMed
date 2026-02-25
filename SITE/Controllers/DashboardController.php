@@ -88,14 +88,11 @@ final class DashboardController
 
         // Si aucun patient associé, afficher le message avec icône
         if (empty($patients)) {
-            // error_log("DEBUG: Aucun patient - affichage icône SVG");
             $noPatient = true;
             $chartData = [];
             require __DIR__ . '/../Views/connected/dashboard.php';
             return;
         }
-
-        // error_log("DEBUG: Patients trouvés: " . count($patients));
 
         /// Patient sélectionné via URL
         $doctorPatients = array_column($patients, 'pt_id');

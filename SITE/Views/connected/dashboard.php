@@ -3,22 +3,10 @@
 /**
  * Page connectée : Tableau de bord médical
  *
- *
  * Nécessite une session utilisateur active.
  *
  * @package Views
  */
-
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
-
-if (empty($_SESSION['user'])) {
-    header('Location: /login');
-    exit;
-}
-
-use Core\Database;
 
 $pageTitle       = $pageTitle ?? "Dashboard";
 $pageDescription = $pageDescription ?? "Tableau de bord - Suivi médical";

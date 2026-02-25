@@ -5,7 +5,7 @@ namespace Controllers;
 use Core\Csrf;
 use Core\Database;
 use Core\Mailer;
-use Models\User;
+use Models\Repositories\UserRepository;
 use PDO;
 
 /**
@@ -21,6 +21,13 @@ use PDO;
  */
 final class ForgottenPasswordController
 {
+    private UserRepository $userRepo;
+
+    public function __construct()
+    {
+        $this->userRepo = new UserRepository();
+    }
+
     /**
      * Affiche le formulaire de demande de réinitialisation.
      *
@@ -106,7 +113,7 @@ final class ForgottenPasswordController
         if (!$errors) {
             try {
                 // Vérifie si l'email est inscrit
-                $user = User::findByEmail($old['email']);
+                $user = $this->userRepo->findByEmail($old['email']);
                 if ($user) {
                     $pdo = Database::getConnection();
 
@@ -134,7 +141,7 @@ final class ForgottenPasswordController
                         . urlencode($token) . '&email=' . urlencode($old['email']);
 
                     // Nom d’affichage
-                    $displayName = trim(($user['name'] ?? '') . ' ' . ($user['last_name'] ?? ''));
+                    $displayName = trim($user->getPrenom() . ' ' . $user->getNom());
                     Mailer::sendPasswordResetEmail($old['email'], $displayName ?: 'Utilisateur', $resetUrl);
                 } else {
                     // En prod on reste neutre côté UI, mais on log pour faciliter le debug

@@ -8,7 +8,7 @@
  * Nécessite une session utilisateur active.
  *
  * Variables attendues :
- *  - $_SESSION['user'] (array)   Données utilisateur
+ *  - $user             (array)   Données utilisateur
  *  - $pageTitle        (string)  Titre de la page
  *  - $pageDescription  (string)  Meta description
  *  - $pageStyles       (array)   Styles spécifiques
@@ -17,18 +17,7 @@
  * @package Views
  */
 
-// SÉCURITÉ : Contrôle d'authentification
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
-
-if (empty($_SESSION['user'])) {
-    header('Location: /login');
-    exit;
-}
-
 // RÉCUPÉRATION DES DONNÉES UTILISATEUR
-$user  = $_SESSION['user'];
 $first = $user['name'] ?? '';
 $last  = $user['last_name'] ?? '';
 

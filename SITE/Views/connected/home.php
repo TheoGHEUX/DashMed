@@ -16,16 +16,7 @@
  * @package Views
  */
 
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
-
 $csrf_token = function_exists('\\Core\\Csrf::token') ? \Core\Csrf::token() : '';
-
-if (empty($_SESSION['user'])) {
-    header('Location: /login');
-    exit;
-}
 
 $pageTitle       = $pageTitle ?? "Accueil";
 $pageDescription = $pageDescription ?? "Page d'accueil accessible une fois connecté";

@@ -2,8 +2,6 @@
 
 namespace Core;
 
-require_once __DIR__ . '/Constant.php'; // On garde ton inclusion si besoin
-
 /**
  * Autoloader PSR-4 Simplifié & Universel
  *
