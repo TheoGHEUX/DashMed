@@ -36,7 +36,6 @@ include __DIR__ . '/../partials/head.php';
         <h1 class="profile-title">Profil</h1>
 
         <div class="profile-card">
-            <!-- Avatar symbolique de l'utilisateur -->
             <div class="avatar">
                 <div class="avatar-circle" aria-hidden="true">👤</div>
             </div>

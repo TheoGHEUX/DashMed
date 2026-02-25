@@ -16,7 +16,6 @@
         Vous avez demandé la réinitialisation de votre mot de passe DashMed. Pour définir un nouveau mot de passe, cliquez sur le bouton ci-dessous :
     </p>
 
-    <!-- Bouton centré -->
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
         <tr>
             <td align="center" style="padding: 20px 0;">

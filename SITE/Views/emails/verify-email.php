@@ -6,7 +6,6 @@
 </head>
 <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px;">
 
-<!-- Conteneur principal -->
 <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border: 1px solid #dddddd; border-radius: 5px;">
 
     <h2 style="color: #2c5282; margin-top: 0;">Bienvenue sur DashMed !</h2>
@@ -17,7 +16,6 @@
         Merci de vous être inscrit. Pour activer votre compte, cliquez ci-dessous :
     </p>
 
-    <!-- Bouton (Tableau pour compatibilité Outlook) -->
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
         <tr>
             <td align="center" style="padding: 20px 0;">

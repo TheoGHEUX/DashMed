@@ -105,7 +105,6 @@ include __DIR__ . '/../partials/head.php';
     <?php endif; ?>
 
     <?php if (isset($noPatient) && $noPatient === true) : ?>
-        <!-- Message quand aucun patient n'est associé au médecin -->
         <section class="dashboard-empty-state" role="status" aria-label="Aucun patient">
             <div class="empty-state-content">
                 <div class="empty-state-icon" aria-hidden="true">👥</div>
@@ -206,8 +205,6 @@ include __DIR__ . '/../partials/head.php';
                 actualisez la page ou videz le cache du navigateur.</em></p>
     </section>
 </main>
-
-<!-- Légende des seuils d'alerte -->
 
 <?php if (isset($noPatient) && $noPatient === true) : ?>
 <?php else : ?>
