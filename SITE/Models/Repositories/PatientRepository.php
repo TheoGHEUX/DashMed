@@ -6,15 +6,35 @@ use Core\Database;
 use Models\Entities\Patient;
 use PDO;
 
+/**
+ * Dépôt Patient
+ *
+ * Gère les interactions avec la base de données concernant les patients
+ *
+ * S'occupe de récupérer les profils, les listes de patients par médecin,
+ * mais aussi les mesures pour les graphiques et
+ * la personnalisation du tableau de bord.
+ *
+ * @package Models\Repositories
+ */
 class PatientRepository
 {
     private PDO $db;
 
+    /**
+     * Constructeur : Initialise la connexion à la base de données
+     */
     public function __construct()
     {
         $this->db = Database::getConnection();
     }
 
+    /**
+     * Trouve un patient grâce à son unique identifiant
+     *
+     * @param int $id L'ID du patient
+     * @return Patient|null L'objet Patient ou null si introuvable
+     */
     public function findById(int $id): ?Patient
     {
         $stmt = $this->db->prepare('
@@ -26,6 +46,12 @@ class PatientRepository
         return $row ? new Patient($row) : null;
     }
 
+    /**
+     * Récupère la liste de tous les patients suivis par un médecin
+     *
+     * @param int $medId L'ID du médecin connecté
+     * @return Patient[] Tableau d'objets Patient triés par nom
+     */
     public function getPatientsForDoctor(int $medId): array
     {
         $stmt = $this->db->prepare("
@@ -39,14 +65,26 @@ class PatientRepository
 
         $patients = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $patients[] = new Patient($row); // On renvoie des Objets !
+            $patients[] = new Patient($row); // On transforme les lignes SQL en objets
         }
         return $patients;
     }
 
-
+    /**
+     * Récupère les données pour construire un graphique
+     *
+     * Cherche les mesures d'un type précis (ex: "Tension") pour un patient,
+     * et renvoie les dernières valeurs enregistrées
+     *
+     * @param int    $patientId   ID du patient
+     * @param string $typeMesure  Nom de la mesure
+     * @param int    $limit       Nombre de points à récupérer (défaut 50)
+     *
+     * @return array|null Un tableau structuré pour le graphique ou null si pas de données
+     */
     public function getChartData(int $patientId, string $typeMesure, int $limit = 50): ?array
     {
+        // 1. On trouve l'ID et l'unité de la mesure
         $stmt = $this->db->prepare('
             SELECT id_mesure, unite FROM mesures 
             WHERE pt_id = ? AND type_mesure = ? LIMIT 1
@@ -56,6 +94,7 @@ class PatientRepository
 
         if (!$mesure) return null;
 
+        // 2. On récupère les valeurs brutes
         $stmt = $this->db->prepare('
             SELECT valeur, date_mesure, heure_mesure 
             FROM valeurs_mesures 
@@ -66,6 +105,7 @@ class PatientRepository
         $stmt->execute([$mesure['id_mesure'], $limit]);
         $valeurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        // 3. On retourne le tout (en inversant pour avoir l'ordre chronologique)
         return [
             'id_mesure' => $mesure['id_mesure'],
             'type_mesure' => $typeMesure,
@@ -74,6 +114,17 @@ class PatientRepository
         ];
     }
 
+    /**
+     * Récupère un seuil d'alerte spécifique
+     *
+     *
+     * @param int    $patientId   ID du patient
+     * @param string $typeMesure  Type de mesure
+     * @param string $statut      Niveau d'alerte ('critique', 'urgent', etc.)
+     * @param bool   $majorant    Vrai pour le seuil max, Faux pour le seuil min
+     *
+     * @return float|null La valeur du seuil ou null s'il n'existe pas
+     */
     public function getSeuilByStatus(int $patientId, string $typeMesure, string $statut, bool $majorant): ?float
     {
         $stmt = $this->db->prepare("
@@ -90,21 +141,34 @@ class PatientRepository
         return $row ? (float)$row['seuil'] : null;
     }
 
-
+    /**
+     * Normalise des valeurs pour l'affichage (entre 0 et 1).
+     *
+     * Utile pour certains types de visualisations ou calculs de tendances
+     *
+     * @param array $valeurs Liste des valeurs
+     * @param float $min     Valeur minimale de référence
+     * @param float $max     Valeur maximale de référence
+     * @return array Tableau des valeurs normalisées
+     */
     public function prepareChartValues(array $valeurs, float $min, float $max): array
     {
         return array_map(function ($v) use ($min, $max) {
             if ($max === $min) return 0.5;
+            // On s'assure que le résultat reste entre 0 et 1
             return max(0, min(1, ((float)$v['valeur'] - $min) / ($max - $min)));
         }, $valeurs);
     }
 
     /**
-     * Récupère l'agencement du dashboard pour un patient spécifique
-     * 
+     * Charge la configuration personnalisée du tableau de bord
+     *
+     * Récupère la disposition des widgets (position, taille) sauvegardée
+     * pour un patient donné par un médecin donné
+     *
      * @param int $patientId ID du patient
-     * @param int $medId ID du médecin
-     * @return array|null Configuration de l'agencement ou null si aucun agencement personnalisé
+     * @param int $medId     ID du médecin
+     * @return array|null    Configuration (tableau) ou null si pas de config
      */
     public function getDashboardLayout(int $patientId, int $medId): ?array
     {
@@ -120,23 +184,26 @@ class PatientRepository
             return null;
         }
 
-        // Décoder le JSON
+        // On décode le JSON stocké en base
         $config = json_decode($row['layout_config'], true);
         return is_array($config) ? $config : null;
     }
 
     /**
-     * Sauvegarde l'agencement du dashboard pour un patient
-     * 
-     * @param int $patientId ID du patient
-     * @param int $medId ID du médecin
-     * @param array $config Configuration de l'agencement {visible: [...], sizes: {...}}
-     * @return bool True si la sauvegarde a réussi
+     * Sauvegarde la disposition du tableau de bord
+     *
+     * Enregistre comment le médecin a organisé les graphiques pour ce patient
+     * Vérifie d'abord si le médecin a bien le droit de suivre ce patient
+     *
+     * @param int   $patientId ID du patient
+     * @param int   $medId     ID du médecin
+     * @param array $config    Données de configuration (positions, tailles)
+     * @return bool Vrai si la sauvegarde a réussi
      */
     public function saveDashboardLayout(int $patientId, int $medId, array $config): bool
     {
         try {
-            // Vérifier que le médecin suit bien ce patient
+            // Vérification de sécurité : le lien médecin-patient existe-t-il ?
             $stmt = $this->db->prepare('
                 SELECT COUNT(*) as count FROM suivre
                 WHERE pt_id = ? AND med_id = ?
@@ -145,19 +212,16 @@ class PatientRepository
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if (!$row || $row['count'] == 0) {
-                // Le médecin ne suit pas ce patient
                 error_log("[PATIENT_REPO] Médecin $medId ne suit pas le patient $patientId");
                 return false;
             }
 
-            // Encoder la configuration en JSON
             $jsonConfig = json_encode($config);
-            
-            error_log("[PATIENT_REPO] Sauvegarde layout - Patient: $patientId, Médecin: $medId");
-            error_log("[PATIENT_REPO] Config JSON: " . $jsonConfig);
-            error_log("[PATIENT_REPO] JSON valide: " . (json_last_error() === JSON_ERROR_NONE ? 'OUI' : 'NON - ' . json_last_error_msg()));
 
-            // Insérer ou mettre à jour l'agencement (UPSERT)
+            // Logs serveur pour le débogage
+            error_log("[PATIENT_REPO] Sauvegarde layout - Patient: $patientId");
+
+            // Requête "UPSERT" : Insère si nouveau, Met à jour si existe déjà
             $stmt = $this->db->prepare('
                 INSERT INTO dashboard_layouts (pt_id, med_id, layout_config)
                 VALUES (?, ?, ?)
@@ -166,10 +230,8 @@ class PatientRepository
                     date_modification = CURRENT_TIMESTAMP
             ');
 
-            $result = $stmt->execute([$patientId, $medId, $jsonConfig]);
-            error_log("[PATIENT_REPO] Résultat execute: " . ($result ? 'SUCCESS' : 'FAILED'));
-            
-            return $result;
+            return $stmt->execute([$patientId, $medId, $jsonConfig]);
+
         } catch (\Throwable $e) {
             error_log('[PATIENT_REPO] Erreur saveDashboardLayout: ' . $e->getMessage());
             return false;
@@ -177,16 +239,22 @@ class PatientRepository
     }
 
     /**
-     * Trouve des patients similaires en utilisant l'algorithme KNN
+     * Trouve des patients similaires (Algorithme KNN).
+     *
+     * Analyse les données du patient actuel et cherche d'autres patients
+     * ayant des caractéristiques proches (âge, sexe, constantes vitales).
+     *
+     * Utile pour suggérer des configurations de dashboard basées sur des cas similaires
+     *
      * @param int $patientId ID du patient de référence
-     * @param int $medId ID du médecin
-     * @param int $k Nombre de voisins à trouver
-     * @return array Liste des patients similaires avec leur distance
+     * @param int $medId     ID du médecin
+     * @param int $k         Nombre de voisins à trouver (défaut 5)
+     * @return array         Liste des patients similaires trouvés
      */
     public function findSimilarPatients(int $patientId, int $medId, int $k = 5): array
     {
         try {
-            // Récupérer les caractéristiques du patient cible
+            // 1. Récupérer les données du patient cible (Âge, moyennes vitales...)
             $targetStmt = $this->db->prepare('
                 SELECT 
                     p.pt_id,
@@ -206,11 +274,9 @@ class PatientRepository
             $targetStmt->execute([$patientId]);
             $target = $targetStmt->fetch(PDO::FETCH_ASSOC);
 
-            if (!$target) {
-                return [];
-            }
+            if (!$target) return [];
 
-            // Récupérer tous les autres patients du médecin avec un layout enregistré
+            // 2. Récupérer tous les autres patients candidats (ceux qui ont un layout sauvegardé)
             $candidatesStmt = $this->db->prepare('
                 SELECT DISTINCT
                     p.pt_id,
@@ -233,51 +299,43 @@ class PatientRepository
             $candidatesStmt->execute([$medId, $patientId]);
             $candidates = $candidatesStmt->fetchAll(PDO::FETCH_ASSOC);
 
-            error_log("[KNN] Patient cible: #$patientId, Médecin: #$medId");
-            error_log("[KNN] Nombre de candidats trouvés: " . count($candidates));
-            
-            if (empty($candidates)) {
-                error_log("[KNN] Aucun patient candidat trouvé avec un layout enregistré");
-                return [];
-            }
+            if (empty($candidates)) return [];
 
-            // Calculer les distances euclidiennes normalisées
+            // 3. Calculer les distances mathématiques entre les patients
             $distances = [];
             foreach ($candidates as $candidate) {
                 $distance = 0;
 
-                // Distance d'âge (normalisée sur 100 ans)
+                // Différence d'âge (pondérée sur 100 ans)
                 $ageDiff = ($target['age'] - $candidate['age']) / 100;
                 $distance += $ageDiff * $ageDiff;
 
-                // Distance de sexe (0 ou 1)
+                // Différence de sexe (0 = même sexe, 1 = différent)
                 if ($target['sexe'] !== $candidate['sexe']) {
                     $distance += 1;
                 }
 
-                // Distance de groupe sanguin (0 ou 1)
+                // Différence de groupe sanguin
                 if ($target['groupe_sanguin'] !== $candidate['groupe_sanguin']) {
-                    $distance += 0.5; // Poids réduit
+                    $distance += 0.5; // Moins important que le sexe ou l'âge
                 }
 
-                // Distances des moyennes de constantes vitales (normalisées)
+                // Différence sur les constantes vitales (Tension, FC, Temp, SpO2)
                 if ($target['avg_tension'] && $candidate['avg_tension']) {
-                    $tensionDiff = ($target['avg_tension'] - $candidate['avg_tension']) / 80; // Plage ~80-160
+                    $tensionDiff = ($target['avg_tension'] - $candidate['avg_tension']) / 80;
                     $distance += $tensionDiff * $tensionDiff;
                 }
-
+                // (Même logique pour les autres constantes...)
                 if ($target['avg_fc'] && $candidate['avg_fc']) {
-                    $fcDiff = ($target['avg_fc'] - $candidate['avg_fc']) / 95; // Plage ~35-130
+                    $fcDiff = ($target['avg_fc'] - $candidate['avg_fc']) / 95;
                     $distance += $fcDiff * $fcDiff;
                 }
-
                 if ($target['avg_temp'] && $candidate['avg_temp']) {
-                    $tempDiff = ($target['avg_temp'] - $candidate['avg_temp']) / 5; // Plage ~35-40
+                    $tempDiff = ($target['avg_temp'] - $candidate['avg_temp']) / 5;
                     $distance += $tempDiff * $tempDiff;
                 }
-
                 if ($target['avg_spo2'] && $candidate['avg_spo2']) {
-                    $spo2Diff = ($target['avg_spo2'] - $candidate['avg_spo2']) / 10; // Plage ~90-100
+                    $spo2Diff = ($target['avg_spo2'] - $candidate['avg_spo2']) / 10;
                     $distance += $spo2Diff * $spo2Diff;
                 }
 
@@ -287,16 +345,11 @@ class PatientRepository
                 ];
             }
 
-            // Trier par distance croissante et prendre les k plus proches
+            // 4. Trier pour garder les plus proches (distance la plus petite)
             usort($distances, fn($a, $b) => $a['distance'] <=> $b['distance']);
-            $result = array_slice($distances, 0, $k);
-            
-            error_log("[KNN] Patients similaires trouvés: " . count($result));
-            if (!empty($result)) {
-                error_log("[KNN] Patient le plus proche: #" . $result[0]['pt_id'] . " (distance: " . round($result[0]['distance'], 2) . ")");
-            }
-            
-            return $result;
+
+            // Retourner les K premiers résultats
+            return array_slice($distances, 0, $k);
 
         } catch (\Throwable $e) {
             error_log('[PATIENT_REPO] Erreur findSimilarPatients: ' . $e->getMessage());

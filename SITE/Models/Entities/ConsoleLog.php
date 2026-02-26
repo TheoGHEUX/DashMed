@@ -2,6 +2,16 @@
 
 namespace Models\Entities;
 
+/**
+ * Entité Log Console
+ *
+ *  Log pour les actions effectuées dans le tableau de bord.
+ *
+ * Stocke les détails d'une action : qui a fait l'action (médecin), quel type d'action,
+ * sur quel patient et quelle mesure, ainsi que l'heure.
+ *
+ * @package Models\Entities
+ */
 class ConsoleLog
 {
     private int $id;
@@ -12,6 +22,12 @@ class ConsoleLog
     private string $date;
     private string $heure;
 
+    /**
+     *
+     * Mappe les clés de la base de données vers les propriétés typées de l'objet.
+     *
+     * @param array $data généralement une ligne de BD
+     */
     public function __construct(array $data)
     {
         $this->id = (int) ($data['log_id'] ?? 0);
@@ -22,5 +38,4 @@ class ConsoleLog
         $this->date = $data['date_action'] ?? '';
         $this->heure = $data['heure_action'] ?? '';
     }
-
 }

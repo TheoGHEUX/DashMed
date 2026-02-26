@@ -3,7 +3,14 @@
 namespace Models\Entities;
 
 /**
- * Objet Patient (Données pures)
+ * Entité Patient
+ *
+ * Représente un patient inscrit dans l'application.
+ *
+ * Cette classe sert à stocker toutes les informations d'un patient (nom, prénom, adresse, etc.)
+ * pour les utiliser facilement dans le reste du code.
+ *
+ * @package Models\Entities
  */
 class Patient
 {
@@ -19,7 +26,16 @@ class Patient
     private ?string $codePostal;
     private ?string $ville;
 
-
+    /**
+     * Constructeur : Crée un patient à partir de données brutes.
+     *
+     * Prend un tableau de données
+     * et remplit automatiquement les propriétés de l'objet.
+     *
+     * Si une info est manquante, elle est laissée vide ou nulle.
+     *
+     * @param array $data Tableau contenant les infos du patient
+     */
     public function __construct(array $data)
     {
         $this->id = (int) ($data['pt_id'] ?? 0);
@@ -35,12 +51,43 @@ class Patient
         $this->ville = $data['ville'] ?? null;
     }
 
-    // Getters
+    // --- Méthodes pour récupérer les infos (Getters) ---
+
+    /**
+     * Récupère l'identifiant unique du patient.
+     *
+     * @return int L'ID du patient
+     */
     public function getId(): int { return $this->id; }
+
+    /**
+     * Récupère le nom de famille.
+     *
+     * @return string Le nom
+     */
     public function getNom(): string { return $this->nom; }
+
+    /**
+     * Récupère le prénom.
+     *
+     * @return string Le prénom
+     */
     public function getPrenom(): string { return $this->prenom; }
+
+    /**
+     * Récupère l'adresse email (peut être vide).
+     *
+     * @return string|null L'email ou null
+     */
     public function getEmail(): ?string { return $this->email; }
 
+    /**
+     * Convertit l'objet Patient en un simple tableau.
+     *
+     * Transforme toutes les infos de l'objet en un format tableau
+     *
+     * @return array Tableau des données du patient
+     */
     public function toArray(): array
     {
         return [
