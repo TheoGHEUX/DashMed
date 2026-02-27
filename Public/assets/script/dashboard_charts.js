@@ -1359,6 +1359,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         );
     }
 
+    window.addEventListener('chartDataUpdated', (e) => {
+        const newData = e.detail.chartData;
+
+        // Mettre à jour les données de chaque définition de graphique
+        Object.keys(CHART_DEFINITIONS).forEach(chartId => {
+            if (!newData[chartId]) return;
+
+            const def = CHART_DEFINITIONS[chartId];
+            const metric = newData[chartId];
+
+            def.data = metric.values;
+            def.value = metric.lastValue?.toFixed(def.unit === '°C' || def.unit === 'mmol/L' ? 1 : 0) || 'No Data';
+
+            // Mettre à jour les seuils
+            def.thresholds.preoccupant     = metric.seuil_preoccupant     ?? null;
+            def.thresholds.urgent          = metric.seuil_urgent          ?? null;
+            def.thresholds.critique        = metric.seuil_critique        ?? null;
+            def.thresholds.preoccupant_min = metric.seuil_preoccupant_min ?? null;
+            def.thresholds.urgent_min      = metric.seuil_urgent_min      ?? null;
+            def.thresholds.critique_min    = metric.seuil_critique_min    ?? null;
+
+            // Mettre à jour la valeur affichée sous le graphique
+            const valueEl = document.getElementById(def.valueId);
+            if (valueEl) valueEl.textContent = def.value;
+        });
+
+        // Redessiner tous les graphiques
+        redrawAllCharts();
+    });
+
     /**
      * Affiche un indicateur temporaire lors du redimensionnement.
      *

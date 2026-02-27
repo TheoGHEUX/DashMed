@@ -464,4 +464,61 @@ final class DashboardController
         ]);
         exit;
     }
+
+    /**
+     * Endpoint API pour récupérer les données des graphiques en temps réel.
+     * Utilisé pour le polling côté client.
+     */
+    public function getChartData(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        if (empty($_SESSION['user'])) {
+            http_response_code(401);
+            echo json_encode(['error' => 'Non authentifié']);
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+            http_response_code(405);
+            echo json_encode(['error' => 'Méthode non autorisée']);
+            exit;
+        }
+
+        $ptId = isset($_GET['ptId']) ? (int)$_GET['ptId'] : null;
+        $medId = (int) $_SESSION['user']['id'];
+
+        if (!$ptId) {
+            http_response_code(400);
+            echo json_encode(['error' => 'ID patient manquant']);
+            exit;
+        }
+
+        // Vérifier que le médecin suit bien ce patient
+        $patientsObjects = $this->patientRepo->getPatientsForDoctor($medId);
+        $doctorPatients = array_map(fn($p) => $p->toArray()['pt_id'], $patientsObjects);
+
+        if (!in_array($ptId, $doctorPatients, true)) {
+            http_response_code(403);
+            echo json_encode(['error' => 'Accès non autorisé']);
+            exit;
+        }
+
+        $chartData = [];
+        foreach (self::METRICS_CONFIG as $key => $config) {
+            $metricData = $this->getMetricChartData(
+                $ptId,
+                $config['label'],
+                $config['labelAlt'] ?? null,
+                $config['min'],
+                $config['max']
+            );
+            if ($metricData !== null) {
+                $chartData[$key] = $metricData;
+            }
+        }
+
+        echo json_encode(['success' => true, 'chartData' => $chartData]);
+        exit;
+    }
 }

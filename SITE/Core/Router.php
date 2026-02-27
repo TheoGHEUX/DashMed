@@ -95,6 +95,7 @@ final class Router
             '/api/save-dashboard-layout' => [DashboardController::class, 'saveLayout'],
             '/api/suggest-layout' => [DashboardController::class, 'suggestLayout', 'suggestLayout'],
             '/api/check-ai-availability' => [DashboardController::class, 'checkAIAvailability', 'checkAIAvailability'],
+            '/api/dashboard/chart-data'  => [DashboardController::class, 'getChartData', 'getChartData'],
         ],
     ];
 
