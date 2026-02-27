@@ -2,7 +2,7 @@
 
 use Core\Database;
 
-function generatePatientData(int $patientId, int $nb_valeurs = 5): void
+function generatePatientData(int $patientId): void
 {
     $pdo = Database::getConnection();
 
@@ -26,19 +26,15 @@ function generatePatientData(int $patientId, int $nb_valeurs = 5): void
 
         $valeur_base = $last !== false ? (float)$last : 70;
 
-        for ($i = 0; $i < $nb_valeurs; $i++) {
+        $variation = mt_rand(-5,5)/10;
+        $valeur = round($valeur_base + $variation, 1);
 
-            $variation = mt_rand(-5,5)/10;
-            $valeur = round($valeur_base + $variation, 1);
-            $valeur_base = $valeur;
+        $insert = $pdo->prepare("
+            INSERT INTO valeurs_mesures 
+            (valeur, date_mesure, heure_mesure, id_mesure)
+            VALUES (?, CURDATE(), CURTIME(), ?)
+        ");
 
-            $insert = $pdo->prepare("
-                INSERT INTO valeurs_mesures 
-                (valeur, date_mesure, heure_mesure, id_mesure)
-                VALUES (?, CURDATE(), CURTIME(), ?)
-            ");
-
-            $insert->execute([$valeur, $id_mesure]);
-        }
+        $insert->execute([$valeur, $id_mesure]);
     }
 }

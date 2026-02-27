@@ -1,18 +1,30 @@
-document.getElementById('generateDataBtn').addEventListener('click', async () => {
+document.getElementById('generateDataBtn').addEventListener('click', () => {
 
-    const response = await fetch('/generate-data', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: 'patient=25'
-    });
+    const btn = document.getElementById('generateDataBtn');
+    btn.disabled = true;
+    btn.textContent = "Live en cours...";
 
-    const data = await response.json();
+    let compteur = 0;
 
-    if (data.success) {
-        alert('5 valeurs générées');
-    } else {
-        alert('Erreur');
-    }
+    const interval = setInterval(async () => {
+
+        await fetch('/generate-data', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: 'patient=25'
+        });
+
+        compteur++;
+
+        console.log("Valeur générée :", compteur);
+
+        if (compteur >= 5) {
+            clearInterval(interval);
+            btn.disabled = false;
+            btn.textContent = "Générer 5 mesures";
+        }
+
+    }, 3000); // 3 secondes
 });
