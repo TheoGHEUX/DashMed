@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
         notif.querySelector('.btn-notif-view').addEventListener('click', () => {
 			// Vérifier si le graphique est visible dans le dashboard
 			const isVisible = window.dashboardIsChartVisible && window.dashboardIsChartVisible(metricKey);
-			
+
 			// Si le graphique n'est pas visible, le réajouter
 			if (!isVisible && window.dashboardAddChart) {
 				window.dashboardAddChart(metricKey);
@@ -109,5 +109,30 @@ document.addEventListener('DOMContentLoaded', function() {
         if (level) {
             createNotification(key, level, metric.lastValue, metric.unit);
         }
+    });
+
+    const notifiedValues = {};
+    Object.keys(chartData).forEach(key => {
+        notifiedValues[key] = chartData[key]?.lastValue ?? null;
+    });
+
+    // Écouter les mises à jour en temps réel
+    window.addEventListener('chartDataUpdated', (e) => {
+        const newData = e.detail.chartData;
+
+        Object.keys(newData).forEach(key => {
+            const metric = newData[key];
+            const newValue = metric.lastValue;
+
+            // Ne notifier que si la valeur a changé depuis la dernière notification
+            if (newValue === notifiedValues[key]) return;
+
+            notifiedValues[key] = newValue;
+
+            const level = getAlertLevel(key, metric);
+            if (level) {
+                createNotification(key, level, newValue, metric.unit);
+            }
+        });
     });
 });
