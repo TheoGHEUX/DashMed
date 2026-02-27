@@ -71,7 +71,7 @@
     // Exécution immédiate pour éviter un flash visuel lors du chargement
     initTheme();
     
-    // Setup toggle when DOM is ready
+    // Configuration du bouton lorsque le DOM est prêt
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', setupToggle);
     } else {

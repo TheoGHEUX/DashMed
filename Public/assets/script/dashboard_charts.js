@@ -34,12 +34,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 		}, 1000);
 	}
 
-	// Reset config if requested via URL parameter
+	// Réinitialiser la configuration si demandé via un paramètre URL
 	const urlParams = new URLSearchParams(window.location.search);
 	if (urlParams.get('reset') === '1') {
 		// Supprimer l'ancien localStorage si présent
 		localStorage.removeItem('dashboardChartConfig');
-		// Remove the reset parameter from URL
+		// Retirer le paramètre reset de l'URL
 		window.history.replaceState({}, '', window.location.pathname);
 	}
 
@@ -541,7 +541,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             tooltip.style.display = 'none';
             drawChart();
         });
-    }    // Bar chart - Version statique
+    }    // Graphique en barres - Version statique
 
     /**
      * Charge la configuration des graphiques depuis l'API (par patient).
@@ -1413,14 +1413,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 			const chartId = e.dataTransfer.getData('text/plain');
 			const source = e.dataTransfer.getData('source');
 
-			// Only add if it's from chart-option panel (not from moving within grid)
+			// N'ajouter que si ça vient du panneau d'options (pas d'un déplacement interne)
 			if (source === 'chart-option' && chartId && !chartConfig.visible.includes(chartId)) {
 				addChart(chartId);
 			}
 		});
 	}
 
-    // Setup drop zone pour supprimer des graphiques (drag vers panneau)
+    // Configuration de la zone de suppression des graphiques (glisser vers le panneau)
 	if (addChartPanel) {
 		addChartPanel.addEventListener('dragover', (e) => {
 			if (!editMode) return;
@@ -1445,14 +1445,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 			const chartId = e.dataTransfer.getData('text/plain');
 			const source = e.dataTransfer.getData('source');
 
-			// Only delete if it's from a chart card
+			// Ne supprimer que si ça vient d'une carte de graphique
 			if (source === 'chart-card' && chartId && chartConfig.visible.includes(chartId)) {
 				removeChart(chartId);
 			}
 		});
 	}
 
-	// Populate sample numeric values under each chart
+	// Remplir les valeurs numériques d'exemple sous chaque graphique
 	Object.keys(CHART_DEFINITIONS).forEach(chartId => {
 		const def = CHART_DEFINITIONS[chartId];
 		const valueEl = document.getElementById(def.valueId);
@@ -1488,15 +1488,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 		};
 	}
 
-	// Apply saved configuration
-	// applyChartConfig();
-
-	// Reorder charts in DOM based on saved order
-	// reorderChartsInDOM();
-
-	// initial resize
-	// resizeAllCanvases();
-
 	// Fonction pour redessiner tous les graphiques
 	let isReordering = false;
 
@@ -1517,23 +1508,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 		// Charger la configuration depuis l'API
 		chartConfig = await loadChartConfig();
 
-		// Apply saved configuration
+		// Appliquer la configuration sauvegardée
 		applyChartConfig();
 
-		// Reorder charts in DOM based on saved order
+		// Réorganiser les graphiques dans le DOM selon l'ordre sauvegardé
 		reorderChartsInDOM();
 
-		// initial resize
+		// Redimensionnement initial
 		resizeAllCanvases();
 
-		// start animations for all charts present in the DOM
+		// Démarrer les animations pour tous les graphiques présents dans le DOM
 		redrawAllCharts();
 	}
 
 	// Lancer l'initialisation
 	initializeDashboard();
 
-	// resize handler (debounced) to keep canvases crisp when viewport changes
+	// Gestionnaire de redimensionnement (debounced) pour garder les canvas nets lors des changements de viewport
 	window.addEventListener('resize', debounce(() => {
 		resizeAllCanvases();
 		redrawAllCharts();
