@@ -57,18 +57,37 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Voir l'alerte
         notif.querySelector('.btn-notif-view').addEventListener('click', () => {
-            const chartCard = document.querySelector(`article[data-chart-id="${metricKey}"]`);
-            if (chartCard) {
-                chartCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                chartCard.style.transition = 'box-shadow 0.5s';
-                chartCard.style.boxShadow = '0 0 20px rgba(229, 62, 62, 0.6)';
-                setTimeout(() => { chartCard.style.boxShadow = ''; }, 2000);
-            }
-            closeNotification(notif);
-        });
+			// Vérifier si le graphique est visible dans le dashboard
+			const isVisible = window.dashboardIsChartVisible && window.dashboardIsChartVisible(metricKey);
+			
+			// Si le graphique n'est pas visible, le réajouter
+			if (!isVisible && window.dashboardAddChart) {
+				window.dashboardAddChart(metricKey);
+				// Attendre que le graphique soit ajouté au DOM avant de scroller
+				setTimeout(() => {
+					const chartCard = document.querySelector(`article[data-chart-id="${metricKey}"]`);
+					if (chartCard) {
+						chartCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+						chartCard.style.transition = 'box-shadow 0.5s';
+						chartCard.style.boxShadow = '0 0 20px rgba(229, 62, 62, 0.6)';
+						setTimeout(() => { chartCard.style.boxShadow = ''; }, 2000);
+					}
+				}, 100);
+			} else {
+				// Le graphique est déjà visible, scroller directement
+				const chartCard = document.querySelector(`article[data-chart-id="${metricKey}"]`);
+				if (chartCard) {
+					chartCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+					chartCard.style.transition = 'box-shadow 0.5s';
+					chartCard.style.boxShadow = '0 0 20px rgba(229, 62, 62, 0.6)';
+					setTimeout(() => { chartCard.style.boxShadow = ''; }, 2000);
+				}
+			}
+			closeNotification(notif);
+		});
 
-        // Ignorer
-        notif.querySelector('.btn-notif-ignore').addEventListener('click', () => {
+		// Ignorer
+		notif.querySelector('.btn-notif-ignore').addEventListener('click', () => {
             closeNotification(notif);
         });
 

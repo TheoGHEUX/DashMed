@@ -1552,5 +1552,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 		console.log('Événement themechange reçu:', e.detail.theme);
 		setTimeout(() => redrawAllCharts(), 50);
 	});
+
+	// Exposer les fonctions globalement pour les notifications
+	window.dashboardAddChart = addChart;
+	window.dashboardIsChartVisible = (chartId) => chartConfig?.visible.includes(chartId) ?? false;
 });
 
