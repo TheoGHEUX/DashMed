@@ -20,10 +20,10 @@ document.getElementById('generateDataBtn').addEventListener('click', () => {
 
         console.log("Valeur générée :", compteur);
 
-        if (compteur >= 5) {
+        if (compteur >= 20) {
             clearInterval(interval);
             btn.disabled = false;
-            btn.textContent = "Générer 5 mesures";
+            btn.textContent = "Générer 20 mesures";
         }
 
     }, 3000); // 3 secondes
