@@ -259,7 +259,7 @@ include __DIR__ . '/../partials/head.php';
 <?php if (!empty($patient) && $patient['pt_id'] == 25) : ?>
     <div class="dashboard-actions">
         <button id="generateDataBtn" class="btn-small">
-            Générer 5 mesures
+            Générer 20 mesures
         </button>
     </div>
 <?php endif; ?>
