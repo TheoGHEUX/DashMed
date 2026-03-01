@@ -1270,3 +1270,34 @@
         padding: 1rem;
     }
 }
+
+/* Bouton pour tout ignorer */
+
+.btn-dismiss-all {
+    display: block;
+    width: 100%;
+    margin-bottom: 8px;
+    padding: 6px 12px;
+    background: rgba(133, 129, 129, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    color: #333;
+    cursor: pointer;
+    font-size: 0.85rem;
+    text-align: center;
+    transition: background 0.2s;
+}
+
+.btn-dismiss-all:hover {
+    background: rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="dark"] .btn-dismiss-all {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+[data-theme="dark"] .btn-dismiss-all:hover {
+    background: rgba(255, 255, 255, 0.2);
+}

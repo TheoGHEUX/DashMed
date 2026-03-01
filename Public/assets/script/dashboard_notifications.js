@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Récupération des données injectées par PHP
     const chartData = window.patientChartData || {};
     const container = document.getElementById('notification-container');
+    const activeNotifications = new Set();
 
     if (!container || Object.keys(chartData).length === 0) return;
 
@@ -31,6 +32,27 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function createNotification(metricKey, level, value, unit) {
+
+
+        if (activeNotifications.has(metricKey)) return; // Bloquer si une notification est déjà ouverte pour cette mesure pour éviter les accumulations inutiles de popups.
+        activeNotifications.add(metricKey);
+
+        // Créer ou afficher le bouton "Ignorer tout" s'il n'existe pas encore
+        let dismissAllBtn = document.getElementById('dismiss-all-btn');
+        if (!dismissAllBtn) {
+            dismissAllBtn = document.createElement('button');
+            dismissAllBtn.id = 'dismiss-all-btn';
+            dismissAllBtn.className = 'btn-dismiss-all';
+            dismissAllBtn.textContent = 'Tout ignorer';
+            dismissAllBtn.addEventListener('click', () => {
+                // Fermer toutes les notifications actives
+                container.querySelectorAll('.notification-toast').forEach(n => closeNotification(n));
+                activeNotifications.clear();
+                dismissAllBtn.remove();
+            });
+            container.insertBefore(dismissAllBtn, container.firstChild);
+        }
+
         const titleMap = {
             'critique': 'Seuil Critique Atteint',
             'urgent': 'Seuil Urgent Atteint',
@@ -57,6 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Voir l'alerte
         notif.querySelector('.btn-notif-view').addEventListener('click', () => {
+            activeNotifications.delete(metricKey);
 			// Vérifier si le graphique est visible dans le dashboard
 			const isVisible = window.dashboardIsChartVisible && window.dashboardIsChartVisible(metricKey);
 
@@ -88,6 +111,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		// Ignorer
 		notif.querySelector('.btn-notif-ignore').addEventListener('click', () => {
+            activeNotifications.delete(metricKey);
             closeNotification(notif);
         });
 
@@ -98,7 +122,13 @@ document.addEventListener('DOMContentLoaded', function() {
         element.classList.add('closing');
         setTimeout(() => {
             if (element.parentNode) element.parentNode.removeChild(element);
-        }, 300); // Attend la fin de l'animation CSS
+
+            // Supprimer le bouton "Ignorer tout" s'il ne reste plus de notifications
+            const remaining = container.querySelectorAll('.notification-toast').length;
+            if (remaining === 0) {
+                document.getElementById('dismiss-all-btn')?.remove();
+            }
+        }, 300);
     }
 
 
