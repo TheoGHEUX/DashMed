@@ -86,6 +86,62 @@ class Patient
     }
 
     /**
+     * @return string|null Sexe du patient ou null
+     */
+    public function getSexe(): ?string
+    {
+        return $this->sexe;
+    }
+
+    /**
+     * @return string|null Groupe sanguin du patient ou null
+     */
+    public function getGroupeSanguin(): ?string
+    {
+        return $this->groupeSanguin;
+    }
+
+    /**
+     * @return string|null Date de naissance du patient ou null
+     */
+    public function getDateNaissance(): ?string
+    {
+        return $this->dateNaissance;
+    }
+
+    /**
+     * @return string|null Numéro de téléphone du patient ou null
+     */
+    public function getTelephone(): ?string
+    {
+        return $this->telephone;
+    }
+
+    /**
+     * @return string|null Adresse du patient ou null
+     */
+    public function getAdresse(): ?string
+    {
+        return $this->adresse;
+    }
+
+    /**
+     * @return string|null Code postal du patient ou null
+     */
+    public function getCodePostal(): ?string
+    {
+        return $this->codePostal;
+    }
+
+    /**
+     * @return string|null Ville du patient ou null
+     */
+    public function getVille(): ?string
+    {
+        return $this->ville;
+    }
+
+    /**
      * Convertit l'objet Patient en un simple tableau.
      *
      * Transforme toutes les infos de l'objet en un format tableau

@@ -32,7 +32,7 @@ document.getElementById('generateDataBtn').addEventListener('click', () => {
 
 /**
  * Mise à jour en temps réel des graphiques du dashboard
- * Polling toutes les 15 secondes vers /api/dashboard/chart-data
+ * Polling toutes les secondes vers /api/dashboard/chart-data
  */
 (function () {
     const POLL_INTERVAL_MS = 1000;

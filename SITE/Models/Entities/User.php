@@ -119,6 +119,22 @@ class User
     }
 
     /**
+     * @return string|null Sexe de l'utilisateur ou null
+     */
+    public function getSexe(): ?string
+    {
+        return $this->sexe;
+    }
+
+    /**
+     * @return string|null Spécialité médicale de l'utilisateur ou null
+     */
+    public function getSpecialite(): ?string
+    {
+        return $this->specialite;
+    }
+
+    /**
      * Prépare les données pour la session
      *
      * Sélectionne uniquement les info nécessaires à garder en mémoire
