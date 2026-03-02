@@ -11,7 +11,8 @@ document.getElementById('generateDataBtn').addEventListener('click', () => {
         await fetch('/generate-data', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRF-Token': window.csrfToken || ''
             },
             body: 'patient=25'
         });

@@ -4,6 +4,7 @@ namespace Controllers;
 
 use Models\Repositories\PatientRepository;
 use Models\Repositories\ConsoleRepository;
+use Core\Csrf;
 
 /**
  * Tableau de bord
@@ -74,6 +75,27 @@ final class DashboardController
     public function __construct()
     {
         $this->patientRepo = new PatientRepository();
+    }
+
+    /**
+     * Vérifie le jeton CSRF envoyé via le header X-CSRF-Token.
+     *
+     * Utilisé pour protéger les endpoints API POST contre les attaques CSRF.
+     * Le jeton n'est pas consommé afin de permettre plusieurs appels API par session.
+     *
+     * @return bool True si le jeton est valide, False sinon (répond 403 et termine)
+     */
+    private function validateApiCsrf(): bool
+    {
+        $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+
+        if ($token === '' || !Csrf::validateWithoutConsuming($token)) {
+            http_response_code(403);
+            echo json_encode(['error' => 'Jeton CSRF invalide ou manquant']);
+            exit;
+        }
+
+        return true;
     }
 
     /**
@@ -244,6 +266,8 @@ final class DashboardController
             exit;
         }
 
+        $this->validateApiCsrf();
+
         $input = json_decode(file_get_contents('php://input'), true);
         $action = $input['action'] ?? null;
         $ptId = isset($input['ptId']) ? (int)$input['ptId'] : null;
@@ -346,6 +370,8 @@ final class DashboardController
             echo json_encode(['error' => 'Méthode non autorisée']);
             exit;
         }
+
+        $this->validateApiCsrf();
 
         $input = json_decode(file_get_contents('php://input'), true);
         $ptId = isset($input['ptId']) ? (int)$input['ptId'] : null;

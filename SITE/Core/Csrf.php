@@ -56,4 +56,27 @@ final class Csrf
         unset($_SESSION['csrf_token'], $_SESSION['csrf_token_time']);
         return true;
     }
+
+    /**
+     * Valide un jeton CSRF sans le consommer.
+     *
+     * Conçu pour les appels API répétés (AJAX/fetch) où le même jeton
+     * doit rester valide pendant toute la durée de la session.
+     * Le jeton est transmis via le header HTTP X-CSRF-Token.
+     *
+     * @param string $token      Jeton fourni par le header HTTP
+     * @param int    $ttlSeconds Durée de vie en secondes (7200s = 2h)
+     * @return bool  Vrai si le jeton est valide, faux sinon
+     */
+    public static function validateWithoutConsuming(string $token, int $ttlSeconds = 7200): bool
+    {
+        if (empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
+            return false;
+        }
+        if (!empty($_SESSION['csrf_token_time']) && (time() - (int)$_SESSION['csrf_token_time']) > $ttlSeconds) {
+            unset($_SESSION['csrf_token'], $_SESSION['csrf_token_time']);
+            return false;
+        }
+        return true;
+    }
 }

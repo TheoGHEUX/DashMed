@@ -652,7 +652,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 		fetch('/api/log-graph-action', {
 			method: 'POST',
 			headers: {
-				'Content-Type': 'application/json'
+				'Content-Type': 'application/json',
+				'X-CSRF-Token': window.csrfToken || ''
 			},
 			body: JSON.stringify({ 
 				action: action,
@@ -689,7 +690,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 		fetch('/api/save-dashboard-layout', {
 			method: 'POST',
 			headers: {
-				'Content-Type': 'application/json'
+				'Content-Type': 'application/json',
+				'X-CSRF-Token': window.csrfToken || ''
 			},
 			body: JSON.stringify({
 				ptId: ptId,

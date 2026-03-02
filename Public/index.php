@@ -77,10 +77,18 @@ if ($uri === '/generate-data' && $method === 'POST') {
 
     header('Content-Type: application/json');
 
-    // 🔐 Sécurité (à adapter selon ton système)
+    // Sécurité : authentification requise
     if (!isset($_SESSION['user'])) {
         http_response_code(403);
         echo json_encode(['error' => 'Accès refusé']);
+        exit;
+    }
+
+    // Sécurité : validation CSRF via header
+    $csrfToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+    if ($csrfToken === '' || !\Core\Csrf::validateWithoutConsuming($csrfToken)) {
+        http_response_code(403);
+        echo json_encode(['error' => 'Jeton CSRF invalide ou manquant']);
         exit;
     }
 
