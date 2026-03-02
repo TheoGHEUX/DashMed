@@ -55,52 +55,68 @@ class User
     // --- Méthodes pour récupérer les infos (Getters) ---
 
     /**
-     * Récupère l'identifiant unique
-     * @return int
+     * @return int Identifiant unique de l'utilisateur
      */
-    public function getId(): int { return $this->id; }
+    public function getId(): int
+    {
+        return $this->id;
+    }
 
     /**
-     * Récupère le prénom
-     * @return string
+     * @return string Prénom de l'utilisateur
      */
-    public function getPrenom(): string { return $this->prenom; }
+    public function getPrenom(): string
+    {
+        return $this->prenom;
+    }
 
     /**
-     * Récupère le nom de famille
-     * @return string
+     * @return string Nom de l'utilisateur
      */
-    public function getNom(): string { return $this->nom; }
+    public function getNom(): string
+    {
+        return $this->nom;
+    }
 
     /**
-     * Récupère l'adresse email
-     * @return string
+     * @return string Email de l'utilisateur
      */
-    public function getEmail(): string { return $this->email; }
+    public function getEmail(): string
+    {
+        return $this->email;
+    }
 
     /**
-     * Récupère le mot de passe hashé
-     * @return string
+     * @return string Hash du mot de passe de l'utilisateur
      */
-    public function getPasswordHash(): string { return $this->passwordHash; }
+    public function getPasswordHash(): string
+    {
+        return $this->passwordHash;
+    }
 
     /**
-     * Vérifie si l'email a été confirmé par l'utilisateur
      * @return bool Vrai si confirmé, Faux sinon
      */
-    public function isEmailVerified(): bool { return $this->emailVerified; }
+    public function isEmailVerified(): bool
+    {
+        return $this->emailVerified;
+    }
 
     /**
-     * Récupère le token de vérification d'email
-     * @return string|null Le token ou null
+     * @return string|null Token ou null
      */
-    public function getVerificationToken(): ?string { return $this->verificationToken; }
+    public function getVerificationToken(): ?string
+    {
+        return $this->verificationToken;
+    }
 
     /**
-     * Récupère la date d'expiration du lien de vérification
-     * @return string|null La date ou null
+     * @return string|null Date d'expiration ou null
      */
-    public function getVerificationExpires(): ?string { return $this->verificationExpires; }
+    public function getVerificationExpires(): ?string
+    {
+        return $this->verificationExpires;
+    }
 
     /**
      * Prépare les données pour la session

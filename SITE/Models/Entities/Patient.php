@@ -54,32 +54,36 @@ class Patient
     // --- Méthodes pour récupérer les infos (Getters) ---
 
     /**
-     * Récupère l'identifiant unique du patient.
-     *
-     * @return int L'ID du patient
+     * @return int Id du patient
      */
-    public function getId(): int { return $this->id; }
+    public function getId(): int
+    {
+        return $this->id;
+    }
 
     /**
-     * Récupère le nom de famille.
-     *
-     * @return string Le nom
+     * @return string Nom du patient
      */
-    public function getNom(): string { return $this->nom; }
+    public function getNom(): string
+    {
+        return $this->nom;
+    }
 
     /**
-     * Récupère le prénom.
-     *
-     * @return string Le prénom
+     * @return string Prénom du patient
      */
-    public function getPrenom(): string { return $this->prenom; }
+    public function getPrenom(): string
+    {
+        return $this->prenom;
+    }
 
     /**
-     * Récupère l'adresse email (peut être vide).
-     *
-     * @return string|null L'email ou null
+     * @return string|null Email du patient ou null
      */
-    public function getEmail(): ?string { return $this->email; }
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
 
     /**
      * Convertit l'objet Patient en un simple tableau.

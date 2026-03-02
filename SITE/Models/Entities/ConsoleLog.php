@@ -58,7 +58,7 @@ class ConsoleLog
     }
 
     /**
-     * @return string Type d'action effectuée
+     * @return string Type d'action
      */
     public function getTypeAction(): string
     {
@@ -66,7 +66,7 @@ class ConsoleLog
     }
 
     /**
-     * @return int|null Identifiant du patient (nullable)
+     * @return int|null Identifiant du patient ou null
      */
     public function getPtId(): ?int
     {
@@ -74,7 +74,7 @@ class ConsoleLog
     }
 
     /**
-     * @return int|null Identifiant de la mesure (nullable)
+     * @return int|null Identifiant de la mesure ou null
      */
     public function getMesureId(): ?int
     {
