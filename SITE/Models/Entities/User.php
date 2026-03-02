@@ -52,7 +52,7 @@ class User
         $this->verificationExpires = $data['email_verification_expires'] ?? null;
     }
 
-    // --- Méthodes de lecture (Getters) ---
+    // --- Méthodes pour récupérer les infos (Getters) ---
 
     /**
      * Récupère l'identifiant unique
@@ -91,10 +91,16 @@ class User
     public function isEmailVerified(): bool { return $this->emailVerified; }
 
     /**
+     * Récupère le token de vérification d'email
+     * @return string|null Le token ou null
+     */
+    public function getVerificationToken(): ?string { return $this->verificationToken; }
+
+    /**
      * Récupère la date d'expiration du lien de vérification
      * @return string|null La date ou null
      */
-    public function getVerificationExpires(): ?string { return $this->verificationExpires;}
+    public function getVerificationExpires(): ?string { return $this->verificationExpires; }
 
     /**
      * Prépare les données pour la session

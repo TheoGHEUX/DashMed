@@ -38,4 +38,62 @@ class ConsoleLog
         $this->date = $data['date_action'] ?? '';
         $this->heure = $data['heure_action'] ?? '';
     }
+
+    // --- Méthodes pour récupérer les infos (Getters) ---
+
+    /**
+     * @return int Identifiant du log
+     */
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return int Identifiant du médecin
+     */
+    public function getMedId(): int
+    {
+        return $this->medId;
+    }
+
+    /**
+     * @return string Type d'action effectuée
+     */
+    public function getTypeAction(): string
+    {
+        return $this->typeAction;
+    }
+
+    /**
+     * @return int|null Identifiant du patient (nullable)
+     */
+    public function getPtId(): ?int
+    {
+        return $this->ptId;
+    }
+
+    /**
+     * @return int|null Identifiant de la mesure (nullable)
+     */
+    public function getMesureId(): ?int
+    {
+        return $this->mesureId;
+    }
+
+    /**
+     * @return string Date de l'action
+     */
+    public function getDate(): string
+    {
+        return $this->date;
+    }
+
+    /**
+     * @return string Heure de l'action
+     */
+    public function getHeure(): string
+    {
+        return $this->heure;
+    }
 }
