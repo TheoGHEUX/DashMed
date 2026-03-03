@@ -96,6 +96,7 @@ final class Router
             '/api/suggest-layout' => [DashboardController::class, 'suggestLayout', 'suggestLayout'],
             '/api/check-ai-availability' => [DashboardController::class, 'checkAIAvailability', 'checkAIAvailability'],
             '/api/dashboard/chart-data'  => [DashboardController::class, 'getChartData', 'getChartData'],
+            '/api/predict-action' => [DashboardController::class, 'predictAction'],
         ],
     ];
 

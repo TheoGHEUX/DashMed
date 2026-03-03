@@ -547,4 +547,91 @@ final class DashboardController
         echo json_encode(['success' => true, 'chartData' => $chartData]);
         exit;
     }
+
+    /**
+     * Endpoint API pour prédire la prochaine action du médecin.
+     *
+     * Appelle le script Python predict_action.py avec l'action courante
+     * et le type de mesure, puis retourne la prédiction en JSON.
+     *
+     * Le script Python charge un arbre de décision pré-entraîné (scikit-learn)
+     * qui a appris les enchaînements d'actions depuis l'historique.
+     *
+     * Requête POST JSON attendue :
+     *   { "action": "supprimer", "mesure": "Fréquence cardiaque" }
+     *
+     * Réponse JSON :
+     *   { "success": true, "prediction": { "action": "...", "mesure": "..." }, ... }
+     */
+    public function predictAction(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        if (empty($_SESSION['user'])) {
+            http_response_code(401);
+            echo json_encode(['error' => 'Non authentifié']);
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['error' => 'Méthode non autorisée']);
+            exit;
+        }
+
+        $this->validateApiCsrf();
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        $action = $input['action'] ?? null;
+        $mesure = $input['mesure'] ?? null;
+
+        if (!$action || !$mesure) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Paramètres action et mesure requis']);
+            exit;
+        }
+
+        // Validation : seules les actions connues sont acceptées
+        $validActions = ['ajouter', 'supprimer', 'réduire', 'agrandir'];
+        if (!in_array($action, $validActions, true)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Action invalide']);
+            exit;
+        }
+
+        // Chemin vers le script Python
+        $scriptPath = dirname(__DIR__) . '/Scripts/predict_action.py';
+
+        if (!file_exists($scriptPath)) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Script de prédiction introuvable']);
+            exit;
+        }
+
+        // Appel du script Python via exec()
+        // escapeshellarg protège contre l'injection de commandes
+        $command = sprintf(
+            'python %s %s %s 2>&1',
+            escapeshellarg($scriptPath),
+            escapeshellarg($action),
+            escapeshellarg($mesure)
+        );
+
+        $output = [];
+        $exitCode = 0;
+        exec($command, $output, $exitCode);
+
+        $jsonOutput = implode('', $output);
+        $result = json_decode($jsonOutput, true);
+
+        if ($result === null) {
+            error_log('[PREDICT] Sortie Python invalide : ' . $jsonOutput);
+            http_response_code(500);
+            echo json_encode(['error' => 'Erreur de prédiction', 'details' => $jsonOutput]);
+            exit;
+        }
+
+        echo json_encode($result, JSON_UNESCAPED_UNICODE);
+        exit;
+    }
 }
