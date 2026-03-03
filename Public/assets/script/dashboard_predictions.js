@@ -1,21 +1,10 @@
-/**
- * Module de prédiction IA pour le dashboard médical.
- *
- * Après chaque action utilisateur (ajouter, supprimer, agrandir, réduire),
- * appelle l'API /api/predict-action qui utilise un arbre de décision
- * (scikit-learn) pour suggérer la prochaine action probable.
- *
- * La suggestion est affichée sous forme de pop-up dans le conteneur
- * de notifications existant, avec un style distinct (bleu/violet IA).
- *
- * @module dashboard_predictions
- */
+// dashboard_predictions.js
+// Après chaque action (ajouter/supprimer/agrandir/réduire), appelle l'API
+// /api/predict-action pour suggérer la prochaine action via un pop-up.
+
 document.addEventListener('DOMContentLoaded', function () {
 
-    /**
-     * Mapping chartId ↔ nom de mesure tel qu'enregistré en base.
-     * Doit rester synchronisé avec METRICS_CONFIG dans DashboardController.php
-     */
+    // Mapping chartId -> nom de mesure en base (doit rester synchro avec METRICS_CONFIG côté PHP)
     const CHART_TO_MESURE = {
         'temperature':       'Température corporelle',
         'blood-pressure':    'Tension artérielle',
@@ -26,24 +15,16 @@ document.addEventListener('DOMContentLoaded', function () {
         'oxygen-saturation': 'Saturation en oxygène'
     };
 
-    /** Mapping inverse : nom de mesure → chartId */
+    // Mapping inverse pour retrouver le chartId depuis le nom de mesure
     const MESURE_TO_CHART = {};
     for (const [chartId, mesure] of Object.entries(CHART_TO_MESURE)) {
         MESURE_TO_CHART[mesure] = chartId;
     }
 
-    /** Empêche d'afficher plusieurs suggestions en même temps */
-    let predictionActive = false;
+    let predictionActive = false; // empêche d'afficher plusieurs suggestions en même temps
+    const MIN_CONFIDENCE = 0.05; // seuil minimum pour afficher une suggestion
 
-    /** Seuil de confiance minimum pour afficher une suggestion (5 %) */
-    const MIN_CONFIDENCE = 0.05;
-
-    /**
-     * Appelle l'API de prédiction et affiche le résultat en pop-up.
-     *
-     * @param {string} action  - L'action que l'utilisateur vient d'effectuer
-     * @param {string|null} chartId - L'ID du graphique concerné
-     */
+    // Appelle l'API de prédiction après une action utilisateur
     function fetchAndShowPrediction(action, chartId) {
         // Ne pas empiler les suggestions
         if (predictionActive) return;
@@ -95,13 +76,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    /**
-     * Affiche une pop-up de suggestion IA dans le conteneur de notifications.
-     *
-     * @param {string} action     - Action prédite ('ajouter', 'supprimer', etc.)
-     * @param {string} mesure     - Nom de la mesure prédite
-     * @param {number} confidence - Niveau de confiance [0-1]
-     */
+    // Affiche le pop-up de suggestion dans le conteneur de notifications
     function showPredictionPopup(action, mesure, confidence) {
         const container = document.getElementById('notification-container');
         if (!container) {
@@ -112,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const targetChartId = MESURE_TO_CHART[mesure] || null;
         const confidencePercent = Math.round(confidence * 100);
 
-        // Libellé lisible de l'action
+        // Libellé lisible
         const actionLabels = {
             'ajouter':   'Ajouter',
             'supprimer': 'Supprimer',
@@ -137,13 +112,13 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
         `;
 
-        // Bouton « Appliquer » : exécute l'action prédite
+        // Bouton Appliquer
         popup.querySelector('.btn-notif-accept').addEventListener('click', () => {
             executePredictedAction(action, targetChartId);
             closePrediction(popup);
         });
 
-        // Bouton « Ignorer » : ferme la pop-up
+        // Bouton Ignorer
         popup.querySelector('.btn-notif-ignore').addEventListener('click', () => {
             closePrediction(popup);
         });
@@ -158,11 +133,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 8000);
     }
 
-    /**
-     * Ferme une pop-up de prédiction avec animation.
-     *
-     * @param {HTMLElement} element - Élément DOM de la pop-up
-     */
+    // Ferme un pop-up avec l'animation CSS .closing
     function closePrediction(element) {
         element.classList.add('closing');
         setTimeout(() => {
@@ -171,19 +142,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 300);
     }
 
-    /**
-     * Exécute l'action prédite sur le graphique cible.
-     *
-     * Utilise les fonctions globales exposées par dashboard_charts.js :
-     * - window.dashboardAddChart(chartId)
-     * - window.dashboardRemoveChart(chartId)
-     *
-     * Pour agrandir/réduire, scrolle vers le graphique pour signaler
-     * visuellement l'action (le redimensionnement nécessite le mode édition).
-     *
-     * @param {string} action  - Action à exécuter
-     * @param {string|null} chartId - ID du graphique cible
-     */
+    // Exécute l'action prédite (utilise les fonctions globales de dashboard_charts.js)
     function executePredictedAction(action, chartId) {
         if (!chartId) return;
 
@@ -202,17 +161,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
             case 'agrandir':
             case 'réduire':
-                // Scroller vers le graphique pour montrer qu'il faudrait agir dessus
+                // On peut pas redimensionner par code, on scroll juste vers le graphique
                 highlightChart(chartId);
                 break;
         }
     }
 
-    /**
-     * Met en surbrillance un graphique pour attirer l'attention.
-     *
-     * @param {string} chartId - ID du graphique à mettre en surbrillance
-     */
+    // Highlight un graphique pour attirer l'attention dessus
     function highlightChart(chartId) {
         const card = document.querySelector(`article[data-chart-id="${chartId}"]`);
         if (card) {
@@ -223,6 +178,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Exposer la fonction globalement pour dashboard_charts.js
+    // Expose globalement pour que dashboard_charts.js puisse l'appeler
     window.dashboardFetchPrediction = fetchAndShowPrediction;
 });

@@ -1,30 +1,9 @@
-"""
-Script de prédiction — Prédit la prochaine action du médecin.
-
-Appelé par PHP via exec(). Reçoit l'action courante et le type de mesure
-en arguments, charge le modèle entraîné, et renvoie une prédiction en JSON.
-
-Usage :
-    python predict_action.py <action_courante> <type_mesure_courante>
-
-Exemples :
-    python predict_action.py supprimer "Fréquence cardiaque"
-    python predict_action.py réduire "Température corporelle"
-
-Sortie (JSON sur stdout) :
-    {
-        "success": true,
-        "prediction": {
-            "action": "supprimer",
-            "mesure": "Tension artérielle"
-        },
-        "confidence": 0.72,
-        "top_predictions": [
-            {"action": "supprimer", "mesure": "Tension artérielle", "probability": 0.72},
-            {"action": "supprimer", "mesure": "Glycémie", "probability": 0.15}
-        ]
-    }
-"""
+# predict_action.py
+# Appelé par PHP (exec) pour prédire la prochaine action du médecin.
+# Charge le modèle entraîné et retourne du JSON sur stdout.
+#
+# Usage : python predict_action.py <action> <type_mesure>
+# Ex: python predict_action.py supprimer "Fréquence cardiaque"
 
 import sys
 import os
@@ -34,21 +13,13 @@ import joblib
 
 
 def get_storage_dir():
-    """Retourne le chemin vers SITE/storage/."""
+    """Chemin vers SITE/storage/ où sont stockés les .joblib."""
     script_dir = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(os.path.dirname(script_dir), 'storage')
 
 
 def load_model():
-    """
-    Charge le modèle et les encodeurs depuis SITE/storage/.
-
-    Fichiers attendus :
-        - action_model.joblib   : l'arbre de décision entraîné
-        - action_encoder.joblib : encodeur actions (texte → nombre)
-        - mesure_encoder.joblib : encodeur mesures (texte → nombre)
-        - label_encoder.joblib  : encodeur labels (nombre → "action|mesure")
-    """
+    """Charge le modèle + les 3 encodeurs depuis storage/."""
     storage = get_storage_dir()
 
     model = joblib.load(os.path.join(storage, 'action_model.joblib'))
@@ -60,23 +31,10 @@ def load_model():
 
 
 def predict(action_courante, mesure_courante):
-    """
-    Prédit la prochaine action à partir de l'action et mesure courantes.
-
-    Processus :
-        1. Encode l'action et la mesure en nombres via les encodeurs
-        2. Passe le vecteur [action_encodée, mesure_encodée] au modèle
-        3. Récupère les probabilités pour chaque classe
-        4. Décode les top prédictions en texte lisible
-
-    Retourne un dictionnaire JSON-serializable avec :
-        - La prédiction principale (action + mesure)
-        - Le niveau de confiance (probabilité)
-        - Les 3 meilleures prédictions avec leurs probabilités
-    """
+    """Prédit la prochaine action à partir de l'action+mesure courantes."""
     model, action_enc, mesure_enc, label_enc = load_model()
 
-    # Vérifier que l'action et la mesure sont connues du modèle
+    # Vérifier que les valeurs sont connues du modèle
     if action_courante not in action_enc.classes_:
         return {
             'success': False,
@@ -91,25 +49,22 @@ def predict(action_courante, mesure_courante):
                      f"Mesures connues : {list(mesure_enc.classes_)}"
         }
 
-    # Encoder les entrées
+    # Encoder les entrées (même format que l'entraînement)
     action_encoded = action_enc.transform([action_courante])[0]
     mesure_encoded = mesure_enc.transform([mesure_courante])[0]
-
-    # Construire le vecteur de features (même format que l'entraînement)
     X = np.array([[action_encoded, mesure_encoded]])
 
-    # Prédiction avec probabilités
+    # predict_proba donne les probas pour chaque classe possible
     probabilities = model.predict_proba(X)[0]
 
-    # Trier par probabilité décroissante
+    # Trier par proba décroissante et garder le top 3
     sorted_indices = np.argsort(probabilities)[::-1]
 
-    # Décoder les top 3 prédictions
     top_predictions = []
     for idx in sorted_indices[:3]:
         prob = probabilities[idx]
         if prob < 0.05:
-            break  # Ignorer les prédictions < 5%
+            break  # en dessous de 5% c'est pas pertinent
 
         label = label_enc.inverse_transform([idx])[0]
         action_pred, mesure_pred = label.split('|', 1)
@@ -126,7 +81,7 @@ def predict(action_courante, mesure_courante):
             'error': 'Aucune prédiction suffisamment fiable'
         }
 
-    # Résultat principal = la prédiction la plus probable
+    # La meilleure prédiction
     best = top_predictions[0]
 
     return {
@@ -141,7 +96,6 @@ def predict(action_courante, mesure_courante):
 
 
 def main():
-    # Vérification des arguments
     if len(sys.argv) != 3:
         result = {
             'success': False,

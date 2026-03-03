@@ -1,27 +1,10 @@
-"""
-Script d'entraînement — Arbre de décision pour la prédiction d'actions médecin.
-
-Principe :
-    On lit l'historique des actions (table historique_console) et on reconstruit
-    des paires (action_courante → action_suivante) pour chaque session médecin/patient.
-    
-    Le modèle apprend à prédire : "après telle action sur telle mesure,
-    quelle sera la prochaine action et sur quelle mesure ?"
-
-Features (entrées) :
-    - type_action_courante   (encodé 0-3 : ajouter/supprimer/réduire/agrandir)
-    - type_mesure_courante   (encodé 0-6 : les 7 types de mesures)
-
-Label (sortie) :
-    - Combinaison action_suivante + mesure_suivante (entier encodé)
-
-Sortie :
-    - Fichier .joblib contenant le modèle entraîné
-    - Fichiers .joblib contenant les encodeurs (pour décoder les prédictions)
-
-Usage :
-    python SITE/Scripts/train_action_model.py
-"""
+# train_action_model.py
+# Entraîne un arbre de décision sur l'historique des actions du dashboard
+# pour prédire la prochaine action du médecin.
+#
+# Usage : python SITE/Scripts/train_action_model.py
+#
+# Le modèle + encodeurs sont sauvegardés en .joblib dans SITE/storage/
 
 import sys
 import os
@@ -33,15 +16,8 @@ from sklearn.preprocessing import LabelEncoder
 import joblib
 
 
-# ============================================================
-# 1. Connexion à la BDD (mêmes paramètres que Database.php)
-# ============================================================
-
 def get_db_config():
-    """
-    Lit le fichier .env s'il existe, sinon utilise les valeurs par défaut
-    (identique au comportement de SITE/Core/Database.php).
-    """
+    """Lit le .env pour les identifiants BDD (même logique que Database.php)."""
     # Remonter à la racine du projet
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(os.path.dirname(script_dir))
@@ -73,20 +49,9 @@ def get_db_config():
     }
 
 
-# ============================================================
-# 2. Récupération des données d'entraînement
-# ============================================================
-
 def fetch_training_data(conn):
-    """
-    Récupère l'historique des actions avec le type de mesure associé.
-    
-    On ne garde que les lignes où id_mesure est NOT NULL
-    (sinon on ne sait pas sur quelle mesure porte l'action).
-    
-    Le tri chronologique (date + heure + log_id) permet de reconstruire
-    les séquences d'actions dans l'ordre réel.
-    """
+    """Récupère l'historique des actions avec le type de mesure (JOIN mesures)."""
+    # On garde que les lignes avec id_mesure NOT NULL, triées par ordre chronologique
     cur = conn.cursor()
     cur.execute("""
         SELECT 
@@ -108,31 +73,14 @@ def fetch_training_data(conn):
     return rows
 
 
-# ============================================================
-# 3. Construction des paires (action N → action N+1)
-# ============================================================
-
 def build_pairs(rows):
     """
-    Reconstruit les paires d'actions consécutives.
-    
-    Pour chaque médecin+patient, on prend les actions dans l'ordre chronologique
-    et on crée des paires : (action[i], mesure[i]) → (action[i+1], mesure[i+1])
-    
-    Exemple concret :
-        Si un médecin fait ces actions sur le patient 25 :
-            1. supprimer Fréquence cardiaque
-            2. supprimer Tension artérielle
-            3. ajouter Glycémie
-        
-        On génère 2 paires :
-            (supprimer, Fréquence cardiaque) → (supprimer, Tension artérielle)
-            (supprimer, Tension artérielle)  → (ajouter, Glycémie)
+    Construit des paires (action N -> action N+1) groupées par médecin+patient.
+    Ex: si le médecin fait supprimer FC puis ajouter Glycémie,
+    on obtient la paire (supprimer, FC) -> (ajouter, Glycémie)
     """
     pairs = []
-    
-    # Regrouper par (med_id, pt_id) pour avoir des séquences cohérentes
-    sessions = {}
+    sessions = {}  # grouper par (med_id, pt_id)
     for row in rows:
         log_id, med_id, action, pt_id, type_mesure, date_action, heure_action = row
         key = (med_id, pt_id)
@@ -143,16 +91,13 @@ def build_pairs(rows):
             'type_mesure': type_mesure,
         })
     
-    # Pour chaque session, créer les paires consécutives
     for key, actions in sessions.items():
         for i in range(len(actions) - 1):
             current = actions[i]
             next_action = actions[i + 1]
             pairs.append({
-                # Features (entrées)
                 'action_courante': current['action'],
                 'mesure_courante': current['type_mesure'],
-                # Label (sortie à prédire)
                 'action_suivante': next_action['action'],
                 'mesure_suivante': next_action['type_mesure'],
             })
@@ -160,32 +105,14 @@ def build_pairs(rows):
     return pairs
 
 
-# ============================================================
-# 4. Encodage et entraînement
-# ============================================================
-
 def train_model(pairs):
-    """
-    Encode les données et entraîne un arbre de décision.
-    
-    Encodage :
-        Les actions et mesures textuelles sont converties en nombres entiers
-        par LabelEncoder (ex: 'supprimer' → 2, 'Glycémie' → 1).
-    
-    Arbre de décision :
-        - max_depth=10 : limite la profondeur pour éviter le sur-apprentissage
-        - min_samples_leaf=2 : chaque feuille doit avoir au moins 2 exemples
-        - random_state=42 : résultats reproductibles
-    
-    Le label combiné (action_suivante + mesure_suivante) est créé en concaténant
-    les deux valeurs : ex: "supprimer|Tension artérielle"
-    """
+    """Encode les données en nombres et entraîne un DecisionTreeClassifier."""
     if len(pairs) < 5:
         print(f"ERREUR : Seulement {len(pairs)} paires trouvées. Il faut plus de données.")
         print("Utilisez le dashboard pour générer de l'historique, puis relancez.")
         sys.exit(1)
     
-    # Encodeurs pour convertir texte → nombres
+    # Encodeurs pour convertir texte -> nombres (cf. doc sklearn LabelEncoder)
     action_encoder = LabelEncoder()
     mesure_encoder = LabelEncoder()
     label_encoder = LabelEncoder()
@@ -194,10 +121,11 @@ def train_model(pairs):
     actions_courantes = [p['action_courante'] for p in pairs]
     mesures_courantes = [p['mesure_courante'] for p in pairs]
     
-    # Labels combinés : "action|mesure"
+    # On combine action+mesure en un seul label (ex: "supprimer|Tension artérielle")
+    # TODO: tester avec MultiOutputClassifier pour séparer les 2 sorties
     labels = [f"{p['action_suivante']}|{p['mesure_suivante']}" for p in pairs]
     
-    # Fit des encodeurs sur TOUTES les valeurs possibles
+    # Fit des encodeurs sur toutes les valeurs rencontrées
     all_actions = list(set(actions_courantes + [p['action_suivante'] for p in pairs]))
     all_mesures = list(set(mesures_courantes + [p['mesure_suivante'] for p in pairs]))
     
@@ -205,13 +133,12 @@ def train_model(pairs):
     mesure_encoder.fit(all_mesures)
     label_encoder.fit(labels)
     
-    # Encodage des features
+    # Encodage des features (2 colonnes : action + mesure)
     X = np.column_stack([
         action_encoder.transform(actions_courantes),
         mesure_encoder.transform(mesures_courantes),
     ])
     
-    # Encodage des labels
     y = label_encoder.transform(labels)
     
     print(f"Données d'entraînement : {len(pairs)} paires")
@@ -219,15 +146,16 @@ def train_model(pairs):
     print(f"Mesures distinctes     : {list(mesure_encoder.classes_)}")
     print(f"Labels distincts       : {len(label_encoder.classes_)} combinaisons")
     
-    # Entraînement de l'arbre de décision
+    # Entraînement
+    # max_depth=10 pour éviter le sur-apprentissage, min_samples_leaf=2 pour pas avoir de feuilles avec 1 seul exemple
     model = DecisionTreeClassifier(
         max_depth=10,
         min_samples_leaf=2,
-        random_state=42
+        random_state=42  # pour reproductibilité
     )
     model.fit(X, y)
     
-    # Validation croisée (5 folds) pour estimer la qualité
+    # Validation croisée pour voir si le modèle généralise un minimum
     if len(pairs) >= 10:
         scores = cross_val_score(model, X, y, cv=min(5, len(pairs) // 2), scoring='accuracy')
         print(f"Précision (cross-val)  : {scores.mean():.1%} ± {scores.std():.1%}")
@@ -241,20 +169,8 @@ def train_model(pairs):
     return model, action_encoder, mesure_encoder, label_encoder
 
 
-# ============================================================
-# 5. Sauvegarde du modèle
-# ============================================================
-
 def save_model(model, action_encoder, mesure_encoder, label_encoder):
-    """
-    Sauvegarde le modèle et les encodeurs dans SITE/storage/.
-    
-    Fichiers créés :
-        - action_model.joblib       : le modèle entraîné
-        - action_encoder.joblib     : encodeur des actions (texte → nombre)
-        - mesure_encoder.joblib     : encodeur des mesures (texte → nombre)
-        - label_encoder.joblib      : encodeur des labels combinés (nombre → texte)
-    """
+    """Sauvegarde le modèle et les encodeurs en .joblib dans SITE/storage/."""
     script_dir = os.path.dirname(os.path.abspath(__file__))
     storage_dir = os.path.join(os.path.dirname(script_dir), 'storage')
     os.makedirs(storage_dir, exist_ok=True)
@@ -267,10 +183,6 @@ def save_model(model, action_encoder, mesure_encoder, label_encoder):
     print(f"\nModèle sauvegardé dans : {storage_dir}/")
     print("Fichiers : action_model.joblib, action_encoder.joblib, mesure_encoder.joblib, label_encoder.joblib")
 
-
-# ============================================================
-# Main
-# ============================================================
 
 def main():
     print("=" * 60)

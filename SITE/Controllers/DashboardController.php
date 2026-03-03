@@ -550,18 +550,7 @@ final class DashboardController
 
     /**
      * Endpoint API pour prédire la prochaine action du médecin.
-     *
-     * Appelle le script Python predict_action.py avec l'action courante
-     * et le type de mesure, puis retourne la prédiction en JSON.
-     *
-     * Le script Python charge un arbre de décision pré-entraîné (scikit-learn)
-     * qui a appris les enchaînements d'actions depuis l'historique.
-     *
-     * Requête POST JSON attendue :
-     *   { "action": "supprimer", "mesure": "Fréquence cardiaque" }
-     *
-     * Réponse JSON :
-     *   { "success": true, "prediction": { "action": "...", "mesure": "..." }, ... }
+     * Appelle predict_action.py via exec() et retourne le JSON.
      */
     public function predictAction(): void
     {
