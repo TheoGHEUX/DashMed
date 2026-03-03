@@ -15,6 +15,7 @@ $pageScripts     = $pageScripts ?? [
         '/assets/script/dashboard_charts.js',
         '/assets/script/dashboard.js',
         '/assets/script/dashboard_notifications.js',
+        '/assets/script/dashboard_predictions.js',
         '/assets/script/dashboard_generate_data.js'
 ];
 include __DIR__ . '/../partials/head.php';

@@ -670,7 +670,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 			return response.json();
 		})
 		.then(data => {
-			// Action loggée avec succès
+			// Action loggée — lancer la prédiction IA si disponible
+			if (typeof window.dashboardFetchPrediction === 'function') {
+				window.dashboardFetchPrediction(action, chartId);
+			}
 		})
 		.catch(err => {
 			// Erreur lors du log de l'action - ignorer silencieusement
@@ -1587,6 +1590,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 	// Exposer les fonctions globalement pour les notifications
 	window.dashboardAddChart = addChart;
+	window.dashboardRemoveChart = removeChart;
 	window.dashboardIsChartVisible = (chartId) => chartConfig?.visible.includes(chartId) ?? false;
 });
 
