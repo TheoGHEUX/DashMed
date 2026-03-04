@@ -68,7 +68,7 @@ class ConsoleRepository
 
         // Génération d'un ID unique basé sur le temps (microsecondes) + hasard
         $logId = (int)(microtime(true) * 10000) + random_int(1, 999);
-        $typeActionId = self::ACTION_IDS[$typeAction] ?? 0;
+        $typeActionId = self::ACTION_IDS[$typeAction];
 
         try {
             $stmt = $this->db->prepare('

@@ -2,14 +2,18 @@
 # Appelé par PHP (exec) pour prédire la prochaine action du médecin.
 # Charge le modèle entraîné et retourne du JSON sur stdout.
 #
-# Usage : python predict_action.py <action> <type_mesure>
-# Ex: python predict_action.py supprimer "Fréquence cardiaque"
+# Usage : python predict_action.py <action> <type_mesure> <heure> <position>
+# Ex: python predict_action.py supprimer "Fréquence cardiaque" 14 3
 
 import sys
 import os
 import json
 import numpy as np
 import joblib
+
+# Forcer la sortie en UTF-8 (Windows utilise cp1252 par défaut)
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
 
 # Mapping action ↔ entier (identique à type_action_id dans la BD)
 ACTION_MAP = {
@@ -37,8 +41,8 @@ def load_model():
     return model, mesure_enc
 
 
-def predict(action_courante, mesure_courante):
-    """Prédit la prochaine action à partir de l'action+mesure courantes."""
+def predict(action_courante, mesure_courante, heure=12, position=0):
+    """Prédit la prochaine action à partir de l'action+mesure courantes + contexte."""
     model, mesure_enc = load_model()
 
     # Vérifier que les valeurs sont connues
@@ -56,10 +60,10 @@ def predict(action_courante, mesure_courante):
                      f"Mesures connues : {list(mesure_enc.classes_)}"
         }
 
-    # Encoder les entrées : action via type_action_id, mesure via LabelEncoder
+    # 4 features : action_id, mesure_encoded, heure, position
     action_id = ACTION_MAP[action_courante]
     mesure_encoded = mesure_enc.transform([mesure_courante])[0]
-    X = np.array([[action_id, mesure_encoded]])
+    X = np.array([[action_id, mesure_encoded, int(heure), int(position)]])
 
     # Multi-output : predict_proba renvoie une liste de 2 arrays
     # [action_probs, mesure_probs] (cf. doc sklearn section 1.10.3)
@@ -123,19 +127,21 @@ def predict(action_courante, mesure_courante):
 
 
 def main():
-    if len(sys.argv) != 3:
+    if len(sys.argv) < 3 or len(sys.argv) > 5:
         result = {
             'success': False,
-            'error': 'Usage : python predict_action.py <action> <type_mesure>'
+            'error': 'Usage : python predict_action.py <action> <type_mesure> [heure] [position]'
         }
         print(json.dumps(result, ensure_ascii=False))
         sys.exit(1)
 
     action_courante = sys.argv[1]
     mesure_courante = sys.argv[2]
+    heure = int(sys.argv[3]) if len(sys.argv) > 3 else 12
+    position = int(sys.argv[4]) if len(sys.argv) > 4 else 0
 
     try:
-        result = predict(action_courante, mesure_courante)
+        result = predict(action_courante, mesure_courante, heure, position)
     except FileNotFoundError:
         result = {
             'success': False,

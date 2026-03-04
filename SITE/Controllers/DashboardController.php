@@ -556,71 +556,91 @@ final class DashboardController
     {
         header('Content-Type: application/json; charset=utf-8');
 
-        if (empty($_SESSION['user'])) {
-            http_response_code(401);
-            echo json_encode(['error' => 'Non authentifié']);
+        try {
+            if (empty($_SESSION['user'])) {
+                http_response_code(401);
+                echo json_encode(['error' => 'Non authentifié']);
+                exit;
+            }
+
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                http_response_code(405);
+                echo json_encode(['error' => 'Méthode non autorisée']);
+                exit;
+            }
+
+            $this->validateApiCsrf();
+
+            $input = json_decode(file_get_contents('php://input'), true);
+            $action = $input['action'] ?? null;
+            $mesure = $input['mesure'] ?? null;
+            $heure  = $input['heure'] ?? (int) date('G');
+            $position = $input['position'] ?? 0;
+
+            if (!$action || !$mesure) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Paramètres action et mesure requis']);
+                exit;
+            }
+
+            $validActions = ['ajouter', 'supprimer', 'réduire', 'agrandir'];
+            if (!in_array($action, $validActions, true)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Action invalide']);
+                exit;
+            }
+
+            $scriptPath = dirname(__DIR__) . '/Scripts/predict_action.py';
+
+            if (!file_exists($scriptPath)) {
+                http_response_code(500);
+                echo json_encode(['error' => 'Script de prédiction introuvable']);
+                exit;
+            }
+
+            $pythonBin = 'python';
+            if (PHP_OS_FAMILY === 'Windows' && file_exists('C:\\Python313\\python.exe')) {
+                $pythonBin = 'C:\\Python313\\python.exe';
+            }
+
+            // Forcer l'encodage UTF-8 pour éviter les caractères corrompus sous Windows
+            putenv('PYTHONIOENCODING=utf-8');
+
+            $command = sprintf(
+                '%s %s %s %s %s %s 2>&1',
+                escapeshellarg($pythonBin),
+                escapeshellarg($scriptPath),
+                escapeshellarg($action),
+                escapeshellarg($mesure),
+                escapeshellarg(strval((int) $heure)),
+                escapeshellarg(strval((int) $position))
+            );
+
+            $output = [];
+            $exitCode = 0;
+            exec($command, $output, $exitCode);
+
+            $jsonOutput = implode('', $output);
+            $result = json_decode($jsonOutput, true);
+
+            if ($result === null) {
+                http_response_code(500);
+                echo json_encode(['error' => 'Erreur de prédiction', 'details' => $jsonOutput]);
+                exit;
+            }
+
+            echo json_encode($result, JSON_UNESCAPED_UNICODE);
             exit;
-        }
 
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(405);
-            echo json_encode(['error' => 'Méthode non autorisée']);
-            exit;
-        }
-
-        $this->validateApiCsrf();
-
-        $input = json_decode(file_get_contents('php://input'), true);
-        $action = $input['action'] ?? null;
-        $mesure = $input['mesure'] ?? null;
-
-        if (!$action || !$mesure) {
-            http_response_code(400);
-            echo json_encode(['error' => 'Paramètres action et mesure requis']);
-            exit;
-        }
-
-        // Validation : seules les actions connues sont acceptées
-        $validActions = ['ajouter', 'supprimer', 'réduire', 'agrandir'];
-        if (!in_array($action, $validActions, true)) {
-            http_response_code(400);
-            echo json_encode(['error' => 'Action invalide']);
-            exit;
-        }
-
-        // Chemin vers le script Python
-        $scriptPath = dirname(__DIR__) . '/Scripts/predict_action.py';
-
-        if (!file_exists($scriptPath)) {
+        } catch (\Throwable $e) {
             http_response_code(500);
-            echo json_encode(['error' => 'Script de prédiction introuvable']);
+            echo json_encode([
+                'error' => 'Exception serveur',
+                'message' => $e->getMessage(),
+                'file' => basename($e->getFile()),
+                'line' => $e->getLine()
+            ]);
             exit;
         }
-
-        // Appel du script Python via exec()
-        // escapeshellarg protège contre l'injection de commandes
-        $command = sprintf(
-            'python %s %s %s 2>&1',
-            escapeshellarg($scriptPath),
-            escapeshellarg($action),
-            escapeshellarg($mesure)
-        );
-
-        $output = [];
-        $exitCode = 0;
-        exec($command, $output, $exitCode);
-
-        $jsonOutput = implode('', $output);
-        $result = json_decode($jsonOutput, true);
-
-        if ($result === null) {
-            error_log('[PREDICT] Sortie Python invalide : ' . $jsonOutput);
-            http_response_code(500);
-            echo json_encode(['error' => 'Erreur de prédiction', 'details' => $jsonOutput]);
-            exit;
-        }
-
-        echo json_encode($result, JSON_UNESCAPED_UNICODE);
-        exit;
     }
 }

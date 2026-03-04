@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let predictionActive = false; // empêche d'afficher plusieurs suggestions en même temps
     const MIN_CONFIDENCE = 0.05; // seuil minimum pour afficher une suggestion
+    let sessionActionCount = 0;  // compteur d'actions dans la session courante
 
     // Appelle l'API de prédiction après une action utilisateur
     function fetchAndShowPrediction(action, chartId) {
@@ -34,6 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!mesure) return;
 
         predictionActive = true;
+        sessionActionCount++;
 
         fetch('/api/predict-action', {
             method: 'POST',
@@ -41,7 +43,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 'Content-Type': 'application/json',
                 'X-CSRF-Token': window.csrfToken || ''
             },
-            body: JSON.stringify({ action: action, mesure: mesure })
+            body: JSON.stringify({
+                action: action,
+                mesure: mesure,
+                heure: new Date().getHours(),
+                position: sessionActionCount
+            })
         })
         .then(response => {
             if (!response.ok) throw new Error('Erreur API prédiction');
@@ -67,6 +74,22 @@ document.addEventListener('DOMContentLoaded', function () {
             if (predictedAction === action && predictedMesure === mesure) {
                 predictionActive = false;
                 return;
+            }
+
+            // Vérifier la cohérence avec l'état actuel du dashboard
+            const targetChartId = MESURE_TO_CHART[predictedMesure] || null;
+            if (targetChartId && typeof window.dashboardIsChartVisible === 'function') {
+                const isVisible = window.dashboardIsChartVisible(targetChartId);
+                // Ne pas proposer d'ajouter un graphique déjà affiché
+                if (predictedAction === 'ajouter' && isVisible) {
+                    predictionActive = false;
+                    return;
+                }
+                // Ne pas proposer de supprimer/réduire/agrandir un graphique absent
+                if (['supprimer', 'réduire', 'agrandir'].includes(predictedAction) && !isVisible) {
+                    predictionActive = false;
+                    return;
+                }
             }
 
             showPredictionPopup(predictedAction, predictedMesure, confidence);
