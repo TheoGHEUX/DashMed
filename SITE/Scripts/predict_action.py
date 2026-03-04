@@ -11,6 +11,15 @@ import json
 import numpy as np
 import joblib
 
+# Mapping action ↔ entier (identique à type_action_id en BDD)
+ACTION_MAP = {
+    'ajouter': 0,
+    'supprimer': 1,
+    'réduire': 2,
+    'agrandir': 3,
+}
+ACTION_MAP_INV = {v: k for k, v in ACTION_MAP.items()}
+
 
 def get_storage_dir():
     """Chemin vers SITE/storage/ où sont stockés les .joblib."""
@@ -19,27 +28,25 @@ def get_storage_dir():
 
 
 def load_model():
-    """Charge le modèle + les 3 encodeurs depuis storage/."""
+    """Charge le modèle + l'encodeur mesures depuis storage/."""
     storage = get_storage_dir()
 
     model = joblib.load(os.path.join(storage, 'action_model.joblib'))
-    action_enc = joblib.load(os.path.join(storage, 'action_encoder.joblib'))
     mesure_enc = joblib.load(os.path.join(storage, 'mesure_encoder.joblib'))
-    label_enc = joblib.load(os.path.join(storage, 'label_encoder.joblib'))
 
-    return model, action_enc, mesure_enc, label_enc
+    return model, mesure_enc
 
 
 def predict(action_courante, mesure_courante):
     """Prédit la prochaine action à partir de l'action+mesure courantes."""
-    model, action_enc, mesure_enc, label_enc = load_model()
+    model, mesure_enc = load_model()
 
-    # Vérifier que les valeurs sont connues du modèle
-    if action_courante not in action_enc.classes_:
+    # Vérifier que les valeurs sont connues
+    if action_courante not in ACTION_MAP:
         return {
             'success': False,
             'error': f"Action inconnue : '{action_courante}'. "
-                     f"Actions connues : {list(action_enc.classes_)}"
+                     f"Actions connues : {list(ACTION_MAP.keys())}"
         }
 
     if mesure_courante not in mesure_enc.classes_:
@@ -49,31 +56,50 @@ def predict(action_courante, mesure_courante):
                      f"Mesures connues : {list(mesure_enc.classes_)}"
         }
 
-    # Encoder les entrées (même format que l'entraînement)
-    action_encoded = action_enc.transform([action_courante])[0]
+    # Encoder les entrées : action via type_action_id, mesure via LabelEncoder
+    action_id = ACTION_MAP[action_courante]
     mesure_encoded = mesure_enc.transform([mesure_courante])[0]
-    X = np.array([[action_encoded, mesure_encoded]])
+    X = np.array([[action_id, mesure_encoded]])
 
-    # predict_proba donne les probas pour chaque classe possible
-    probabilities = model.predict_proba(X)[0]
+    # Multi-output : predict_proba renvoie une liste de 2 arrays
+    # [action_probs, mesure_probs] (cf. doc sklearn section 1.10.3)
+    proba_list = model.predict_proba(X)
+    action_probs = proba_list[0][0]  # probas pour chaque action possible
+    mesure_probs = proba_list[1][0]  # probas pour chaque mesure possible
+
+    # Top actions et mesures triées par proba décroissante
+    top_action_idx = np.argsort(action_probs)[::-1]
+    top_mesure_idx = np.argsort(mesure_probs)[::-1]
+
+    best_action_idx = top_action_idx[0]
+    best_mesure_idx = top_mesure_idx[0]
+
+    best_action = ACTION_MAP_INV[int(best_action_idx)]
+    best_mesure = str(mesure_enc.inverse_transform([best_mesure_idx])[0])
+
+    # Confiance = produit des 2 probas (action et mesure indépendantes)
+    action_conf = float(action_probs[best_action_idx])
+    mesure_conf = float(mesure_probs[best_mesure_idx])
+    confidence = round(action_conf * mesure_conf, 3)
+
+    # Construire le top 3 des combinaisons les plus probables
+    top_predictions = []
+    for a_idx in top_action_idx[:3]:
+        for m_idx in top_mesure_idx[:3]:
+            a_prob = float(action_probs[a_idx])
+            m_prob = float(mesure_probs[m_idx])
+            combined = a_prob * m_prob
+            if combined < 0.05:
+                continue
+            top_predictions.append({
+                'action': ACTION_MAP_INV[int(a_idx)],
+                'mesure': str(mesure_enc.inverse_transform([m_idx])[0]),
+                'probability': round(combined, 3)
+            })
 
     # Trier par proba décroissante et garder le top 3
-    sorted_indices = np.argsort(probabilities)[::-1]
-
-    top_predictions = []
-    for idx in sorted_indices[:3]:
-        prob = probabilities[idx]
-        if prob < 0.05:
-            break  # en dessous de 5% c'est pas pertinent
-
-        label = label_enc.inverse_transform([idx])[0]
-        action_pred, mesure_pred = label.split('|', 1)
-
-        top_predictions.append({
-            'action': str(action_pred),
-            'mesure': str(mesure_pred),
-            'probability': round(float(prob), 3)
-        })
+    top_predictions.sort(key=lambda x: x['probability'], reverse=True)
+    top_predictions = top_predictions[:3]
 
     if not top_predictions:
         return {
@@ -81,16 +107,17 @@ def predict(action_courante, mesure_courante):
             'error': 'Aucune prédiction suffisamment fiable'
         }
 
-    # La meilleure prédiction
-    best = top_predictions[0]
-
     return {
         'success': True,
         'prediction': {
-            'action': best['action'],
-            'mesure': best['mesure']
+            'action': best_action,
+            'mesure': best_mesure
         },
-        'confidence': best['probability'],
+        'confidence': confidence,
+        'details': {
+            'action_confidence': round(action_conf, 3),
+            'mesure_confidence': round(mesure_conf, 3)
+        },
         'top_predictions': top_predictions
     }
 

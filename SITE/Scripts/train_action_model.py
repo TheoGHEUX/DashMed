@@ -12,8 +12,18 @@ import pymysql
 import numpy as np
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import cross_val_score
+from sklearn.metrics import make_scorer
 from sklearn.preprocessing import LabelEncoder
 import joblib
+
+# Mapping action ↔ entier (identique à la colonne type_action_id en BDD)
+ACTION_MAP = {
+    'ajouter': 0,
+    'supprimer': 1,
+    'réduire': 2,
+    'agrandir': 3,
+}
+ACTION_MAP_INV = {v: k for k, v in ACTION_MAP.items()}
 
 
 def get_db_config():
@@ -58,6 +68,7 @@ def fetch_training_data(conn):
             h.log_id,
             h.med_id,
             h.type_action,
+            h.type_action_id,
             h.pt_id,
             m.type_mesure,
             h.date_action,
@@ -82,12 +93,13 @@ def build_pairs(rows):
     pairs = []
     sessions = {}  # grouper par (med_id, pt_id)
     for row in rows:
-        log_id, med_id, action, pt_id, type_mesure, date_action, heure_action = row
+        log_id, med_id, action, action_id, pt_id, type_mesure, date_action, heure_action = row
         key = (med_id, pt_id)
         if key not in sessions:
             sessions[key] = []
         sessions[key].append({
             'action': action,
+            'action_id': int(action_id),
             'type_mesure': type_mesure,
         })
     
@@ -97,8 +109,10 @@ def build_pairs(rows):
             next_action = actions[i + 1]
             pairs.append({
                 'action_courante': current['action'],
+                'action_id_courante': current['action_id'],
                 'mesure_courante': current['type_mesure'],
                 'action_suivante': next_action['action'],
+                'action_id_suivante': next_action['action_id'],
                 'mesure_suivante': next_action['type_mesure'],
             })
     
@@ -106,82 +120,88 @@ def build_pairs(rows):
 
 
 def train_model(pairs):
-    """Encode les données en nombres et entraîne un DecisionTreeClassifier."""
+    """Encode les données en nombres et entraîne un DecisionTreeClassifier multi-output."""
     if len(pairs) < 5:
         print(f"ERREUR : Seulement {len(pairs)} paires trouvées. Il faut plus de données.")
         print("Utilisez le dashboard pour générer de l'historique, puis relancez.")
         sys.exit(1)
     
-    # Encodeurs pour convertir texte -> nombres (cf. doc sklearn LabelEncoder)
-    action_encoder = LabelEncoder()
+    # Les actions utilisent directement type_action_id de la BDD (0-3)
+    # Seules les mesures ont besoin d'un encodeur (texte -> nombre)
     mesure_encoder = LabelEncoder()
-    label_encoder = LabelEncoder()
     
     # Extraire les colonnes
-    actions_courantes = [p['action_courante'] for p in pairs]
+    action_ids_courantes = [p['action_id_courante'] for p in pairs]
     mesures_courantes = [p['mesure_courante'] for p in pairs]
+    action_ids_suivantes = [p['action_id_suivante'] for p in pairs]
+    mesures_suivantes = [p['mesure_suivante'] for p in pairs]
     
-    # On combine action+mesure en un seul label (ex: "supprimer|Tension artérielle")
-    # TODO: tester avec MultiOutputClassifier pour séparer les 2 sorties
-    labels = [f"{p['action_suivante']}|{p['mesure_suivante']}" for p in pairs]
-    
-    # Fit des encodeurs sur toutes les valeurs rencontrées
-    all_actions = list(set(actions_courantes + [p['action_suivante'] for p in pairs]))
-    all_mesures = list(set(mesures_courantes + [p['mesure_suivante'] for p in pairs]))
-    
-    action_encoder.fit(all_actions)
+    # Fit de l'encodeur mesures sur toutes les valeurs rencontrées
+    all_mesures = list(set(mesures_courantes + mesures_suivantes))
     mesure_encoder.fit(all_mesures)
-    label_encoder.fit(labels)
     
-    # Encodage des features (2 colonnes : action + mesure)
+    # Features : [type_action_id, mesure_encoded]
     X = np.column_stack([
-        action_encoder.transform(actions_courantes),
+        np.array(action_ids_courantes),
         mesure_encoder.transform(mesures_courantes),
     ])
     
-    y = label_encoder.transform(labels)
+    # Multi-output : y = [action_id_suivante, mesure_suivante_encoded]
+    # cf. doc sklearn section 1.10.3 "Multi-output problems"
+    y = np.column_stack([
+        np.array(action_ids_suivantes),
+        mesure_encoder.transform(mesures_suivantes),
+    ])
     
     print(f"Données d'entraînement : {len(pairs)} paires")
-    print(f"Actions distinctes     : {list(action_encoder.classes_)}")
+    print(f"Actions (type_action_id) : {sorted(set(action_ids_courantes + action_ids_suivantes))}")
     print(f"Mesures distinctes     : {list(mesure_encoder.classes_)}")
-    print(f"Labels distincts       : {len(label_encoder.classes_)} combinaisons")
+    print(f"Sorties                : {len(ACTION_MAP)} actions x {len(mesure_encoder.classes_)} mesures")
     
     # Entraînement
-    # max_depth=10 pour éviter le sur-apprentissage, min_samples_leaf=2 pour pas avoir de feuilles avec 1 seul exemple
+    # max_depth=10 pour éviter le sur-apprentissage
+    # min_samples_leaf=5 comme recommandé par la doc sklearn (section 1.10.5 Tips)
     model = DecisionTreeClassifier(
         max_depth=10,
-        min_samples_leaf=2,
-        random_state=42  # pour reproductibilité
+        min_samples_leaf=5,
+        random_state=42
     )
     model.fit(X, y)
     
+    # Pour le multi-output, accuracy_score ne marche pas directement.
+    # On calcule manuellement : une prédiction est correcte si les 2 sorties sont bonnes
+    def multioutput_accuracy(y_true, y_pred):
+        correct = np.all(y_true == y_pred, axis=1)
+        return np.mean(correct)
+    
+    scorer = make_scorer(multioutput_accuracy)
+    
     # Validation croisée pour voir si le modèle généralise un minimum
     if len(pairs) >= 10:
-        scores = cross_val_score(model, X, y, cv=min(5, len(pairs) // 2), scoring='accuracy')
+        scores = cross_val_score(model, X, y, cv=min(5, len(pairs) // 2), scoring=scorer)
         print(f"Précision (cross-val)  : {scores.mean():.1%} ± {scores.std():.1%}")
     else:
         print("Pas assez de données pour la validation croisée.")
     
-    # Score sur l'ensemble complet
-    train_score = model.score(X, y)
+    # Score sur l'ensemble d'entraînement
+    y_pred = model.predict(X)
+    train_score = multioutput_accuracy(y, y_pred)
     print(f"Précision (train)      : {train_score:.1%}")
     
-    return model, action_encoder, mesure_encoder, label_encoder
+    return model, mesure_encoder
 
 
-def save_model(model, action_encoder, mesure_encoder, label_encoder):
-    """Sauvegarde le modèle et les encodeurs en .joblib dans SITE/storage/."""
+def save_model(model, mesure_encoder):
+    """Sauvegarde le modèle et l'encodeur mesures en .joblib dans SITE/storage/."""
     script_dir = os.path.dirname(os.path.abspath(__file__))
     storage_dir = os.path.join(os.path.dirname(script_dir), 'storage')
     os.makedirs(storage_dir, exist_ok=True)
     
     joblib.dump(model, os.path.join(storage_dir, 'action_model.joblib'))
-    joblib.dump(action_encoder, os.path.join(storage_dir, 'action_encoder.joblib'))
     joblib.dump(mesure_encoder, os.path.join(storage_dir, 'mesure_encoder.joblib'))
-    joblib.dump(label_encoder, os.path.join(storage_dir, 'label_encoder.joblib'))
     
     print(f"\nModèle sauvegardé dans : {storage_dir}/")
-    print("Fichiers : action_model.joblib, action_encoder.joblib, mesure_encoder.joblib, label_encoder.joblib")
+    print("Fichiers : action_model.joblib, mesure_encoder.joblib")
 
 
 def main():
@@ -207,12 +227,12 @@ def main():
     print(f"Paires générées : {len(pairs)}")
     
     # Entraînement
-    print("\nEntraînement de l'arbre de décision...")
+    print("\nEntraînement de l'arbre de décision (multi-output)...")
     print("-" * 40)
-    model, action_enc, mesure_enc, label_enc = train_model(pairs)
+    model, mesure_enc = train_model(pairs)
     
     # Sauvegarde
-    save_model(model, action_enc, mesure_enc, label_enc)
+    save_model(model, mesure_enc)
     
     print("\n✓ Terminé !")
 

@@ -48,13 +48,13 @@ document.addEventListener('DOMContentLoaded', function () {
             return response.json();
         })
         .then(data => {
-            if (data.error) {
+            if (data.error || !data.prediction) {
                 predictionActive = false;
                 return;
             }
 
-            const predictedAction = data.action;
-            const predictedMesure = data.mesure;
+            const predictedAction = data.prediction.action;
+            const predictedMesure = data.prediction.mesure;
             const confidence = data.confidence || 0;
 
             // Ne pas suggérer si la confiance est trop faible
