@@ -11,7 +11,7 @@ import json
 import numpy as np
 import joblib
 
-# Mapping action ↔ entier (identique à type_action_id en BDD)
+# Mapping action ↔ entier (identique à type_action_id dans la BD)
 ACTION_MAP = {
     'ajouter': 0,
     'supprimer': 1,

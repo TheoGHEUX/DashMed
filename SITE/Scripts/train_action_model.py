@@ -16,7 +16,7 @@ from sklearn.metrics import make_scorer
 from sklearn.preprocessing import LabelEncoder
 import joblib
 
-# Mapping action ↔ entier (identique à la colonne type_action_id en BDD)
+# Mapping action ↔ entier (identique à type_action_id dans la BD)
 ACTION_MAP = {
     'ajouter': 0,
     'supprimer': 1,
