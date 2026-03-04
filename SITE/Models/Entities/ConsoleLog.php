@@ -17,6 +17,7 @@ class ConsoleLog
     private int $id;
     private int $medId;
     private string $typeAction;
+    private int $typeActionId;
     private ?int $ptId;
     private ?int $mesureId;
     private string $date;
@@ -33,6 +34,7 @@ class ConsoleLog
         $this->id = (int) ($data['log_id'] ?? 0);
         $this->medId = (int) ($data['med_id'] ?? 0);
         $this->typeAction = $data['type_action'] ?? '';
+        $this->typeActionId = (int) ($data['type_action_id'] ?? 0);
         $this->ptId = isset($data['pt_id']) ? (int) $data['pt_id'] : null;
         $this->mesureId = isset($data['id_mesure']) ? (int) $data['id_mesure'] : null;
         $this->date = $data['date_action'] ?? '';
@@ -63,6 +65,14 @@ class ConsoleLog
     public function getTypeAction(): string
     {
         return $this->typeAction;
+    }
+
+    /**
+     * @return int Identifiant numérique du type d'action (0-3)
+     */
+    public function getTypeActionId(): int
+    {
+        return $this->typeActionId;
     }
 
     /**

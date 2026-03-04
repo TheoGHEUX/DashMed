@@ -29,6 +29,16 @@ class ConsoleRepository
     private const VALID_ACTIONS = ['ajouter', 'supprimer', 'réduire', 'agrandir'];
 
     /**
+     * Mapping action ↔ entier (identique à type_action_id dans la BD)
+     */
+    private const ACTION_IDS = [
+        'ajouter'   => 0,
+        'supprimer' => 1,
+        'réduire'   => 2,
+        'agrandir'  => 3,
+    ];
+
+    /**
      * Constructeur : Initialise la connexion à la base de données
      */
     public function __construct()
@@ -58,14 +68,15 @@ class ConsoleRepository
 
         // Génération d'un ID unique basé sur le temps (microsecondes) + hasard
         $logId = (int)(microtime(true) * 10000) + random_int(1, 999);
+        $typeActionId = self::ACTION_IDS[$typeAction];
 
         try {
             $stmt = $this->db->prepare('
                 INSERT INTO historique_console 
-                    (log_id, med_id, type_action, pt_id, id_mesure, date_action, heure_action)
-                VALUES (?, ?, ?, ?, ?, NOW(), NOW())
+                    (log_id, med_id, type_action, type_action_id, pt_id, id_mesure, date_action, heure_action)
+                VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
             ');
-            return $stmt->execute([$logId, $medId, $typeAction, $ptId, $idMesure]);
+            return $stmt->execute([$logId, $medId, $typeAction, $typeActionId, $ptId, $idMesure]);
         } catch (\Throwable $e) {
             // En cas d'erreur SQL, on note l'erreur dans les logs serveur mais on ne plante pas le site
             error_log('[CONSOLE_REPO] ' . $e->getMessage());
