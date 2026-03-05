@@ -14,7 +14,8 @@
         "psr-4": {
             "Core\\": "SITE/Core/",
             "Models\\": "SITE/Models/",
-            "Controllers\\": "SITE/Controllers/"
+            "Controllers\\": "SITE/Controllers/",
+            "Domain\\": "SITE/Domain/"
         }
     },
     "autoload-dev": {

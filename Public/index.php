@@ -18,6 +18,7 @@ declare(strict_types=1);
  *
  * @package DashMed
  */
+
 // Configuration sécurisée de la session
 $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
 session_set_cookie_params([
@@ -35,7 +36,6 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // En-têtes HTTP de sécurité (définis avant toute sortie)
-// Ajuster HSTS uniquement si HTTPS est détecté en production
 $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
 header('X-Frame-Options: DENY');
 header('X-Content-Type-Options: nosniff');
@@ -54,6 +54,7 @@ $csp = "default-src 'self'; "
     . "img-src 'self' data:;";
 header("Content-Security-Policy: " . $csp);
 header('X-Powered-By:');
+
 // Chargement de l'autoloader
 $siteDir = __DIR__ . '/../SITE';
 $autoLoader = $siteDir . '/Core/AutoLoader.php';
@@ -70,11 +71,11 @@ if (is_file($autoLoader)) {
     });
 }
 
+// Gestion des requêtes spéciales (API Data Generation)
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($uri === '/generate-data' && $method === 'POST') {
-
     header('Content-Type: application/json');
 
     // Sécurité : authentification requise
@@ -95,15 +96,18 @@ if ($uri === '/generate-data' && $method === 'POST') {
     require_once __DIR__ . '/../SITE/Scripts/generate_data_online.php';
 
     $patientId = $_POST['patient'] ?? 25;
-
     generatePatientData((int)$patientId, 5);
 
     echo json_encode(['success' => true]);
     exit;
 }
 
-// Dispatch des routes
+use Core\App;
 use Core\Router;
 
+// On initialise le conteneur avant de lancer le routeur
+App::init();
+
+// Dispatch des routes
 $router = new Router($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']);
 $router->dispatch();

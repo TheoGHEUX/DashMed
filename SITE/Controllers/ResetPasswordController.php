@@ -2,143 +2,73 @@
 
 namespace Controllers;
 
-use Core\Csrf;
-use Core\Database;
-use Core\View;
+use Core\Interfaces\UserRepositoryInterface;
 use Models\Repositories\PasswordResetRepository;
-use Models\Repositories\UserRepository;
+use Domain\UseCases\Auth\ResetPasswordUseCase;
+use Core\Csrf;
+use Core\View;
 
-/**
- * Réinitialisation du mot de passe
- *
- * Gère l'affichage du formulaire de réinitialisation et le traitement
- * de la soumission avec validation du jeton et mise à jour du mot de passe.
- *
- * @package Controllers
- */
 final class ResetPasswordController
 {
-    private PasswordResetRepository $resetRepo;
-    private UserRepository $userRepo;
+    private UserRepositoryInterface $userRepo;
+    private PasswordResetRepository $pwdRepo;
 
-    public function __construct()
+    // Injection automatique via le Conteneur
+    public function __construct(UserRepositoryInterface $userRepo, PasswordResetRepository $pwdRepo)
     {
-        $this->resetRepo = new PasswordResetRepository();
-        $this->userRepo = new UserRepository();
+        $this->userRepo = $userRepo;
+        $this->pwdRepo = $pwdRepo;
     }
 
-    /**
-     * Affiche le formulaire de réinitialisation.
-     *
-     * Vérifie la validité du jeton avant d'afficher le formulaire.
-     * Si le jeton est invalide ou expiré, affiche un message d'erreur.
-     *
-     * @return void
-     */
     public function showForm(): void
     {
         $errors = [];
         $success = '';
 
-        $email = strtolower(trim((string)($_GET['email'] ?? '')));
-        $token = (string)($_GET['token'] ?? '');
+        $token = $_GET['token'] ?? '';
+        $email = $_GET['email'] ?? '';
 
-        if (!$this->resetRepo->isValidToken($email, $token)) {
-            $errors[] = 'Lien de réinitialisation invalide ou expiré.';
+        // Petite vérification visuelle (optionnelle)
+        // On doit hasher le token pour vérifier s'il existe en base
+        $tokenHash = hash('sha256', $token);
+        if (!$this->pwdRepo->findEmailByToken($tokenHash)) {
+            $errors[] = 'Lien invalide ou expiré.';
         }
 
-        View::render('auth/reset-password', compact('errors', 'success', 'email', 'token'));
+        View::render('auth/reset-password', compact('errors', 'success', 'token', 'email'));
     }
 
-    /**
-     * Traite la soumission du formulaire de réinitialisation.
-     *
-     * Validations effectuées :
-     * - Jeton CSRF
-     * - Jeton de reset valide et non expiré
-     * - Nouveau mot de passe conforme (12+ car., maj/min/chiffre/spécial)
-     * - Confirmation correspondante
-     *
-     * Processus en transaction :
-     * 1. Récupère l'email associé au jeton
-     * 2. Met à jour le mot de passe de l'utilisateur
-     * 3. Invalide le jeton (used_at = NOW())
-     * 4. Commit et redirection vers /login?reset=1
-     *
-     * En cas d'erreur, rollback et affichage du message d'erreur.
-     *
-     * @return void
-     */
     public function submit(): void
     {
         $errors = [];
-        $success = '';
-
-        $csrf     = $_POST['csrf_token'] ?? '';
-        $token    = $_POST['token'] ?? '';
-        $emailPosted = strtolower(trim($_POST['email'] ?? '')); // Pour réaffichage
+        $csrf = $_POST['csrf_token'] ?? '';
+        $token = $_POST['token'] ?? '';
         $password = $_POST['password'] ?? '';
-        $confirm  = $_POST['password_confirm'] ?? '';
+        $confirm = $_POST['password_confirm'] ?? '';
 
-        // --- VALIDATIONS ---
-        if (!Csrf::validate($csrf)) $errors[] = 'Session expirée.';
-        if ($token === '') $errors[] = 'Lien invalide.';
-        if ($password !== $confirm) $errors[] = 'Mots de passe différents.';
-
-        // Complexité mot de passe
-        if (strlen($password) < 12
-            || !preg_match('/[A-Z]/', $password)
-            || !preg_match('/[a-z]/', $password)
-            || !preg_match('/\d/', $password)
-            || !preg_match('/[^A-Za-z0-9]/', $password)) {
-            $errors[] = 'Mot de passe trop faible (12+ car., maj/min/chiffre/spécial).';
+        if (!Csrf::validate($csrf)) {
+            $errors[] = 'Session expirée.';
         }
 
-        if (!$errors) {
-            $pdo = Database::getConnection(); // On a besoin de PDO pour la Transaction
+        if (empty($errors)) {
+            // Instanciation du Use Case
+            $useCase = new ResetPasswordUseCase($this->userRepo, $this->pwdRepo);
 
-            try {
-                $pdo->beginTransaction();
+            // Exécution
+            $result = $useCase->execute($token, $password, $confirm);
 
-                // 1. Récupérer l'email depuis le token (via Repo)
-                $emailFromToken = $this->resetRepo->getEmailFromToken($token);
-
-                if (!$emailFromToken) {
-                    $pdo->rollBack();
-                    $errors[] = 'Lien invalide ou expiré.';
-                } else {
-                    // 2. Mettre à jour le mot de passe (via UserRepo)
-                    // Il faut d'abord récupérer l'ID de l'user par son email
-                    $user = $this->userRepo->findByEmail($emailFromToken);
-
-                    if ($user) {
-                        $hash = password_hash($password, PASSWORD_DEFAULT);
-                        $this->userRepo->updatePassword($user->getId(), $hash);
-
-                        // 3. Invalider le token (via ResetRepo)
-                        $this->resetRepo->markAsUsed($token);
-
-                        $pdo->commit();
-                        header('Location: /login?reset=1');
-                        exit;
-                    } else {
-                        // Email trouvé dans le token mais pas dans la table User
-                        $pdo->rollBack();
-                        $errors[] = 'Utilisateur introuvable.';
-                    }
-                }
-            } catch (\Throwable $e) {
-                if ($pdo->inTransaction()) $pdo->rollBack();
-                error_log('[RESET] Erreur : ' . $e->getMessage());
-                $errors[] = 'Erreur technique. Réessayez.';
+            if ($result['success']) {
+                // Redirection vers le login avec un flag pour afficher un message
+                header('Location: /login?reset=1');
+                exit;
+            } else {
+                $errors[] = $result['error'];
             }
         }
 
-        View::render('auth/reset-password', [
-            'errors'  => $errors,
-            'success' => $success,
-            'email'   => $emailPosted,
-            'token'   => $token,
-        ]);
+        // Si erreur, on réaffiche le formulaire
+        $email = $_POST['email'] ?? '';
+        $success = '';
+        View::render('auth/reset-password', compact('errors', 'success', 'token', 'email'));
     }
 }

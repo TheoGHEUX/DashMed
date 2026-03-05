@@ -2,182 +2,105 @@
 
 namespace Controllers;
 
+use Core\Interfaces\UserRepositoryInterface;
+use Models\Repositories\PasswordResetRepository;
+use Domain\UseCases\Auth\RequestPasswordResetUseCase;
 use Core\Csrf;
-use Core\Database;
-use Core\Mailer;
-use Models\Repositories\UserRepository;
-use PDO;
+use Core\View;
 
-/**
- * Mot de passe oublié
- *
- * Gère la demande de réinitialisation de mot de passe avec génération de jeton
- * sécurisé et envoi d'email. Applique une limite par session (5 demandes/heure).
- *
- * Note : Retourne toujours une réponse neutre pour ne pas révéler l'existence
- * d'un compte.
- *
- * @package Controllers
- */
 final class ForgottenPasswordController
 {
-    private UserRepository $userRepo;
+    private UserRepositoryInterface $userRepo;
+    private PasswordResetRepository $pwdRepo;
 
-    public function __construct()
+    // Injection des deux repositories nécessaires
+    public function __construct(UserRepositoryInterface $userRepo, PasswordResetRepository $pwdRepo)
     {
-        $this->userRepo = new UserRepository();
+        $this->userRepo = $userRepo;
+        $this->pwdRepo = $pwdRepo;
     }
 
-    /**
-     * Affiche le formulaire de demande de réinitialisation.
-     *
-     * Récupère les messages depuis la session (errors, success, old) et les
-     * supprime immédiatement pour éviter leur persistance (pattern PRG).
-     *
-     * @return void
-     */
     public function showForm(): void
     {
+        // Gestion des messages Flash (Session)
         $errors = $_SESSION['errors'] ?? null;
         $success = $_SESSION['success'] ?? null;
         $old = $_SESSION['old'] ?? null;
 
+        // Nettoyage immédiat (Flash)
         unset($_SESSION['errors'], $_SESSION['success'], $_SESSION['old']);
 
-        \Core\View::render('auth/forgotten-password', [
-            'errors' => $errors,
-            'success' => $success,
-            'old' => $old
-        ]);
+        View::render('auth/forgotten-password', compact('errors', 'success', 'old'));
     }
 
-    /**
-     * Traite la demande de réinitialisation de mot de passe.
-     *
-     * Sécurité appliquée :
-     * - Contrôle du débit : 5 tentatives max par session sur 1 heure
-     * - Validation CSRF
-     * - Réponse neutre (même si l'email n'existe pas)
-     * - Jeton sécurisé (64 hex, hash SHA-256, expire 60 min)
-     * - Nettoyage des anciens jetons avant insertion
-     *
-     * Processus en cas de compte existant :
-     * 1. Supprime les anciens jetons pour cet email + jetons expirés
-     * 2. Génère un jeton (64 hex), le hash en SHA-256
-     * 3. Insert dans password_resets avec expiration 60 min
-     * 4. Construit l'URL de reset (utilise SERVER_NAME, pas HTTP_HOST)
-     * 5. Envoie l'email via Mailer::sendPasswordResetEmail()
-     *
-     * En cas d'email inexistant : log serveur mais réponse neutre côté UI.
-     * Redirige toujours vers /forgotten-password avec message de succès (PRG).
-     *
-     * @return void
-     */
     public function submit(): void
     {
-        $errors = [];
-        $success = '';
-        // Simple rate-limiting per session to avoid abuse of password reset endpoint
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_start();
-        }
-        $maxAttempts = 5;
-        $windowSeconds = 3600; // 1 hour
-        $now = time();
-        $fpAttempts = $_SESSION['forgot_password_attempts'] ?? [];
-        $fpAttempts = array_filter($fpAttempts, function ($ts) use ($now, $windowSeconds) {
-            return ($now - $ts) <= $windowSeconds;
-        });
-        if (count($fpAttempts) >= $maxAttempts) {
-            // Keep UI neutral, set success message and redirect
-            $success = "Si un compte existe à cette adresse mail, "
-                . "un lien de réinitialisation a été envoyé.\n"
-                . "Veuillez attendre avant de refaire une demande.";
-            $_SESSION['success'] = $success;
+        if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+
+        // 1. Rate Limiting (Protection anti-abus)
+        if ($this->isRateLimited()) {
+            $_SESSION['success'] = "Si un compte existe, un lien a été envoyé. Veuillez patienter.";
             header('Location: /forgotten-password');
             exit;
         }
-        $old = [
-            'email' => trim((string)($_POST['email'] ?? '')),
-        ];
-        $csrf = (string)($_POST['csrf_token'] ?? '');
 
+        $email = trim($_POST['email'] ?? '');
+        $csrf = $_POST['csrf_token'] ?? '';
+        $errors = [];
+
+        // 2. Validation de base
         if (!Csrf::validate($csrf)) {
-            $errors[] = 'Session expirée ou jeton CSRF invalide.';
+            $errors[] = 'Session expirée.';
         }
-
-        if (!filter_var($old['email'], FILTER_VALIDATE_EMAIL)) {
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $errors[] = 'Adresse email invalide.';
         }
 
-        if (!$errors) {
+        // 3. Exécution
+        if (empty($errors)) {
             try {
-                // Vérifie si l'email est inscrit
-                $user = $this->userRepo->findByEmail($old['email']);
-                if ($user) {
-                    $pdo = Database::getConnection();
+                // Instanciation du Use Case avec les dépendances injectées
+                $useCase = new RequestPasswordResetUseCase($this->userRepo, $this->pwdRepo);
+                $useCase->execute($email);
 
-                    // Nettoyage des anciens jetons pour le mail associer au mdp réunitialiser
-                    $del = $pdo->prepare('DELETE FROM password_resets WHERE email = ? OR expires_at < NOW()');
-                    $del->execute([$old['email']]);
+                // Succès (Message neutre pour la sécurité)
+                $_SESSION['success'] = "Si un compte existe à cette adresse, un lien de réinitialisation a été envoyé.";
 
-                    // Génère un nouveau jeton
-                    $token = bin2hex(random_bytes(32));
-                    $tokenHash = hash('sha256', $token);
-                    $expiresAt = date('Y-m-d H:i:s', time() + 3600); // 60 minutes
+                // On efface l'email du formulaire
+                $_SESSION['old'] = [];
 
-                    $ins = $pdo->prepare(
-                        'INSERT INTO password_resets (email, token_hash, expires_at) VALUES (?, ?, ?)'
-                    );
-                    $ins->execute([$old['email'], $tokenHash, $expiresAt]);
-
-                    // Construit l'URL reset
-                    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-                        ? 'https' : 'http';
-                    // Éviter HTTP_HOST contrôlable par l'utilisateur, préférer SERVER_NAME (config serveur)
-                    $serverName = $_SERVER['SERVER_NAME'] ?? '';
-                    $host = $serverName !== '' ? $serverName : 'localhost';
-                    $resetUrl = $scheme . '://' . $host . '/reset-password?token='
-                        . urlencode($token) . '&email=' . urlencode($old['email']);
-
-                    // Nom d’affichage
-                    $displayName = trim($user->getPrenom() . ' ' . $user->getNom());
-                    Mailer::sendPasswordResetEmail($old['email'], $displayName ?: 'Utilisateur', $resetUrl);
-                } else {
-                    // En prod on reste neutre côté UI, mais on log pour faciliter le debug
-                    error_log(sprintf(
-                        '[FORGOT] Aucun utilisateur trouvé pour %s (message neutre renvoyé)',
-                        $old['email']
-                    ));
-                }
-
-                // Réponse neutre (utilise une vraie nouvelle ligne avec "\n")
-                $success = "Si un compte existe à cette adresse mail, "
-                    . "un lien de réinitialisation a été envoyé.\n"
-                    . "N'oubliez pas de vérifier votre courrier indésirable.";
-                $old = ['email' => ''];
-            } catch (\Throwable $e) {
-                error_log(sprintf(
-                    '[FORGOT] %s in %s:%d',
-                    $e->getMessage(),
-                    $e->getFile(),
-                    $e->getLine()
-                ));
-                $success = "Si un compte existe à cette adresse mail, "
-                    . "un lien de réinitialisation a été envoyé.\n"
-                    . "N'oubliez pas de vérifier votre courrier indésirable.";
-                $old = ['email' => ''];
+            } catch (\Exception $e) {
+                // Log l'erreur mais ne l'affiche pas à l'utilisateur
+                error_log("Reset Password Error: " . $e->getMessage());
+                $_SESSION['success'] = "Si un compte existe à cette adresse, un lien de réinitialisation a été envoyé.";
             }
         } else {
             $_SESSION['errors'] = $errors;
-            $_SESSION['old'] = $old;
+            $_SESSION['old'] = ['email' => $email];
         }
 
-        // record this forgot-password request timestamp
-        $fpAttempts[] = $now;
-        $_SESSION['forgot_password_attempts'] = $fpAttempts;
-        $_SESSION['success'] = $success;
         header('Location: /forgotten-password');
         exit;
+    }
+
+    /**
+     * Vérifie si l'utilisateur a dépassé la limite de tentatives.
+     */
+    private function isRateLimited(): bool
+    {
+        $maxAttempts = 5;
+        $window = 3600; // 1 heure
+        $now = time();
+
+        $attempts = $_SESSION['forgot_password_attempts'] ?? [];
+
+        // Filtre les tentatives de moins d'une heure
+        $attempts = array_filter($attempts, fn($ts) => ($now - $ts) <= $window);
+
+        // Ajoute la tentative actuelle
+        $attempts[] = $now;
+        $_SESSION['forgot_password_attempts'] = $attempts;
+
+        return count($attempts) > $maxAttempts;
     }
 }

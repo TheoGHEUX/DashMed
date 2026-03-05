@@ -2,9 +2,9 @@
 
 namespace Controllers;
 
-use Models\Repositories\UserRepository;
+use Core\Interfaces\UserRepositoryInterface;
+use Domain\UseCases\Auth\RegisterUserUseCase;
 use Core\Csrf;
-use Core\Mailer;
 use Core\View;
 
 /**
@@ -12,21 +12,22 @@ use Core\View;
  *
  * Gère le cycle complet d'authentification des praticiens.
  *
- * Inclut l'inscription (avec vérification d'email),
- * la connexion sécurisée (avec limitation de débit) et la gestion de session.
+ * Architecture :
+ * - Le constructeur reçoit le Repository via l'injection de dépendances (DI).
+ * - L'inscription délègue la logique métier à un Use Case dédié.
+ * - La connexion utilise directement le Repository (pour l'instant).
  *
  * @package Controllers
  */
 final class AuthController
 {
-    private UserRepository $userRepo;
+    /**
+     * @var UserRepositoryInterface Le contrat d'accès aux données utilisateurs
+     */
+    private UserRepositoryInterface $userRepo;
 
     /**
      * Liste des spécialités médicales valides.
-     *
-     * Note : Utilisée pour la validation côté serveur lors de l'inscription.
-     *
-     * @var array<int,string>
      */
     private const SPECIALITES_VALIDES = [
         'Addictologie', 'Algologie', 'Allergologie', 'Anesthésie-Réanimation',
@@ -40,36 +41,32 @@ final class AuthController
         'Toxicologie', 'Urologie',
     ];
 
-    public function __construct()
+    /**
+     * Constructeur avec Injection de Dépendances.
+     *
+     * Le routeur (via le conteneur) va automatiquement fournir une instance
+     * qui respecte l'interface UserRepositoryInterface.
+     *
+     * @param UserRepositoryInterface $userRepo
+     */
+    public function __construct(UserRepositoryInterface $userRepo)
     {
-        $this->userRepo = new UserRepository();
+        $this->userRepo = $userRepo;
     }
 
     /**
      * Affiche le formulaire de connexion.
-     *
-     * @return void
      */
     public function showLogin(): void
     {
         $errors = [];
         $success = (isset($_GET['reset']) && $_GET['reset'] === '1') ? 'Mot de passe réinitialisé.' : '';
         $old = ['email' => ''];
-        \Core\View::render('auth/login', compact('errors', 'success', 'old'));
+        View::render('auth/login', compact('errors', 'success', 'old'));
     }
 
     /**
      * Traite la soumission du formulaire de connexion.
-     *
-     * Validations effectuées :
-     * - Jeton CSRF
-     * - Existence de l'utilisateur
-     * - Vérification du mot de passe
-     * - Email vérifié
-     *
-     * En cas de succès, régénère l'ID de session et redirige vers /dashboard.
-     *
-     * @return void
      */
     public function login(): void
     {
@@ -83,7 +80,7 @@ final class AuthController
         }
 
         if (!$errors) {
-            // Appel REPOSITORY
+            // Utilisation du Repository injecté
             $user = $this->userRepo->findByEmail($old['email']);
 
             if (!$user || !password_verify($password, $user->getPasswordHash())) {
@@ -102,13 +99,11 @@ final class AuthController
             }
         }
 
-        \Core\View::render('auth/login', compact('errors', 'old'));
+        View::render('auth/login', compact('errors', 'old'));
     }
 
     /**
      * Affiche le formulaire d'inscription.
-     *
-     * @return void
      */
     public function showRegister(): void
     {
@@ -116,31 +111,19 @@ final class AuthController
         $success = '';
         $old = ['name' => '', 'last_name' => '', 'email' => '', 'sexe' => '', 'specialite' => ''];
         $specialites = self::SPECIALITES_VALIDES;
-        \Core\View::render('auth/register', compact('errors', 'success', 'old', 'specialites'));
+        View::render('auth/register', compact('errors', 'success', 'old', 'specialites'));
     }
 
     /**
-     * Traite l'inscription d'un nouveau praticien.
-     *
-     * Validations effectuées :
-     * - Jeton CSRF : protection contre l'usurpation de requête
-     * - Nom et prénom
-     * - Email (format et unicité)
-     * - Mot de passe (12+ car., maj, min, chiffre, spécial)
-     *
-     * Processus en cas de succès :
-     * 1. Création du compte avec hachage du mot de passe
-     * 2. Génération d'un jeton de vérification d'email (64 hex chars, valide 24h)
-     * 3. Envoi de l'email de vérification
-     * 4. Affichage du message de succès
-     *
-     * @return void
+     * Traite l'inscription via le Use Case RegisterUser.
      */
     public function register(): void
     {
         $errors = [];
         $success = '';
+        $csrf = $_POST['csrf_token'] ?? '';
 
+        // Données pour ré-affichage en cas d'erreur
         $old = [
             'name' => trim($_POST['name'] ?? ''),
             'last_name' => trim($_POST['last_name'] ?? ''),
@@ -148,82 +131,36 @@ final class AuthController
             'sexe' => trim($_POST['sexe'] ?? ''),
             'specialite' => trim($_POST['specialite'] ?? ''),
         ];
-        $password = $_POST['password'] ?? '';
-        $confirm = $_POST['password_confirm'] ?? '';
-        $csrf = $_POST['csrf_token'] ?? '';
 
-
+        // 1. Vérification CSRF (Responsabilité HTTP du contrôleur)
         if (!Csrf::validate($csrf)) {
             $errors[] = 'Session expirée.';
         }
-        if (empty($old['name']) || empty($old['last_name'])) {
-            $errors[] = 'Nom et prénom obligatoires.';
-        }
-        if (!filter_var($old['email'], FILTER_VALIDATE_EMAIL)) {
-            $errors[] = 'Email invalide.';
-        }
-        if ($password !== $confirm) {
-            $errors[] = 'Les mots de passe ne correspondent pas.';
-        }
-        // Complexité mot de passe (12 chars + Maj + Min + Chiffre + Spécial)
-        if (strlen($password) < 12
-            || !preg_match('/[A-Z]/', $password)
-            || !preg_match('/[a-z]/', $password)
-            || !preg_match('/\d/', $password)
-            || !preg_match('/[^A-Za-z0-9]/', $password)) {
-            $errors[] = 'Le mot de passe doit faire 12 caractères min. avec Maj, Min, Chiffre et Caractère spécial.';
-        }
 
-        if (!$errors && $this->userRepo->emailExists($old['email'])) {
-            $errors[] = 'Cet email est déjà utilisé.';
-        }
+        // 2. Appel du Use Case
+        if (empty($errors)) {
+            // On instancie le Use Case en lui passant le Repository injecté
+            $useCase = new RegisterUserUseCase($this->userRepo);
 
+            // Exécution de la logique métier
+            $result = $useCase->execute($_POST);
 
-
-        if (!$errors) {
-            $created = $this->userRepo->create([
-                'prenom' => $old['name'],
-                'nom' => $old['last_name'],
-                'email' => $old['email'],
-                'password_hash' => password_hash($password, PASSWORD_DEFAULT),
-                'sexe' => $old['sexe'],
-                'specialite' => $old['specialite']
-            ]);
-
-            if ($created) {
-                // Gestion du token
-                $token = bin2hex(random_bytes(32));
-                $expires = date('Y-m-d H:i:s', strtotime('+24 hours'));
-
-                $this->userRepo->setVerificationToken($old['email'], $token, $expires);
-
-                // Envoi email
-                $mailSent = Mailer::sendEmailVerification($old['email'], $old['name'], $token);
-
-                if ($mailSent) {
-                    $success = "Compte créé ! Un lien de vérification a été envoyé à " . htmlspecialchars($old['email']);
-                } else {
-                    $success = "Compte créé, mais l'envoi du mail a échoué. Contactez le support.";
-                }
-
-                // Reset form
+            if ($result['success']) {
+                $success = $result['message'];
+                // Reset du formulaire en cas de succès
                 $old = ['name' => '', 'last_name' => '', 'email' => '', 'sexe' => '', 'specialite' => ''];
             } else {
-                $errors[] = "Erreur technique lors de la création du compte.";
+                // Récupération des erreurs métier
+                $errors = $result['errors'];
             }
         }
 
         $specialites = self::SPECIALITES_VALIDES;
-        \Core\View::render('auth/register', compact('errors', 'success', 'old', 'specialites'));
+        View::render('auth/register', compact('errors', 'success', 'old', 'specialites'));
     }
 
     /**
      * Déconnecte l'utilisateur.
-     *
-     * Détruit la session et supprime le cookie de session,
-     * puis redirige vers la page de connexion.
-     *
-     * @return void
      */
     public function logout(): void
     {
