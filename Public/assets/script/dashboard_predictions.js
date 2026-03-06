@@ -145,30 +145,63 @@ document.addEventListener('DOMContentLoaded', function () {
         };
         const actionLabel = actionLabels[action] || action;
 
+        // Création sécurisée du DOM (protection XSS)
         const popup = document.createElement('div');
         popup.className = 'notification-toast prediction-suggestion';
-        popup.innerHTML = `
-            <div class="notification-header">
-                <span class="notification-title">🤖 Suggestion IA</span>
-                <span class="prediction-confidence">${confidencePercent} %</span>
-            </div>
-            <div class="notification-message">
-                <strong>${actionLabel}</strong> le graphique <strong>${mesure}</strong> ?
-            </div>
-            <div class="notification-actions">
-                <button class="btn-notif btn-notif-accept">Appliquer</button>
-                <button class="btn-notif btn-notif-ignore">Ignorer</button>
-            </div>
-        `;
+        
+        const header = document.createElement('div');
+        header.className = 'notification-header';
+        
+        const title = document.createElement('span');
+        title.className = 'notification-title';
+        title.textContent = '🤖 Suggestion IA';
+        
+        const confidenceBadge = document.createElement('span');
+        confidenceBadge.className = 'prediction-confidence';
+        confidenceBadge.textContent = confidencePercent + ' %';
+        
+        header.appendChild(title);
+        header.appendChild(confidenceBadge);
+        
+        const message = document.createElement('div');
+        message.className = 'notification-message';
+        
+        const actionStrong = document.createElement('strong');
+        actionStrong.textContent = actionLabel;
+        const mesureStrong = document.createElement('strong');
+        mesureStrong.textContent = mesure;
+        
+        message.appendChild(actionStrong);
+        message.appendChild(document.createTextNode(' le graphique '));
+        message.appendChild(mesureStrong);
+        message.appendChild(document.createTextNode(' ?'));
+        
+        const actions = document.createElement('div');
+        actions.className = 'notification-actions';
+        
+        const acceptBtn = document.createElement('button');
+        acceptBtn.className = 'btn-notif btn-notif-accept';
+        acceptBtn.textContent = 'Appliquer';
+        
+        const ignoreBtn = document.createElement('button');
+        ignoreBtn.className = 'btn-notif btn-notif-ignore';
+        ignoreBtn.textContent = 'Ignorer';
+        
+        actions.appendChild(acceptBtn);
+        actions.appendChild(ignoreBtn);
+        
+        popup.appendChild(header);
+        popup.appendChild(message);
+        popup.appendChild(actions);
 
         // Bouton Appliquer
-        popup.querySelector('.btn-notif-accept').addEventListener('click', () => {
+        acceptBtn.addEventListener('click', () => {
             executePredictedAction(action, targetChartId);
             closePrediction(popup);
         });
 
         // Bouton Ignorer
-        popup.querySelector('.btn-notif-ignore').addEventListener('click', () => {
+        ignoreBtn.addEventListener('click', () => {
             closePrediction(popup);
         });
 

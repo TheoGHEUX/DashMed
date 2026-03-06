@@ -44,6 +44,7 @@ header('Permissions-Policy: geolocation=(), microphone=()');
 if ($isHttps) {
     header('Strict-Transport-Security: max-age=31536000; includeSubDomains; preload');
 }
+// CSP renforcé (upgrade-insecure-requests activé uniquement en HTTPS)
 $csp = "default-src 'self'; "
     . "base-uri 'self'; "
     . "form-action 'self'; "
@@ -51,7 +52,14 @@ $csp = "default-src 'self'; "
     . "script-src 'self' 'unsafe-inline'; "
     . "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
     . "font-src 'self' https://fonts.gstatic.com data:; "
-    . "img-src 'self' data:;";
+    . "img-src 'self' data:; "
+    . "connect-src 'self';";
+
+// Ajouter upgrade-insecure-requests et frame-ancestors uniquement en HTTPS (production)
+if ($isHttps) {
+    $csp .= " upgrade-insecure-requests; frame-ancestors 'none';";
+}
+
 header("Content-Security-Policy: " . $csp);
 header('X-Powered-By:');
 // Chargement de l'autoloader
@@ -94,9 +102,12 @@ if ($uri === '/generate-data' && $method === 'POST') {
 
     require_once __DIR__ . '/../SITE/Scripts/generate_data_online.php';
 
-    $patientId = $_POST['patient'] ?? 25;
+    // Lire le JSON envoyé
+    $input = json_decode(file_get_contents('php://input'), true);
+    $patientId = isset($input['patient']) ? (int)$input['patient'] : 25;
 
-    generatePatientData((int)$patientId, 5);
+    // Appel avec le bon nombre de paramètres (1 seul)
+    generatePatientData($patientId);
 
     echo json_encode(['success' => true]);
     exit;

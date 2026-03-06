@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Controllers;
 
 use Models\Repositories\UserRepository;
@@ -61,7 +63,8 @@ final class AuthController
     /**
      * Traite la soumission du formulaire de connexion.
      *
-     * Validations effectuées :
+     * Sécurité appliquée :
+     * - Protection brute force : 5 tentatives max par session sur 15 minutes
      * - Jeton CSRF
      * - Existence de l'utilisateur
      * - Vérification du mot de passe
@@ -73,6 +76,27 @@ final class AuthController
      */
     public function login(): void
     {
+        // Démarrer la session pour la limitation de débit
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
+
+        // Protection contre le brute force : 5 tentatives max par session sur 15 minutes
+        $maxAttempts = 5;
+        $windowSeconds = 900; // 15 minutes
+        $now = time();
+        $loginAttempts = $_SESSION['login_attempts'] ?? [];
+        $loginAttempts = array_filter($loginAttempts, function ($ts) use ($now, $windowSeconds) {
+            return ($now - $ts) <= $windowSeconds;
+        });
+
+        if (count($loginAttempts) >= $maxAttempts) {
+            $errors = ['Trop de tentatives de connexion. Veuillez réessayer dans 15 minutes.'];
+            $old = ['email' => trim($_POST['email'] ?? '')];
+            \Core\View::render('auth/login', compact('errors', 'old'));
+            return;
+        }
+
         $errors = [];
         $old = ['email' => trim($_POST['email'] ?? '')];
         $password = $_POST['password'] ?? '';
@@ -88,11 +112,17 @@ final class AuthController
 
             if (!$user || !password_verify($password, $user->getPasswordHash())) {
                 $errors[] = 'Identifiants incorrects.';
+                // Enregistrer la tentative échouée
+                $loginAttempts[] = $now;
+                $_SESSION['login_attempts'] = $loginAttempts;
             } elseif (!$user->isEmailVerified()) {
                 $errors[] = 'Adresse email non vérifiée. Vérifiez vos spams.';
+                // Enregistrer la tentative échouée
+                $loginAttempts[] = $now;
+                $_SESSION['login_attempts'] = $loginAttempts;
             } else {
-                // Succès : Mise en session
-                if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+                // Succès : Réinitialiser les tentatives et mettre en session
+                $_SESSION['login_attempts'] = [];
                 session_regenerate_id(true);
 
                 $_SESSION['user'] = $user->toSessionArray();
@@ -100,6 +130,10 @@ final class AuthController
                 header('Location: /dashboard');
                 exit;
             }
+        } else {
+            // Enregistrer la tentative avec erreur CSRF
+            $loginAttempts[] = $now;
+            $_SESSION['login_attempts'] = $loginAttempts;
         }
 
         \Core\View::render('auth/login', compact('errors', 'old'));
@@ -122,7 +156,8 @@ final class AuthController
     /**
      * Traite l'inscription d'un nouveau praticien.
      *
-     * Validations effectuées :
+     * Sécurité appliquée :
+     * - Protection brute force : 3 inscriptions max par session sur 1 heure
      * - Jeton CSRF : protection contre l'usurpation de requête
      * - Nom et prénom
      * - Email (format et unicité)
@@ -138,6 +173,29 @@ final class AuthController
      */
     public function register(): void
     {
+        // Démarrer la session pour la limitation de débit
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
+
+        // Protection contre le brute force : 3 inscriptions max par session sur 1 heure
+        $maxAttempts = 3;
+        $windowSeconds = 3600; // 1 heure
+        $now = time();
+        $registerAttempts = $_SESSION['register_attempts'] ?? [];
+        $registerAttempts = array_filter($registerAttempts, function ($ts) use ($now, $windowSeconds) {
+            return ($now - $ts) <= $windowSeconds;
+        });
+
+        if (count($registerAttempts) >= $maxAttempts) {
+            $errors = ['Trop de tentatives d\'inscription. Veuillez réessayer dans 1 heure.'];
+            $old = ['name' => '', 'last_name' => '', 'email' => '', 'sexe' => '', 'specialite' => ''];
+            $success = '';
+            $specialites = self::SPECIALITES_VALIDES;
+            \Core\View::render('auth/register', compact('errors', 'success', 'old', 'specialites'));
+            return;
+        }
+
         $errors = [];
         $success = '';
 
@@ -206,11 +264,19 @@ final class AuthController
                     $success = "Compte créé, mais l'envoi du mail a échoué. Contactez le support.";
                 }
 
-                // Reset form
+                // Reset form et réinitialiser les tentatives après succès
                 $old = ['name' => '', 'last_name' => '', 'email' => '', 'sexe' => '', 'specialite' => ''];
+                $_SESSION['register_attempts'] = [];
             } else {
                 $errors[] = "Erreur technique lors de la création du compte.";
+                // Enregistrer la tentative échouée
+                $registerAttempts[] = $now;
+                $_SESSION['register_attempts'] = $registerAttempts;
             }
+        } else {
+            // Enregistrer la tentative avec erreur de validation
+            $registerAttempts[] = $now;
+            $_SESSION['register_attempts'] = $registerAttempts;
         }
 
         $specialites = self::SPECIALITES_VALIDES;
@@ -227,7 +293,7 @@ final class AuthController
      */
     public function logout(): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+        // Session déjà démarrée dans index.php
 
         $csrf = $_POST['csrf_token'] ?? '';
         if (!Csrf::validate($csrf)) {

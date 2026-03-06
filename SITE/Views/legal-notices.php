@@ -29,91 +29,68 @@ include __DIR__ . '/partials/head.php';
 <main class="content">
     <div class="container">
         <h1>Mentions légales</h1>
-        <p class="muted">Dernière mise à jour: 22 octobre 2025</p>
+        <p class="muted">Dernière mise à jour : 6 mars 2026</p>
 
         <section class="legal-grid">
             <div class="panel short">
-                <h3>Politique de confidentialité</h3>
+                <h3>À propos de DashMed</h3>
                 <p>
-                    Nous protégeons les données personnelles et de santé selon
-                    les normes en vigueur (RGPD, hébergement sécurisé).
-                    Les finalités et durées de conservation sont précisées
-                    dans notre politique complète.
+                    DashMed est une plateforme de démonstration conçue pour illustrer
+                    les bonnes pratiques de développement d'applications médicales.
+                    Les données affichées sont <strong>exclusivement fictives</strong>
+                    et générées pour des besoins de présentation.
                 </p>
-                <a class="more" href="#privacy-details">En savoir plus</a>
+                <p style="margin-top: 12px; font-size: 11px; color: var(--text-secondary, #6f7580);">
+                    Développé dans un cadre pédagogique — 2025-2026
+                </p>
             </div>
 
             <div class="panel">
-                <h3>Conditions d'utilisation</h3>
+                <h3>Technologies & Sécurité</h3>
                 <p>
-                    Ces conditions définissent l'usage professionnel de la
-                    plateforme DashMed par les établissements de santé.
-                    Elles couvrent les obligations de l'établissement
-                    utilisatrice, les engagements de DashMed en matière
-                    de sécurité et les limites de responsabilité.
+                    DashMed est développé selon les standards de l'industrie
+                    et implémente les meilleures pratiques de sécurité :
                 </p>
                 <ul>
                     <li>
-                        <strong>Habilitations</strong> — gestion des accès
-                        par l'établissement ; identifiants personnels requis.
+                        <strong>Backend</strong> — PHP 8.1+ avec architecture MVC
                     </li>
                     <li>
-                        <strong>Sécurité</strong> — chiffrement, journaux
-                        d'audit et hébergement sécurisé conformes aux
-                        obligations applicables aux données de santé.
+                        <strong>Sécurité</strong> — Protection CSRF, requêtes préparées,
+                        hashage bcrypt, limitation brute force
                     </li>
                     <li>
-                        <strong>SLA</strong> — disponibilités et procédures
-                        d'incident précisées contractuellement ; maintenance
-                        planifiée annoncée à l'avance.
+                        <strong>Frontend</strong> — Chart.js pour visualisation,
+                        Leaflet.js pour cartographie
                     </li>
                     <li>
-                        <strong>Responsabilités</strong> — l'établissement
-                        reste responsable du contenu clinique et des décisions
-                        médicales ; DashMed assure la plateforme et son
-                        intégrité technique.
+                        <strong>Hébergement</strong> — XAMPP local (dev uniquement)
                     </li>
                 </ul>
-                <a class="more" href="#terms-details">Lire les détails</a>
             </div>
 
             <div class="panel full long">
-                <h3>Droits des utilisateurs et gestion des données</h3>
+                <h3>Cookies & Confidentialité</h3>
                 <p>
-                    Les utilisateurs et les patients bénéficient de droits
-                    encadrés par le RGPD et la réglementation relative aux
-                    données de santé. Les demandes d'accès, de rectification
-                    ou d'effacement sont traitées selon des procédures définies
-                    en collaboration avec l'établissement.
+                    Le site utilise uniquement des cookies techniques essentiels
+                    au fonctionnement. Aucun tracking publicitaire ou analytique.
                 </p>
                 <ul>
                     <li>
-                        <strong>Droit d'accès :</strong> possibilité de demander
-                        une copie des données détenues vous concernant.
+                        <strong>PHPSESSID</strong> — Gestion de session (durée : session navigateur)
                     </li>
                     <li>
-                        <strong>Droit de rectification :</strong> correction des
-                        données inexactes via les procédures internes de
-                        l'établissement.
+                        <strong>theme_preference</strong> — Mémorisation du mode sombre/clair (1 an)
                     </li>
                     <li>
-                        <strong>Droit à l'effacement :</strong> supprimable sous
-                        réserve des obligations légales de conservation (dossiers
-                        médicaux, archives réglementaires).
-                    </li>
-                    <li>
-                        <strong>Logs et traçabilité :</strong> toutes les
-                        consultations et actions sont journalisées pour garantir
-                        la traçabilité et la sécurité.
-                    </li>
-                    <li>
-                        <strong>Procédure de demande :</strong> les demandes
-                        doivent être adressées au DPO ou contact indiqué par
-                        l'établissement ; DashMed assiste techniquement le
-                        traitement de ces demandes.
+                        <strong>dashboard_layout</strong> — Sauvegarde de l'agencement des graphiques (1 an)
                     </li>
                 </ul>
-                <a class="more" href="#rights-details">Procédure complète</a>
+                <p style="margin-top: 14px; font-size: 11px; color: var(--text-secondary, #6f7580);">
+                    <strong>Note :</strong> Cette plateforme de démonstration utilise des données fictives.
+                    En environnement de production avec données réelles, un hébergement certifié HDS
+                    et la désignation d'un DPO seraient requis conformément au RGPD.
+                </p>
             </div>
         </section>
     </div>

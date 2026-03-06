@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Controllers;
 
 use Core\Csrf;
@@ -33,9 +35,7 @@ final class ChangePasswordController
      */
     public function showForm(): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_start();
-        }
+        // Session déjà démarrée dans index.php
 
         if (empty($_SESSION['user'])) {
             header('Location: /login');
@@ -51,7 +51,8 @@ final class ChangePasswordController
     /**
      * Traite la soumission du formulaire de modification.
      *
-     * Validations effectuées :
+     * Sécurité appliquée :
+     * - Protection brute force : 5 tentatives max par session sur 15 minutes
      * - Jeton CSRF
      * - Ancien mot de passe correct
      * - Nouveau mot de passe conforme (12+ car., maj/min/chiffre/spécial)
@@ -61,13 +62,27 @@ final class ChangePasswordController
      */
     public function submit(): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_start();
-        }
+        // Session déjà démarrée dans index.php
 
         if (empty($_SESSION['user'])) {
             header('Location: /login');
             exit;
+        }
+
+        // Protection contre le brute force : 5 tentatives max par session sur 15 minutes
+        $maxAttempts = 5;
+        $windowSeconds = 900; // 15 minutes
+        $now = time();
+        $changeAttempts = $_SESSION['change_password_attempts'] ?? [];
+        $changeAttempts = array_filter($changeAttempts, function ($ts) use ($now, $windowSeconds) {
+            return ($now - $ts) <= $windowSeconds;
+        });
+
+        if (count($changeAttempts) >= $maxAttempts) {
+            $errors = ['Trop de tentatives. Veuillez réessayer dans 15 minutes.'];
+            $success = '';
+            \Core\View::render('auth/change-password', compact('errors', 'success'));
+            return;
         }
 
         $errors = [];
@@ -104,16 +119,31 @@ final class ChangePasswordController
 
             if (!$user || !password_verify($oldPassword, $user->getPasswordHash())) {
                 $errors[] = 'Ancien mot de passe incorrect.';
+                // Enregistrer la tentative échouée
+                $changeAttempts[] = $now;
+                $_SESSION['change_password_attempts'] = $changeAttempts;
             } else {
 
                 $hash = password_hash($newPassword, PASSWORD_DEFAULT);
 
                 if ($this->users->updatePassword($userId, $hash)) {
+                    // Régénérer l'ID de session après changement sensible (protection session fixation)
+                    session_regenerate_id(true);
+                    
                     $success = 'Votre mot de passe a été mis à jour.';
+                    // Réinitialiser les tentatives après succès
+                    $_SESSION['change_password_attempts'] = [];
                 } else {
                     $errors[] = 'Impossible de mettre à jour le mot de passe pour le moment.';
+                    // Enregistrer la tentative échouée
+                    $changeAttempts[] = $now;
+                    $_SESSION['change_password_attempts'] = $changeAttempts;
                 }
             }
+        } else {
+            // Enregistrer la tentative avec erreur de validation
+            $changeAttempts[] = $now;
+            $_SESSION['change_password_attempts'] = $changeAttempts;
         }
 
         \Core\View::render('auth/change-password', compact('errors', 'success'));

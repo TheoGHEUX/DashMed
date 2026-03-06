@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Controllers;
 
 use Models\Repositories\UserRepository;
@@ -85,9 +87,17 @@ final class VerifyEmailController
      */
     public function resend(): void
     {
+        $csrf = trim((string)($_POST['csrf_token'] ?? ''));
         $email = trim((string)($_POST['email'] ?? ''));
         $errors = [];
         $success = '';
+
+        // Validation CSRF
+        if (!empty($_POST) && !\Core\Csrf::validate($csrf)) {
+            $errors[] = 'Session expirée. Veuillez réessayer.';
+            \Core\View::render('auth/resend-verification', compact('errors', 'success', 'email'));
+            return;
+        }
 
         if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $errors[] = 'Adresse email invalide.';
@@ -120,6 +130,6 @@ final class VerifyEmailController
             }
         }
 
-        \Core\View::render('auth/resend-verification', compact('errors', 'success'));
+        \Core\View::render('auth/resend-verification', compact('errors', 'success', 'email'));
     }
 }

@@ -20,6 +20,8 @@ use Core\Csrf;
 final class DashboardController
 {
     private PatientRepository $patientRepo;
+    private ?ConsoleRepository $consoleRepo = null;
+    private ?string $cachedInput = null;
 
     /**
      * Configuration des métriques médicales avec leurs plages de valeurs.
@@ -80,6 +82,28 @@ final class DashboardController
     }
 
     /**
+     * Récupère l'input JSON une seule fois par requête (optimisation + sécurité)
+     * Limite la taille à 1MB pour éviter les attaques DoS
+     */
+    private function getJsonInput(): ?array
+    {
+        if ($this->cachedInput === null) {
+            // Limite de sécurité : 1MB maximum
+            $maxSize = 1024 * 1024; // 1MB
+            $contentLength = (int)($_SERVER['CONTENT_LENGTH'] ?? 0);
+            
+            if ($contentLength > $maxSize) {
+                http_response_code(413);
+                echo json_encode(['error' => 'Payload trop volumineux']);
+                exit;
+            }
+            
+            $this->cachedInput = file_get_contents('php://input', false, null, 0, $maxSize);
+        }
+        return json_decode($this->cachedInput, true);
+    }
+
+    /**
      * Vérifie le jeton CSRF envoyé via le header X-CSRF-Token.
      *
      * Utilisé pour protéger les endpoints API POST contre les attaques CSRF.
@@ -125,8 +149,14 @@ final class DashboardController
         // 1. Récupération des patients via le Repository (Retourne des OBJETS Patient)
         $patientsObjects = $this->patientRepo->getPatientsForDoctor((int) $_SESSION['user']['id']);
 
-        // 2. Conversion en tableaux pour compatibilité avec la vue actuelle
-        $patients = array_map(fn($p) => $p->toArray(), $patientsObjects);
+        // 2. Conversion en tableaux (optimisé : une seule fois)
+        $patients = [];
+        $doctorPatients = [];
+        foreach ($patientsObjects as $p) {
+            $pArray = $p->toArray();
+            $patients[] = $pArray;
+            $doctorPatients[] = $pArray['pt_id'];
+        }
 
         // Si aucun patient associé, afficher le message avec icône
         if (empty($patients)) {
@@ -136,8 +166,7 @@ final class DashboardController
             return;
         }
 
-        /// Patient sélectionné via URL
-        $doctorPatients = array_column($patients, 'pt_id');
+        /// Patient sélectionné via URL (doctorPatients déjà construit)
 
         if (isset($_GET['patient']) && ctype_digit($_GET['patient'])) {
             $requestedId = (int) $_GET['patient'];
@@ -231,19 +260,18 @@ final class DashboardController
 
         $lastValue = $lastValueRow['valeur'];
 
-        // Construction du résultat avec appels Repo pour les calculs et seuils
+        // Construction du résultat avec appels Repo optimisés (1 requête au lieu de 6)
+        $seuils = $this->patientRepo->getAllSeuilsForMetric($patientId, $metricLabel);
+        
         $result = [
             'id_mesure' => $data['id_mesure'] ?? null,
             'values' => $this->patientRepo->prepareChartValues($data['valeurs'], $minValue, $maxValue),
             'lastValue' => $lastValue,
-            'unit' => $data['unite'] ?? '',
-            'seuil_preoccupant' => $this->patientRepo->getSeuilByStatus($patientId, $metricLabel, 'préoccupant', true),
-            'seuil_urgent' => $this->patientRepo->getSeuilByStatus($patientId, $metricLabel, 'urgent', true),
-            'seuil_critique' => $this->patientRepo->getSeuilByStatus($patientId, $metricLabel, 'critique', true),
-            'seuil_preoccupant_min' => $this->patientRepo->getSeuilByStatus($patientId, $metricLabel, 'préoccupant', false),
-            'seuil_urgent_min' => $this->patientRepo->getSeuilByStatus($patientId, $metricLabel, 'urgent', false),
-            'seuil_critique_min' => $this->patientRepo->getSeuilByStatus($patientId, $metricLabel, 'critique', false)
+            'unit' => $data['unite'] ?? ''
         ];
+        
+        // Fusion avec les seuils
+        $result = array_merge($result, $seuils);
 
         return $result;
     }
@@ -270,27 +298,29 @@ final class DashboardController
 
         $this->validateApiCsrf();
 
-        $input = json_decode(file_get_contents('php://input'), true);
+        $input = $this->getJsonInput();
         $action = $input['action'] ?? null;
         $ptId = isset($input['ptId']) ? (int)$input['ptId'] : null;
         $idMesure = isset($input['idMesure']) ? (int)$input['idMesure'] : null;
         $medId = (int) $_SESSION['user']['id'];
 
-        $consoleRepo = new ConsoleRepository();
+        if ($this->consoleRepo === null) {
+            $this->consoleRepo = new ConsoleRepository();
+        }
         $success = false;
 
         switch ($action) {
             case 'ajouter':
-                $success = $consoleRepo->logAjouter($medId, $ptId, $idMesure);
+                $success = $this->consoleRepo->logAjouter($medId, $ptId, $idMesure);
                 break;
             case 'supprimer':
-                $success = $consoleRepo->logSupprimer($medId, $ptId, $idMesure);
+                $success = $this->consoleRepo->logSupprimer($medId, $ptId, $idMesure);
                 break;
             case 'réduire':
-                $success = $consoleRepo->logReduire($medId, $ptId, $idMesure);
+                $success = $this->consoleRepo->logReduire($medId, $ptId, $idMesure);
                 break;
             case 'agrandir':
-                $success = $consoleRepo->logAgrandir($medId, $ptId, $idMesure);
+                $success = $this->consoleRepo->logAgrandir($medId, $ptId, $idMesure);
                 break;
             default:
                 http_response_code(400);
@@ -375,7 +405,7 @@ final class DashboardController
 
         $this->validateApiCsrf();
 
-        $input = json_decode(file_get_contents('php://input'), true);
+        $input = $this->getJsonInput();
         $ptId = isset($input['ptId']) ? (int)$input['ptId'] : null;
         $config = $input['config'] ?? null;
         $medId = (int) $_SESSION['user']['id'];
@@ -522,9 +552,12 @@ final class DashboardController
             exit;
         }
 
-        // Vérifier que le médecin suit bien ce patient
+        // Vérifier que le médecin suit bien ce patient (optimisé)
         $patientsObjects = $this->patientRepo->getPatientsForDoctor($medId);
-        $doctorPatients = array_map(fn($p) => $p->toArray()['pt_id'], $patientsObjects);
+        $doctorPatients = [];
+        foreach ($patientsObjects as $p) {
+            $doctorPatients[] = $p->toArray()['pt_id'];
+        }
 
         if (!in_array($ptId, $doctorPatients, true)) {
             http_response_code(403);
@@ -573,7 +606,7 @@ final class DashboardController
 
             $this->validateApiCsrf();
 
-            $input = json_decode(file_get_contents('php://input'), true);
+            $input = $this->getJsonInput();
             $action = $input['action'] ?? null;
             $mesure = $input['mesure'] ?? null;
             $heure  = $input['heure'] ?? (int) date('G');

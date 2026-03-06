@@ -35,7 +35,7 @@ include __DIR__ . '/../partials/head.php';
                 <h1 class="welcome-title" style="color: #0fb0c0 !important;">
                     <?= htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8') ?>
                 </h1>
-                <p>Votre plateforme médicale pour une gestion hospitalière efficace et sécurisée</p>
+                <p>Plateforme de suivi médical centralisé pour une gestion optimale de vos patients</p>
 
                 <a href="/dashboard" class="dashboard-card" role="link" aria-label="Accéder au tableau de bord">
                     <div class="card-icon" aria-hidden="true">📊</div>

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Models\Repositories;
 
 use Core\Database;
@@ -117,7 +119,6 @@ class PatientRepository
     /**
      * Récupère un seuil d'alerte spécifique
      *
-     *
      * @param int    $patientId   ID du patient
      * @param string $typeMesure  Type de mesure
      * @param string $statut      Niveau d'alerte ('critique', 'urgent', etc.)
@@ -139,6 +140,46 @@ class PatientRepository
         $stmt->execute([$statut, $typeMesure, $patientId, $majorant ? 1 : 0]);
         $row = $stmt->fetch();
         return $row ? (float)$row['seuil'] : null;
+    }
+
+    /**
+     * Récupère TOUS les seuils d'alerte pour une métrique en une seule requête (optimisé)
+     *
+     * @param int    $patientId   ID du patient
+     * @param string $typeMesure  Type de mesure
+     *
+     * @return array Tableau associatif avec les clés : seuil_preoccupant, seuil_urgent, etc.
+     */
+    public function getAllSeuilsForMetric(int $patientId, string $typeMesure): array
+    {
+        $stmt = $this->db->prepare("
+            SELECT sa.statut, sa.majorant, sa.seuil
+            FROM seuil_alerte sa
+            JOIN mesures m ON m.id_mesure = sa.id_mesure
+            WHERE m.type_mesure = ? AND m.pt_id = ?
+        ");
+        $stmt->execute([$typeMesure, $patientId]);
+        
+        $result = [
+            'seuil_preoccupant' => null,
+            'seuil_urgent' => null,
+            'seuil_critique' => null,
+            'seuil_preoccupant_min' => null,
+            'seuil_urgent_min' => null,
+            'seuil_critique_min' => null
+        ];
+        
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            // Normaliser le statut (enlever les accents)
+            $statut = str_replace('é', 'e', strtolower($row['statut']));
+            $key = 'seuil_' . $statut;
+            if ((int)$row['majorant'] === 0) {
+                $key .= '_min';
+            }
+            $result[$key] = (float)$row['seuil'];
+        }
+        
+        return $result;
     }
 
     /**
