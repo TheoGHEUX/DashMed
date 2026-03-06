@@ -53,7 +53,8 @@ final class ResetPasswordController
     /**
      * Traite la soumission du formulaire de réinitialisation.
      *
-     * Validations effectuées :
+     * Sécurité appliquée :
+     * - Protection brute force : 5 tentatives max par session sur 15 minutes
      * - Jeton CSRF
      * - Jeton de reset valide et non expiré
      * - Nouveau mot de passe conforme (12+ car., maj/min/chiffre/spécial)
@@ -71,6 +72,34 @@ final class ResetPasswordController
      */
     public function submit(): void
     {
+        // Démarrer la session pour la limitation de débit
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
+
+        // Protection contre le brute force : 5 tentatives max par session sur 15 minutes
+        $maxAttempts = 5;
+        $windowSeconds = 900; // 15 minutes
+        $now = time();
+        $resetAttempts = $_SESSION['reset_password_attempts'] ?? [];
+        $resetAttempts = array_filter($resetAttempts, function ($ts) use ($now, $windowSeconds) {
+            return ($now - $ts) <= $windowSeconds;
+        });
+
+        if (count($resetAttempts) >= $maxAttempts) {
+            $errors = ['Trop de tentatives. Veuillez réessayer dans 15 minutes.'];
+            $success = '';
+            $emailPosted = strtolower(trim($_POST['email'] ?? ''));
+            $token = $_POST['token'] ?? '';
+            View::render('auth/reset-password', [
+                'errors'  => $errors,
+                'success' => $success,
+                'email'   => $emailPosted,
+                'token'   => $token,
+            ]);
+            return;
+        }
+
         $errors = [];
         $success = '';
 
@@ -119,19 +148,31 @@ final class ResetPasswordController
                         $this->resetRepo->markAsUsed($token);
 
                         $pdo->commit();
+                        // Réinitialiser les tentatives après succès
+                        $_SESSION['reset_password_attempts'] = [];
                         header('Location: /login?reset=1');
                         exit;
                     } else {
                         // Email trouvé dans le token mais pas dans la table User
                         $pdo->rollBack();
                         $errors[] = 'Utilisateur introuvable.';
+                        // Enregistrer la tentative échouée
+                        $resetAttempts[] = $now;
+                        $_SESSION['reset_password_attempts'] = $resetAttempts;
                     }
                 }
             } catch (\Throwable $e) {
                 if ($pdo->inTransaction()) $pdo->rollBack();
                 error_log('[RESET] Erreur : ' . $e->getMessage());
                 $errors[] = 'Erreur technique. Réessayez.';
+                // Enregistrer la tentative échouée
+                $resetAttempts[] = $now;
+                $_SESSION['reset_password_attempts'] = $resetAttempts;
             }
+        } else {
+            // Enregistrer la tentative avec erreur de validation
+            $resetAttempts[] = $now;
+            $_SESSION['reset_password_attempts'] = $resetAttempts;
         }
 
         View::render('auth/reset-password', [
