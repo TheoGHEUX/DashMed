@@ -82,12 +82,23 @@ final class DashboardController
     }
 
     /**
-     * Récupère l'input JSON une seule fois par requête (optimisation)
+     * Récupère l'input JSON une seule fois par requête (optimisation + sécurité)
+     * Limite la taille à 1MB pour éviter les attaques DoS
      */
     private function getJsonInput(): ?array
     {
         if ($this->cachedInput === null) {
-            $this->cachedInput = file_get_contents('php://input');
+            // Limite de sécurité : 1MB maximum
+            $maxSize = 1024 * 1024; // 1MB
+            $contentLength = (int)($_SERVER['CONTENT_LENGTH'] ?? 0);
+            
+            if ($contentLength > $maxSize) {
+                http_response_code(413);
+                echo json_encode(['error' => 'Payload trop volumineux']);
+                exit;
+            }
+            
+            $this->cachedInput = file_get_contents('php://input', false, null, 0, $maxSize);
         }
         return json_decode($this->cachedInput, true);
     }

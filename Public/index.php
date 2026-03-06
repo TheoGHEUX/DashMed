@@ -44,6 +44,7 @@ header('Permissions-Policy: geolocation=(), microphone=()');
 if ($isHttps) {
     header('Strict-Transport-Security: max-age=31536000; includeSubDomains; preload');
 }
+// CSP renforcé (upgrade-insecure-requests activé uniquement en HTTPS)
 $csp = "default-src 'self'; "
     . "base-uri 'self'; "
     . "form-action 'self'; "
@@ -51,7 +52,14 @@ $csp = "default-src 'self'; "
     . "script-src 'self' 'unsafe-inline'; "
     . "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
     . "font-src 'self' https://fonts.gstatic.com data:; "
-    . "img-src 'self' data:;";
+    . "img-src 'self' data:; "
+    . "connect-src 'self';";
+
+// Ajouter upgrade-insecure-requests et frame-ancestors uniquement en HTTPS (production)
+if ($isHttps) {
+    $csp .= " upgrade-insecure-requests; frame-ancestors 'none';";
+}
+
 header("Content-Security-Policy: " . $csp);
 header('X-Powered-By:');
 // Chargement de l'autoloader

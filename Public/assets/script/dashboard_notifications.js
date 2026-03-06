@@ -127,23 +127,51 @@ document.addEventListener('DOMContentLoaded', function () {
         const cardTitle = document.querySelector(`article[data-chart-id="${metricKey}"] .card-title`)?.innerText || metricKey;
         const cleanTitle = cardTitle.split('(')[0].trim();
 
+        // Création sécurisée du DOM (protection XSS)
         const notif = document.createElement('div');
         notif.className = `notification-toast ${level}`;
-        notif.innerHTML = `
-            <div class="notification-header">
-                <span class="notification-title">⚠️ ${titleMap[level]}</span>
-            </div>
-            <div class="notification-message">
-                <strong>${cleanTitle}</strong> à <strong>${value} ${unit}</strong>.
-            </div>
-            <div class="notification-actions">
-                <button class="btn-notif btn-notif-view">Voir l'alerte</button>
-                <button class="btn-notif btn-notif-ignore">Ignorer</button>
-            </div>
-        `;
+        
+        const header = document.createElement('div');
+        header.className = 'notification-header';
+        
+        const titleSpan = document.createElement('span');
+        titleSpan.className = 'notification-title';
+        titleSpan.textContent = '⚠️ ' + (titleMap[level] || level);
+        header.appendChild(titleSpan);
+        
+        const message = document.createElement('div');
+        message.className = 'notification-message';
+        
+        const titleStrong = document.createElement('strong');
+        titleStrong.textContent = cleanTitle;
+        const valueStrong = document.createElement('strong');
+        valueStrong.textContent = value + ' ' + unit;
+        
+        message.appendChild(titleStrong);
+        message.appendChild(document.createTextNode(' à '));
+        message.appendChild(valueStrong);
+        message.appendChild(document.createTextNode('.'));
+        
+        const actions = document.createElement('div');
+        actions.className = 'notification-actions';
+        
+        const viewBtn = document.createElement('button');
+        viewBtn.className = 'btn-notif btn-notif-view';
+        viewBtn.textContent = "Voir l'alerte";
+        
+        const ignoreBtn = document.createElement('button');
+        ignoreBtn.className = 'btn-notif btn-notif-ignore';
+        ignoreBtn.textContent = 'Ignorer';
+        
+        actions.appendChild(viewBtn);
+        actions.appendChild(ignoreBtn);
+        
+        notif.appendChild(header);
+        notif.appendChild(message);
+        notif.appendChild(actions);
 
         // Voir l'alerte
-        notif.querySelector('.btn-notif-view').addEventListener('click', () => {
+        viewBtn.addEventListener('click', () => {
             activeNotifications.delete(metricKey);
             updateToggleBadge();
 
@@ -162,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         // Ignorer
-        notif.querySelector('.btn-notif-ignore').addEventListener('click', () => {
+        ignoreBtn.addEventListener('click', () => {
             activeNotifications.delete(metricKey);
             updateToggleBadge();
             closeNotification(notif);
