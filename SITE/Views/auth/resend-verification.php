@@ -16,12 +16,8 @@
  */
 
 $csrf_token = '';
-if (class_exists('\Core\Csrf')) {
-    if (method_exists('\Core\Csrf', 'generate')) {
-        $csrf_token = \Core\Csrf::generate();
-    } elseif (method_exists('\Core\Csrf', 'token')) {
-        $csrf_token = \Core\Csrf::token();
-    }
+if (class_exists('\Core\Csrf') && method_exists('\Core\Csrf', 'token')) {
+    $csrf_token = \Core\Csrf::token();
 }
 
 $pageTitle       = $pageTitle ?? "Renvoyer l'email de vérification";
