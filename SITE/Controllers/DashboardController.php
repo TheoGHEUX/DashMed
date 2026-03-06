@@ -7,6 +7,7 @@ namespace Controllers;
 use Models\Repositories\PatientRepository;
 use Models\Repositories\ConsoleRepository;
 use Core\Csrf;
+use Core\TreePredictor;
 
 /**
  * Tableau de bord
@@ -625,60 +626,16 @@ final class DashboardController
                 exit;
             }
 
-            $scriptPath = dirname(__DIR__) . '/Scripts/predict_action.py';
-
-            if (!file_exists($scriptPath)) {
-                http_response_code(500);
-                echo json_encode(['error' => 'Script de prédiction introuvable']);
-                exit;
-            }
-
-            // Vérifier que le modèle entraîné est présent
-            $storagePath = dirname(__DIR__) . '/storage';
-            if (!file_exists($storagePath . '/action_model.joblib')) {
+            // Prédiction native PHP via l'arbre de décision exporté en JSON
+            $modelPath = dirname(__DIR__) . '/storage/model.json';
+            if (!file_exists($modelPath)) {
                 http_response_code(503);
                 echo json_encode(['error' => 'Modèle IA non disponible sur ce serveur']);
                 exit;
             }
 
-            // Résoudre le binaire Python
-            $pythonBin = 'python3';
-            if (PHP_OS_FAMILY === 'Windows' && file_exists('C:\\Python313\\python.exe')) {
-                $pythonBin = 'C:\\Python313\\python.exe';
-            }
-
-            // Vérifier que exec() est disponible
-            if (!function_exists('exec') || in_array('exec', array_map('trim', explode(',', ini_get('disable_functions'))), true)) {
-                http_response_code(503);
-                echo json_encode(['error' => 'Prédiction IA non disponible (exec désactivé)']);
-                exit;
-            }
-
-            // Forcer l'encodage UTF-8 pour éviter les caractères corrompus sous Windows
-            putenv('PYTHONIOENCODING=utf-8');
-
-            $command = sprintf(
-                '%s %s %s %s %s %s 2>&1',
-                escapeshellarg($pythonBin),
-                escapeshellarg($scriptPath),
-                escapeshellarg($action),
-                escapeshellarg($mesure),
-                escapeshellarg(strval((int) $heure)),
-                escapeshellarg(strval((int) $position))
-            );
-
-            $output = [];
-            $exitCode = 0;
-            exec($command, $output, $exitCode);
-
-            $jsonOutput = implode('', $output);
-            $result = json_decode($jsonOutput, true);
-
-            if ($result === null) {
-                http_response_code(500);
-                echo json_encode(['error' => 'Erreur de prédiction', 'details' => $jsonOutput]);
-                exit;
-            }
+            $predictor = new TreePredictor($modelPath);
+            $result = $predictor->predict($action, $mesure, (int) $heure, (int) $position);
 
             echo json_encode($result, JSON_UNESCAPED_UNICODE);
             exit;

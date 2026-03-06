@@ -1,0 +1,580 @@
+{
+  "feature_names": [
+    "type_action_id",
+    "mesure_encoded",
+    "heure",
+    "position"
+  ],
+  "action_map": {
+    "ajouter": 0,
+    "supprimer": 1,
+    "réduire": 2,
+    "agrandir": 3
+  },
+  "action_map_inv": {
+    "0": "ajouter",
+    "1": "supprimer",
+    "2": "réduire",
+    "3": "agrandir"
+  },
+  "mesure_classes": [
+    "Fréquence cardiaque",
+    "Fréquence respiratoire",
+    "Glycémie",
+    "Poids",
+    "Saturation en oxygène",
+    "Température corporelle",
+    "Tension artérielle"
+  ],
+  "action_classes": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "mesure_output_classes": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "tree": {
+    "action": {
+      "leaf": false,
+      "feature": 0,
+      "threshold": 1.5,
+      "left": {
+        "leaf": false,
+        "feature": 0,
+        "threshold": 0.5,
+        "left": {
+          "leaf": false,
+          "feature": 1,
+          "threshold": 0.5,
+          "left": {
+            "leaf": true,
+            "probas": [
+              0.9091,
+              0.0909,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "right": {
+            "leaf": false,
+            "feature": 3,
+            "threshold": 8.5,
+            "left": {
+              "leaf": true,
+              "probas": [
+                0.6429,
+                0.3571,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            "right": {
+              "leaf": false,
+              "feature": 3,
+              "threshold": 62.5,
+              "left": {
+                "leaf": true,
+                "probas": [
+                  0.2941,
+                  0.2941,
+                  0.1765,
+                  0.2353,
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              },
+              "right": {
+                "leaf": true,
+                "probas": [
+                  0.6667,
+                  0.0556,
+                  0.0556,
+                  0.2222,
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              }
+            }
+          }
+        },
+        "right": {
+          "leaf": false,
+          "feature": 3,
+          "threshold": 1.5,
+          "left": {
+            "leaf": true,
+            "probas": [
+              0.0556,
+              0.9444,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "right": {
+            "leaf": false,
+            "feature": 2,
+            "threshold": 19.5,
+            "left": {
+              "leaf": false,
+              "feature": 3,
+              "threshold": 10.5,
+              "left": {
+                "leaf": true,
+                "probas": [
+                  0.2105,
+                  0.5789,
+                  0.0,
+                  0.2105,
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              },
+              "right": {
+                "leaf": true,
+                "probas": [
+                  0.275,
+                  0.6,
+                  0.075,
+                  0.05,
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              }
+            },
+            "right": {
+              "leaf": true,
+              "probas": [
+                0.3125,
+                0.625,
+                0.0625,
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ]
+            }
+          }
+        }
+      },
+      "right": {
+        "leaf": false,
+        "feature": 3,
+        "threshold": 8.5,
+        "left": {
+          "leaf": false,
+          "feature": 1,
+          "threshold": 4.5,
+          "left": {
+            "leaf": true,
+            "probas": [
+              0.0,
+              0.3529,
+              0.4118,
+              0.2353,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "right": {
+            "leaf": false,
+            "feature": 0,
+            "threshold": 2.5,
+            "left": {
+              "leaf": true,
+              "probas": [
+                0.0,
+                0.2,
+                0.1,
+                0.7,
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            "right": {
+              "leaf": true,
+              "probas": [
+                0.0909,
+                0.0,
+                0.6364,
+                0.2727,
+                0.0,
+                0.0,
+                0.0
+              ]
+            }
+          }
+        },
+        "right": {
+          "leaf": false,
+          "feature": 2,
+          "threshold": 14.5,
+          "left": {
+            "leaf": false,
+            "feature": 3,
+            "threshold": 14.5,
+            "left": {
+              "leaf": true,
+              "probas": [
+                0.0,
+                0.2,
+                0.4,
+                0.4,
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            "right": {
+              "leaf": true,
+              "probas": [
+                0.0,
+                0.3846,
+                0.0769,
+                0.5385,
+                0.0,
+                0.0,
+                0.0
+              ]
+            }
+          },
+          "right": {
+            "leaf": false,
+            "feature": 3,
+            "threshold": 23.5,
+            "left": {
+              "leaf": true,
+              "probas": [
+                0.0,
+                0.0,
+                0.4,
+                0.6,
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            "right": {
+              "leaf": false,
+              "feature": 3,
+              "threshold": 70.5,
+              "left": {
+                "leaf": true,
+                "probas": [
+                  0.0606,
+                  0.0909,
+                  0.4242,
+                  0.4242,
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              },
+              "right": {
+                "leaf": true,
+                "probas": [
+                  0.25,
+                  0.3333,
+                  0.0833,
+                  0.3333,
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "mesure": {
+      "leaf": false,
+      "feature": 0,
+      "threshold": 1.5,
+      "left": {
+        "leaf": false,
+        "feature": 0,
+        "threshold": 0.5,
+        "left": {
+          "leaf": false,
+          "feature": 1,
+          "threshold": 0.5,
+          "left": {
+            "leaf": true,
+            "probas": [
+              0.0909,
+              0.1818,
+              0.0,
+              0.0,
+              0.0,
+              0.2727,
+              0.4545
+            ]
+          },
+          "right": {
+            "leaf": false,
+            "feature": 3,
+            "threshold": 8.5,
+            "left": {
+              "leaf": true,
+              "probas": [
+                0.4286,
+                0.0,
+                0.2857,
+                0.1429,
+                0.0,
+                0.0714,
+                0.0714
+              ]
+            },
+            "right": {
+              "leaf": false,
+              "feature": 3,
+              "threshold": 62.5,
+              "left": {
+                "leaf": true,
+                "probas": [
+                  0.0,
+                  0.1765,
+                  0.3529,
+                  0.0588,
+                  0.1765,
+                  0.1765,
+                  0.0588
+                ]
+              },
+              "right": {
+                "leaf": true,
+                "probas": [
+                  0.1111,
+                  0.1111,
+                  0.1111,
+                  0.2778,
+                  0.1667,
+                  0.1667,
+                  0.0556
+                ]
+              }
+            }
+          }
+        },
+        "right": {
+          "leaf": false,
+          "feature": 3,
+          "threshold": 1.5,
+          "left": {
+            "leaf": true,
+            "probas": [
+              0.1111,
+              0.2778,
+              0.0556,
+              0.1111,
+              0.1667,
+              0.1667,
+              0.1111
+            ]
+          },
+          "right": {
+            "leaf": false,
+            "feature": 2,
+            "threshold": 19.5,
+            "left": {
+              "leaf": false,
+              "feature": 3,
+              "threshold": 10.5,
+              "left": {
+                "leaf": true,
+                "probas": [
+                  0.0,
+                  0.2105,
+                  0.1053,
+                  0.0526,
+                  0.0526,
+                  0.3158,
+                  0.2632
+                ]
+              },
+              "right": {
+                "leaf": true,
+                "probas": [
+                  0.25,
+                  0.2,
+                  0.225,
+                  0.05,
+                  0.1,
+                  0.05,
+                  0.125
+                ]
+              }
+            },
+            "right": {
+              "leaf": true,
+              "probas": [
+                0.1875,
+                0.0625,
+                0.0625,
+                0.375,
+                0.1875,
+                0.0,
+                0.125
+              ]
+            }
+          }
+        }
+      },
+      "right": {
+        "leaf": false,
+        "feature": 3,
+        "threshold": 8.5,
+        "left": {
+          "leaf": false,
+          "feature": 1,
+          "threshold": 4.5,
+          "left": {
+            "leaf": true,
+            "probas": [
+              0.2353,
+              0.1765,
+              0.1176,
+              0.0,
+              0.2353,
+              0.2353,
+              0.0
+            ]
+          },
+          "right": {
+            "leaf": false,
+            "feature": 0,
+            "threshold": 2.5,
+            "left": {
+              "leaf": true,
+              "probas": [
+                0.1,
+                0.1,
+                0.0,
+                0.1,
+                0.0,
+                0.6,
+                0.1
+              ]
+            },
+            "right": {
+              "leaf": true,
+              "probas": [
+                0.0,
+                0.0,
+                0.0909,
+                0.0909,
+                0.0,
+                0.6364,
+                0.1818
+              ]
+            }
+          }
+        },
+        "right": {
+          "leaf": false,
+          "feature": 2,
+          "threshold": 14.5,
+          "left": {
+            "leaf": false,
+            "feature": 3,
+            "threshold": 14.5,
+            "left": {
+              "leaf": true,
+              "probas": [
+                0.0,
+                0.4,
+                0.3,
+                0.3,
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            "right": {
+              "leaf": true,
+              "probas": [
+                0.1538,
+                0.3846,
+                0.2308,
+                0.0,
+                0.0769,
+                0.0,
+                0.1538
+              ]
+            }
+          },
+          "right": {
+            "leaf": false,
+            "feature": 3,
+            "threshold": 23.5,
+            "left": {
+              "leaf": true,
+              "probas": [
+                0.0,
+                0.0,
+                0.2,
+                0.0,
+                0.7,
+                0.1,
+                0.0
+              ]
+            },
+            "right": {
+              "leaf": false,
+              "feature": 3,
+              "threshold": 70.5,
+              "left": {
+                "leaf": true,
+                "probas": [
+                  0.3636,
+                  0.0303,
+                  0.3939,
+                  0.0303,
+                  0.0606,
+                  0.1212,
+                  0.0
+                ]
+              },
+              "right": {
+                "leaf": true,
+                "probas": [
+                  0.0,
+                  0.0,
+                  0.3333,
+                  0.1667,
+                  0.1667,
+                  0.0833,
+                  0.25
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
