@@ -1,61 +1,77 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Récupération des données injectées par PHP
     const chartData = window.patientChartData || {};
     const container = document.getElementById('notification-container');
-    const activeNotifications = new Set();
 
     if (!container || Object.keys(chartData).length === 0) return;
 
-    const priorities = {
-        'critique': 3,
-        'urgent': 2,
-        'préoccupant': 1,
-        'normal': 0
-    };
+    // Métriques dont une notification est actuellement ouverte
+    const activeNotifications = new Set();
 
-    //détermine le niveau d'alerte d'une mesure
+    // Dernière valeur notifiée par métrique (évite les répétitions au polling)
+    const notifiedValues = {};
+    Object.keys(chartData).forEach(key => {
+        notifiedValues[key] = chartData[key]?.lastValue ?? null;
+    });
+
+    const scrollable = document.createElement('div');
+    scrollable.id = 'notifications-scrollable';
+    scrollable.className = 'notifications-scrollable';
+    container.appendChild(scrollable);
+
     function getAlertLevel(metricKey, data) {
         const val = parseFloat(data.lastValue);
         if (isNaN(val)) return null;
 
-        // On vérifie les seuils MAX
-        if (data.seuil_critique && val >= data.seuil_critique) return 'critique';
-        if (data.seuil_urgent && val >= data.seuil_urgent) return 'urgent';
+        // Seuils MAX
+        if (data.seuil_critique   && val >= data.seuil_critique)   return 'critique';
+        if (data.seuil_urgent     && val >= data.seuil_urgent)     return 'urgent';
         if (data.seuil_preoccupant && val >= data.seuil_preoccupant) return 'préoccupant';
 
-        // On vérifie les seuils MIN (si définis)
-        if (data.seuil_critique_min && val <= data.seuil_critique_min) return 'critique';
-        if (data.seuil_urgent_min && val <= data.seuil_urgent_min) return 'urgent';
+        // Seuils MIN
+        if (data.seuil_critique_min   && val <= data.seuil_critique_min)   return 'critique';
+        if (data.seuil_urgent_min     && val <= data.seuil_urgent_min)     return 'urgent';
         if (data.seuil_preoccupant_min && val <= data.seuil_preoccupant_min) return 'préoccupant';
 
         return null;
     }
 
+    function getOrCreateDismissAllBtn() {
+        let btn = document.getElementById('dismiss-all-btn');
+        if (!btn) {
+            btn = document.createElement('button');
+            btn.id = 'dismiss-all-btn';
+            btn.className = 'btn-dismiss-all';
+            btn.textContent = 'Ignorer tout';
+            btn.addEventListener('click', () => {
+                scrollable.querySelectorAll('.notification-toast').forEach(n => closeNotification(n));
+                activeNotifications.clear();
+                btn.remove();
+            });
+            // Inséré avant le wrapper scrollable → toujours visible en haut
+            container.insertBefore(btn, scrollable);
+        }
+        return btn;
+    }
+
+    function removeDismissAllBtnIfEmpty() {
+        const remaining = scrollable.querySelectorAll('.notification-toast').length;
+        if (remaining === 0) {
+            document.getElementById('dismiss-all-btn')?.remove();
+        }
+    }
+
     function createNotification(metricKey, level, value, unit) {
-
-
-        if (activeNotifications.has(metricKey)) return; // Bloquer si une notification est déjà ouverte pour cette mesure pour éviter les accumulations inutiles de popups.
+        // Bloquer si une notification est déjà ouverte pour cette métrique
+        if (activeNotifications.has(metricKey)) return;
         activeNotifications.add(metricKey);
 
-        // Créer ou afficher le bouton "Ignorer tout" s'il n'existe pas encore
-        let dismissAllBtn = document.getElementById('dismiss-all-btn');
-        if (!dismissAllBtn) {
-            dismissAllBtn = document.createElement('button');
-            dismissAllBtn.id = 'dismiss-all-btn';
-            dismissAllBtn.className = 'btn-dismiss-all';
-            dismissAllBtn.textContent = 'Tout ignorer';
-            dismissAllBtn.addEventListener('click', () => {
-                // Fermer toutes les notifications actives
-                container.querySelectorAll('.notification-toast').forEach(n => closeNotification(n));
-                activeNotifications.clear();
-                dismissAllBtn.remove();
-            });
-            container.insertBefore(dismissAllBtn, container.firstChild);
-        }
+        // S'assurer que le bouton "Ignorer tout" est présent
+        getOrCreateDismissAllBtn();
 
         const titleMap = {
-            'critique': 'Seuil Critique Atteint',
-            'urgent': 'Seuil Urgent Atteint',
+            'critique':    'Seuil Critique Atteint',
+            'urgent':      'Seuil Urgent Atteint',
             'préoccupant': 'Attention Requise'
         };
 
@@ -80,73 +96,54 @@ document.addEventListener('DOMContentLoaded', function() {
         // Voir l'alerte
         notif.querySelector('.btn-notif-view').addEventListener('click', () => {
             activeNotifications.delete(metricKey);
-			// Vérifier si le graphique est visible dans le dashboard
-			const isVisible = window.dashboardIsChartVisible && window.dashboardIsChartVisible(metricKey);
 
-			// Si le graphique n'est pas visible, le réajouter
-			if (!isVisible && window.dashboardAddChart) {
-				window.dashboardAddChart(metricKey);
-				// Attendre que le graphique soit ajouté au DOM avant de scroller
-				setTimeout(() => {
-					const chartCard = document.querySelector(`article[data-chart-id="${metricKey}"]`);
-					if (chartCard) {
-						chartCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-						chartCard.style.transition = 'box-shadow 0.5s';
-						chartCard.style.boxShadow = '0 0 20px rgba(229, 62, 62, 0.6)';
-						setTimeout(() => { chartCard.style.boxShadow = ''; }, 2000);
-					}
-				}, 100);
-			} else {
-				// Le graphique est déjà visible, scroller directement
-				const chartCard = document.querySelector(`article[data-chart-id="${metricKey}"]`);
-				if (chartCard) {
-					chartCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-					chartCard.style.transition = 'box-shadow 0.5s';
-					chartCard.style.boxShadow = '0 0 20px rgba(229, 62, 62, 0.6)';
-					setTimeout(() => { chartCard.style.boxShadow = ''; }, 2000);
-				}
-			}
-			closeNotification(notif);
-		});
+            const isVisible = window.dashboardIsChartVisible && window.dashboardIsChartVisible(metricKey);
 
-		// Ignorer
-		notif.querySelector('.btn-notif-ignore').addEventListener('click', () => {
+            if (!isVisible && window.dashboardAddChart) {
+                window.dashboardAddChart(metricKey);
+                setTimeout(() => scrollToChart(metricKey), 100);
+            } else {
+                scrollToChart(metricKey);
+            }
+
+            closeNotification(notif);
+        });
+
+        // Ignorer
+        notif.querySelector('.btn-notif-ignore').addEventListener('click', () => {
             activeNotifications.delete(metricKey);
             closeNotification(notif);
         });
 
-        container.appendChild(notif);
+        // Insérer dans le wrapper scrollable
+        scrollable.appendChild(notif);
+    }
+
+    function scrollToChart(metricKey) {
+        const chartCard = document.querySelector(`article[data-chart-id="${metricKey}"]`);
+        if (!chartCard) return;
+        chartCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        chartCard.style.transition = 'box-shadow 0.5s';
+        chartCard.style.boxShadow = '0 0 20px rgba(229, 62, 62, 0.6)';
+        setTimeout(() => { chartCard.style.boxShadow = ''; }, 2000);
     }
 
     function closeNotification(element) {
         element.classList.add('closing');
         setTimeout(() => {
             if (element.parentNode) element.parentNode.removeChild(element);
-
-            // Supprimer le bouton "Ignorer tout" s'il ne reste plus de notifications
-            const remaining = container.querySelectorAll('.notification-toast').length;
-            if (remaining === 0) {
-                document.getElementById('dismiss-all-btn')?.remove();
-            }
+            removeDismissAllBtnIfEmpty();
         }, 300);
     }
-
 
     Object.keys(chartData).forEach(key => {
         const metric = chartData[key];
         const level = getAlertLevel(key, metric);
-
         if (level) {
             createNotification(key, level, metric.lastValue, metric.unit);
         }
     });
 
-    const notifiedValues = {};
-    Object.keys(chartData).forEach(key => {
-        notifiedValues[key] = chartData[key]?.lastValue ?? null;
-    });
-
-    // Écouter les mises à jour en temps réel
     window.addEventListener('chartDataUpdated', (e) => {
         const newData = e.detail.chartData;
 
@@ -156,7 +153,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Ne notifier que si la valeur a changé depuis la dernière notification
             if (newValue === notifiedValues[key]) return;
-
             notifiedValues[key] = newValue;
 
             const level = getAlertLevel(key, metric);

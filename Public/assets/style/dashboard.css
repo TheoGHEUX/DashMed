@@ -669,7 +669,7 @@
         grid-template-columns: repeat(2, 1fr);
     }
 
-    
+
     .page-title {
         font-size: 1.5rem;
         font-weight: 700;
@@ -726,7 +726,7 @@
         display: none !important;
     }
 
-    
+
     .card-title {
         font-size: 0.95rem;
         font-weight: 600;
@@ -1089,10 +1089,10 @@
     top: 80px;
     right: 20px;
     width: 350px;
-    z-index: 9999;
+    z-index: 1000;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    max-height: 90vh;
 }
 
 .notification-toast {
@@ -1135,6 +1135,29 @@
     display: flex;
     justify-content: space-between;
     margin-top: 5px;
+}
+
+.notifications-scrollable {
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;             /* espace entre les notifications si vous n'en avez pas déjà */
+    padding-right: 4px;   /* évite que la scrollbar masque le contenu */
+}
+
+/* Scrollbar discrète */
+.notifications-scrollable::-webkit-scrollbar {
+    width: 4px;
+}
+.notifications-scrollable::-webkit-scrollbar-track {
+    background: transparent;
+}
+.notifications-scrollable::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.2);
+    border-radius: 2px;
+}
+[data-theme="dark"] .notifications-scrollable::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.2);
 }
 
 .btn-notif {
@@ -1197,56 +1220,56 @@
     color: var(--text-primary);
 }
 
-[data-theme="dark"] .notification-container .notification-toast .notification-title {
-    color: var(--text-primary);
+[data-theme="dark"] .notification-title {
+    color: var(--text-primary) !important;
 }
 
-[data-theme="dark"] .notification-container .notification-toast .notification-message {
-    color: var(--text-secondary);
+[data-theme="dark"] .notification-message {
+    color: var(--text-secondary) !important;
 }
 
 /* Boutons (Sombre) */
-[data-theme="dark"] .notification-toast .btn-notif-view {
-    color: #34d399; /* Vert clair */
-    background-color: rgba(16, 185, 129, 0.15);
+[data-theme="dark"] .btn-notif-view {
+    color: #34d399 !important; /* Vert clair */
+    background-color: rgba(16, 185, 129, 0.15) !important;
 }
 
-[data-theme="dark"] .notification-toast .btn-notif-view:hover {
-    background-color: rgba(16, 185, 129, 0.25);
+[data-theme="dark"] .btn-notif-view:hover {
+    background-color: rgba(16, 185, 129, 0.25) !important;
 }
 
-[data-theme="dark"] .notification-toast .btn-notif-ignore {
-    color: var(--text-muted);
+[data-theme="dark"] .btn-notif-ignore {
+    color: var(--text-muted) !important;
 }
 
-[data-theme="dark"] .notification-toast .btn-notif-ignore:hover {
-    background-color: var(--bg-tertiary);
-    color: var(--text-primary);
+[data-theme="dark"] .btn-notif-ignore:hover {
+    background-color: var(--bg-tertiary) !important;
+    color: var(--text-primary) !important;
 }
 
-/* Couleurs des alertes (Sombre) - Spécificité augmentée */
-[data-theme="dark"] .notification-container .notification-toast.critique {
-    background-color: #450a0a; /* Rouge très sombre */
-    border-left-color: #f87171; /* Rouge clair */
+/* Couleurs des alertes (Sombre) */
+[data-theme="dark"] .notification-toast.critique {
+    background-color: #450a0a !important; /* Rouge très sombre */
+    border-left-color: #f87171 !important; /* Rouge clair */
 }
-[data-theme="dark"] .notification-container .notification-toast.critique .notification-title {
-    color: #fca5a5;
-}
-
-[data-theme="dark"] .notification-container .notification-toast.urgent {
-    background-color: #431407; /* Orange sombre */
-    border-left-color: #fb923c; /* Orange clair */
-}
-[data-theme="dark"] .notification-container .notification-toast.urgent .notification-title {
-    color: #fdba74;
+[data-theme="dark"] .notification-toast.critique .notification-title {
+    color: #fca5a5 !important;
 }
 
-[data-theme="dark"] .notification-container .notification-toast.preoccupant {
-    background-color: #422006; /* Jaune sombre */
-    border-left-color: #facc15; /* Jaune clair */
+[data-theme="dark"] .notification-toast.urgent {
+    background-color: #431407 !important; /* Orange sombre */
+    border-left-color: #fb923c !important; /* Orange clair */
 }
-[data-theme="dark"] .notification-container .notification-toast.preoccupant .notification-title {
-    color: #fde047;
+[data-theme="dark"] .notification-toast.urgent .notification-title {
+    color: #fdba74 !important;
+}
+
+[data-theme="dark"] .notification-toast.preoccupant {
+    background-color: #422006 !important; /* Jaune sombre */
+    border-left-color: #facc15 !important; /* Jaune clair */
+}
+[data-theme="dark"] .notification-toast.preoccupant .notification-title {
+    color: #fde047 !important;
 }
 
 @keyframes slideIn {
@@ -1274,6 +1297,7 @@
 /* Bouton pour tout ignorer */
 
 .btn-dismiss-all {
+    flex-shrink: 0;
     display: block;
     width: 100%;
     margin-bottom: 8px;
@@ -1333,27 +1357,27 @@
     background-color: #4f46e5;
 }
 
-/* Prediction IA — Thème sombre (spécificité augmentée) */
+/* Prediction IA — Thème sombre */
 
-[data-theme="dark"] .notification-container .notification-toast.prediction-suggestion {
-    background-color: #1e1b4b;
-    border-left-color: #818cf8;
+[data-theme="dark"] .notification-toast.prediction-suggestion {
+    background-color: #1e1b4b !important;
+    border-left-color: #818cf8 !important;
 }
 
-[data-theme="dark"] .notification-container .notification-toast.prediction-suggestion .notification-title {
-    color: #a5b4fc;
+[data-theme="dark"] .notification-toast.prediction-suggestion .notification-title {
+    color: #a5b4fc !important;
 }
 
-[data-theme="dark"] .notification-toast .prediction-confidence {
+[data-theme="dark"] .prediction-confidence {
     color: #a5b4fc;
     background-color: rgba(129, 140, 248, 0.2);
 }
 
-[data-theme="dark"] .notification-toast .btn-notif-accept {
-    color: #fff;
-    background-color: #6366f1;
+[data-theme="dark"] .btn-notif-accept {
+    color: #fff !important;
+    background-color: #6366f1 !important;
 }
 
-[data-theme="dark"] .notification-toast .btn-notif-accept:hover {
-    background-color: #4f46e5;
+[data-theme="dark"] .btn-notif-accept:hover {
+    background-color: #4f46e5 !important;
 }
