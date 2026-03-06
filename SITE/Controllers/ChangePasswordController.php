@@ -127,6 +127,9 @@ final class ChangePasswordController
                 $hash = password_hash($newPassword, PASSWORD_DEFAULT);
 
                 if ($this->users->updatePassword($userId, $hash)) {
+                    // Régénérer l'ID de session après changement sensible (protection session fixation)
+                    session_regenerate_id(true);
+                    
                     $success = 'Votre mot de passe a été mis à jour.';
                     // Réinitialiser les tentatives après succès
                     $_SESSION['change_password_attempts'] = [];

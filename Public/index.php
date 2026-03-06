@@ -102,9 +102,12 @@ if ($uri === '/generate-data' && $method === 'POST') {
 
     require_once __DIR__ . '/../SITE/Scripts/generate_data_online.php';
 
-    $patientId = $_POST['patient'] ?? 25;
+    // Lire le JSON envoyé
+    $input = json_decode(file_get_contents('php://input'), true);
+    $patientId = isset($input['patient']) ? (int)$input['patient'] : 25;
 
-    generatePatientData((int)$patientId, 5);
+    // Appel avec le bon nombre de paramètres (1 seul)
+    generatePatientData($patientId);
 
     echo json_encode(['success' => true]);
     exit;

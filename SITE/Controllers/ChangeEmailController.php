@@ -123,6 +123,8 @@ final class ChangeEmailController
                     $updated = $this->users->updateEmail($userId, $newEmail);
 
                     if ($updated) {
+                        // Régénérer l'ID de session après changement sensible (protection session fixation)
+                        session_regenerate_id(true);
 
                         $this->users->setVerificationToken($newEmail, $token, $expires);
 

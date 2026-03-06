@@ -13,10 +13,16 @@ document.addEventListener('DOMContentLoaded', function () {
     const toggleBtn = document.createElement('button');
     toggleBtn.className = 'notification-toggle-btn';
     toggleBtn.setAttribute('aria-label', 'Ouvrir/fermer les notifications');
-    toggleBtn.innerHTML = `
-        <span class="toggle-arrow">❯</span>
-        <span class="notif-count"></span>
-    `;
+    
+    const arrow = document.createElement('span');
+    arrow.className = 'toggle-arrow';
+    arrow.textContent = '❯';
+    
+    const count = document.createElement('span');
+    count.className = 'notif-count';
+    
+    toggleBtn.appendChild(arrow);
+    toggleBtn.appendChild(count);
 
     // Insérer le wrapper autour du container existant
     container.parentNode.insertBefore(wrapper, container);
