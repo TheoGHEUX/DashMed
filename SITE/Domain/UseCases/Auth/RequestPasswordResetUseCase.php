@@ -2,16 +2,16 @@
 
 namespace Domain\UseCases\Auth;
 
+use Core\Interfaces\PasswordResetRepositoryInterface;
 use Core\Interfaces\UserRepositoryInterface;
-use Models\Repositories\PasswordResetRepository; // On pourrait faire une interface ici aussi
 use Core\Mailer;
 
 class RequestPasswordResetUseCase
 {
     private UserRepositoryInterface $userRepo;
-    private PasswordResetRepository $pwdRepo;
+    private PasswordResetRepositoryInterface $pwdRepo;
 
-    public function __construct(UserRepositoryInterface $userRepo, PasswordResetRepository $pwdRepo)
+    public function __construct(UserRepositoryInterface $userRepo, PasswordResetRepositoryInterface $pwdRepo)
     {
         $this->userRepo = $userRepo;
         $this->pwdRepo = $pwdRepo;
@@ -22,7 +22,6 @@ class RequestPasswordResetUseCase
         // 1. Vérifier si l'utilisateur existe
         $user = $this->userRepo->findByEmail($email);
 
-        // S'il n'existe pas, on ne fait rien (sécurité silencieuse), mais on ne renvoie pas d'erreur
         if (!$user) {
             return;
         }

@@ -8,7 +8,7 @@
  * Nécessite une session utilisateur active.
  *
  * Variables attendues :
- *  - $user             (array)   Données utilisateur
+ *  - $user             (array)   Données utilisateur (Session)
  *  - $pageTitle        (string)  Titre de la page
  *  - $pageDescription  (string)  Meta description
  *  - $pageStyles       (array)   Styles spécifiques
@@ -18,8 +18,8 @@
  */
 
 // RÉCUPÉRATION DES DONNÉES UTILISATEUR
-$first = $user['name'] ?? '';
-$last  = $user['last_name'] ?? '';
+$first = $user['prenom'] ?? $user['name'] ?? '';
+$last  = $user['nom'] ?? $user['last_name'] ?? '';
 
 // CONFIGURATION : Variables du template
 $pageTitle       = $pageTitle ?? "Profil";
@@ -52,23 +52,27 @@ include __DIR__ . '/../partials/head.php';
                 </tr>
                 <tr>
                     <th scope="row">Sexe</th>
-                    <td><?= htmlspecialchars(
-                        ($user['sexe'] ?? '') === 'M' ? 'Homme' : 'Femme',
-                        ENT_QUOTES,
-                        'UTF-8'
-                    ) ?></td>
+                    <td>
+                        <?php
+                        $sexe = $user['sexe'] ?? '';
+                        if ($sexe === 'M') echo 'Homme';
+                        elseif ($sexe === 'F') echo 'Femme';
+                        else echo 'Non précisé';
+                        ?>
+                    </td>
                 </tr>
                 <tr>
                     <th scope="row">Spécialité</th>
-                    <td><?= htmlspecialchars($user['specialite'] ?? '', ENT_QUOTES, 'UTF-8') ?></td>
+                    <td><?= htmlspecialchars($user['specialite'] ?? 'Non renseignée', ENT_QUOTES, 'UTF-8') ?></td>
                 </tr>
                 <tr>
                     <th scope="row">Adresse email</th>
                     <td class="email-cell">
                         <span><?= htmlspecialchars($user['email'] ?? '', ENT_QUOTES, 'UTF-8') ?></span>
+
                         <a class="btn-edit"
-                           href="/change-email"
-                           title="Changer votre adresse email (connexion requise)">Changer</a>
+                           href="/profile/email"
+                           title="Changer votre adresse email">Changer</a>
                     </td>
                 </tr>
                 <tr>
@@ -76,7 +80,7 @@ include __DIR__ . '/../partials/head.php';
                     <td class="email-cell">
                         <span aria-label="Mot de passe masqué">••••••••</span>
                         <a class="btn-edit"
-                           href="/change-password"
+                           href="/profile/password"
                            title="Changer votre mot de passe (connexion requise)">Changer</a>
                     </td>
                 </tr>

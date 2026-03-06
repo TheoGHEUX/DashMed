@@ -2,30 +2,36 @@
 
 namespace Controllers;
 
+use Core\View;
+
 /**
  * Page d'accueil connectée
  *
- * Affiche la page d'accueil pour les utilisateurs connectés.
+ * Affiche le tableau de bord principal pour les utilisateurs connectés.
  *
  * @package Controllers
  */
 final class ConnectedHomeController
 {
     /**
-     * Affiche la page d'accueil pour les utilisateurs connectés.
-     *
-     * Vérifie la présence de $_SESSION['user'] avant d'afficher la vue.
-     *
-     * Redirige vers la page de connexion (/login) si la session est vide.
+     * Affiche la page d'accueil.
      *
      * @return void
      */
     public function index(): void
     {
+        // 1. Sécurité : On s'assure que la session est démarrée
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
+
+        // 2. Vérification : L'utilisateur est-il connecté ?
         if (empty($_SESSION['user'])) {
             header('Location: /login');
             exit;
         }
-        \Core\View::render('connected/home');
+
+        // 3. Rendu de la vue
+        View::render('connected/home');
     }
 }

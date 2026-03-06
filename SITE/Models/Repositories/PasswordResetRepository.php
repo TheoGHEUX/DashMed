@@ -3,9 +3,12 @@
 namespace Models\Repositories;
 
 use Core\Database;
+use Core\Interfaces\PasswordResetRepositoryInterface;
 use PDO;
 
-class PasswordResetRepository
+// <-- Import
+
+class PasswordResetRepository implements PasswordResetRepositoryInterface
 {
     private PDO $db;
 
@@ -13,8 +16,6 @@ class PasswordResetRepository
     {
         $this->db = Database::getConnection();
     }
-
-    // --- Utilisé par "Mot de passe oublié" ---
 
     public function deleteExisting(string $email): void
     {
@@ -29,8 +30,6 @@ class PasswordResetRepository
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([$email, $tokenHash, $expiresAt]);
     }
-
-    // --- AJOUTS POUR "Réinitialiser le mot de passe" (Nouveau !) ---
 
     public function findEmailByToken(string $tokenHash): ?string
     {

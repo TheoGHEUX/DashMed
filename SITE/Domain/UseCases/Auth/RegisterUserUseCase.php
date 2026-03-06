@@ -44,7 +44,7 @@ class RegisterUserUseCase
         $password = $data['password'] ?? '';
         $confirm = $data['password_confirm'] ?? '';
 
-        // 2. Validations (Logique identique à l'ancien contrôleur)
+        // 2. Validations
         if (empty($name) || empty($lastName)) {
             $errors[] = 'Nom et prénom obligatoires.';
         }
@@ -71,7 +71,6 @@ class RegisterUserUseCase
             $errors[] = 'Cet email est déjà utilisé.';
         }
 
-        // Si erreurs, on arrête ici
         if (!empty($errors)) {
             return [
                 'success' => false,
@@ -97,7 +96,6 @@ class RegisterUserUseCase
 
             $this->userRepository->setVerificationToken($email, $token, $expires);
 
-            // Note: Mailer est une classe statique Core, on l'utilise directement pour l'instant
             $mailSent = Mailer::sendEmailVerification($email, $name, $token);
 
             if ($mailSent) {
@@ -108,7 +106,7 @@ class RegisterUserUseCase
                 ];
             } else {
                 return [
-                    'success' => true, // Le compte est créé quand même
+                    'success' => true,
                     'errors' => [],
                     'message' => "Compte créé, mais l'envoi du mail a échoué. Contactez le support."
                 ];

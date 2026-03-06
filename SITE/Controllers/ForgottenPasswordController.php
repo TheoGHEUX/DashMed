@@ -2,19 +2,18 @@
 
 namespace Controllers;
 
-use Core\Interfaces\UserRepositoryInterface;
-use Models\Repositories\PasswordResetRepository;
-use Domain\UseCases\Auth\RequestPasswordResetUseCase;
 use Core\Csrf;
+use Core\Interfaces\PasswordResetRepositoryInterface;
+use Core\Interfaces\UserRepositoryInterface;
 use Core\View;
+use Domain\UseCases\Auth\RequestPasswordResetUseCase;
 
 final class ForgottenPasswordController
 {
     private UserRepositoryInterface $userRepo;
-    private PasswordResetRepository $pwdRepo;
+    private PasswordResetRepositoryInterface $pwdRepo;
 
-    // Injection des deux repositories nécessaires
-    public function __construct(UserRepositoryInterface $userRepo, PasswordResetRepository $pwdRepo)
+    public function __construct(UserRepositoryInterface $userRepo, PasswordResetRepositoryInterface $pwdRepo)
     {
         $this->userRepo = $userRepo;
         $this->pwdRepo = $pwdRepo;

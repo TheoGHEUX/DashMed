@@ -3,16 +3,16 @@
 namespace Domain\UseCases\Auth;
 
 use Core\Database;
+use Core\Interfaces\PasswordResetRepositoryInterface;
 use Core\Interfaces\UserRepositoryInterface;
-use Models\Repositories\PasswordResetRepository;
 use Exception;
 
 class ResetPasswordUseCase
 {
     private UserRepositoryInterface $userRepo;
-    private PasswordResetRepository $pwdRepo;
+    private PasswordResetRepositoryInterface $pwdRepo;
 
-    public function __construct(UserRepositoryInterface $userRepo, PasswordResetRepository $pwdRepo)
+    public function __construct(UserRepositoryInterface $userRepo, PasswordResetRepositoryInterface $pwdRepo)
     {
         $this->userRepo = $userRepo;
         $this->pwdRepo = $pwdRepo;
@@ -65,7 +65,7 @@ class ResetPasswordUseCase
             $newPasswordHash = password_hash($password, PASSWORD_DEFAULT);
             $this->userRepo->updatePassword($user->getId(), $newPasswordHash);
 
-            // Invalidation du token (on supprime tout pour cet email)
+            // Invalidation du token
             $this->pwdRepo->deleteByEmail($email);
 
             $pdo->commit();
@@ -75,7 +75,6 @@ class ResetPasswordUseCase
             if ($pdo->inTransaction()) {
                 $pdo->rollBack();
             }
-            // Log réel pour le développeur
             error_log("Erreur ResetPassword : " . $e->getMessage());
             return ['success' => false, 'error' => 'Une erreur technique est survenue.'];
         }

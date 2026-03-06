@@ -91,7 +91,7 @@ include __DIR__ . '/../partials/head.php';
             <button class="btn" type="submit">Se connecter</button>
 
             <p class="muted small mt-16">
-                Pas de compte ? <a href="/inscription" class="link-strong">Inscrivez-vous</a>
+                Pas de compte ? <a href="/register" class="link-strong">Inscrivez-vous</a>
             </p>
 
             <p class="muted small">ou</p>

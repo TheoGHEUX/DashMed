@@ -46,7 +46,7 @@ $pageScripts = [];
             <div class="alert alert-success"><?= nl2br(htmlspecialchars($success, ENT_QUOTES, 'UTF-8')) ?></div>
         <?php endif; ?>
 
-        <form class="form" action="/change-password" method="post" novalidate>
+        <form class="form" action="/profile/password" method="post" novalidate>
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token, ENT_QUOTES, 'UTF-8') ?>" />
             <div class="field">
                 <input type="password" name="old_password" placeholder="Ancien mot de passe" required />

@@ -60,7 +60,7 @@ include __DIR__ . '/../partials/head.php';
             </div>
         <?php endif; ?>
 
-        <form class="form" action="/inscription" method="post" novalidate>
+        <form class="form" action="/register" method="post" novalidate>
             <input type="hidden"
                    name="csrf_token"
                    value="<?= htmlspecialchars($csrf_token ?? '', ENT_QUOTES, 'UTF-8') ?>"/>

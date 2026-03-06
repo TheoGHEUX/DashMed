@@ -46,7 +46,7 @@ final class ChangeEmailController
 
             if ($result['success']) {
                 $success = $result['message'];
-                // Mise à jour de la session (Responsabilité du contrôleur HTTP)
+                // Mise à jour de la session
                 $_SESSION['user']['email'] = $result['newEmail'];
                 $_SESSION['user']['email_verified'] = false;
             } else {

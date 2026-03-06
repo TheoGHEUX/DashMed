@@ -15,7 +15,7 @@ use PDO;
  *
  * @package Models\Repositories
  */
-class UserRepository implements UserRepositoryInterface // <-- Ajout de l'implémentation
+class UserRepository implements UserRepositoryInterface //
 {
     private PDO $db;
 

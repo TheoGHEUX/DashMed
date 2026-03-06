@@ -2,19 +2,19 @@
 
 namespace Controllers;
 
-use Core\Interfaces\UserRepositoryInterface;
-use Models\Repositories\PasswordResetRepository;
-use Domain\UseCases\Auth\ResetPasswordUseCase;
 use Core\Csrf;
+use Core\Interfaces\PasswordResetRepositoryInterface;
+use Core\Interfaces\UserRepositoryInterface;
 use Core\View;
+use Domain\UseCases\Auth\ResetPasswordUseCase;
 
 final class ResetPasswordController
 {
     private UserRepositoryInterface $userRepo;
-    private PasswordResetRepository $pwdRepo;
+    private PasswordResetRepositoryInterface $pwdRepo;
 
     // Injection automatique via le Conteneur
-    public function __construct(UserRepositoryInterface $userRepo, PasswordResetRepository $pwdRepo)
+    public function __construct(UserRepositoryInterface $userRepo, PasswordResetRepositoryInterface $pwdRepo)
     {
         $this->userRepo = $userRepo;
         $this->pwdRepo = $pwdRepo;

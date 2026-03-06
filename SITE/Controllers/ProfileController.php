@@ -2,11 +2,12 @@
 
 namespace Controllers;
 
+use Core\View;
+
 /**
  * Profil utilisateur
  *
- * Affiche les informations du compte pour un utilisateur authentifié et propose
- * les actions de modification (email et mot de passe).
+ * Affiche les informations du compte pour un utilisateur authentifié.
  *
  * @package Controllers
  */
@@ -15,27 +16,24 @@ final class ProfileController
     /**
      * Affiche la page du profil.
      *
-     * Vérifie l'authentification avant d'afficher la vue.
-     * Redirige vers la page de connexion (/login) si l'utilisateur n'est pas connecté.
-     *
-     * Processus :
-     * 1. Démarre la session si nécessaire
-     * 2. Vérifie $_SESSION['user']
-     * 3. Extrait le nom complet et le sépare en prénom/nom
-     * 4. Passe $user, $first, $last à la vue profile.php
-     *
      * @return void
      */
     public function show(): void
     {
+        // 1. Sécurité Session
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
         }
+
+        // 2. Vérification Connexion
         if (empty($_SESSION['user'])) {
             header('Location: /login');
             exit;
         }
+
+        // 3. Récupération des données (depuis la session pour l'instant)
         $user = $_SESSION['user'];
-        \Core\View::render('connected/profile', compact('user'));
+
+        View::render('connected/profile', compact('user'));
     }
 }

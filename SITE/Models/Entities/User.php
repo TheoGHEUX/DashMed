@@ -3,10 +3,10 @@
 namespace Models\Entities;
 
 /**
- * Représente un utilisateur connecté à l'application (médecin).
+ * Entité Utilisateur.
  *
- * Cette classe rassemble toutes les informations importantes :
- * identité, connexion (email/mot de passe), et statut de vérification.
+ * Représente un utilisateur (médecin) dans l'application.
+ * Mappe les données de la base de données vers un objet PHP.
  *
  * @package Models\Entities
  */
@@ -17,6 +17,7 @@ class User
     private string $nom;
     private string $email;
     private string $passwordHash;
+    private string $role;
     private ?string $sexe;
     private ?string $specialite;
     private bool $emailVerified;
@@ -24,38 +25,42 @@ class User
     private ?string $verificationExpires;
 
     /**
-     * Constructeur : Crée un utilisateur à partir de données brutes
+     * Constructeur.
      *
-     * Remplit l'objet en gérant plusieurs noms de colonnes possibles
-     * (ex: accepte 'user_id' OU 'med_id', 'password' OU 'mdp')
-     * Cela permet d'utiliser cette classe peu importe comment la base de données nomme les champs
+     * Initialise l'objet à partir d'un tableau associatif (souvent issu de PDO::fetch).
+     * Gère les différents alias de colonnes pour éviter les erreurs d'index.
      *
-     * @param array $data Données de l'utilisateur
+     * @param array $data Données brutes de l'utilisateur
      */
     public function __construct(array $data)
     {
-        // Tente de trouver l'ID via 'user_id' ou 'med_id'
-        $this->id = (int) ($data['user_id'] ?? $data['med_id'] ?? 0);
+        // Identifiant (supporte id, user_id ou med_id)
+        $this->id = (int) ($data['id'] ?? $data['user_id'] ?? $data['med_id'] ?? 0);
 
-        // Gère les variations de nommage (anglais vs français)
-        $this->prenom = $data['name'] ?? $data['prenom'] ?? '';
-        $this->nom = $data['last_name'] ?? $data['nom'] ?? '';
+        // Identité
+        $this->prenom = $data['prenom'] ?? $data['name'] ?? '';
+        $this->nom = $data['nom'] ?? $data['last_name'] ?? '';
+
+        // Authentification
         $this->email = $data['email'] ?? '';
         $this->passwordHash = $data['password'] ?? $data['mdp'] ?? '';
+        $this->role = $data['role'] ?? 'MEDECIN'; // Valeur par défaut
 
+        // Informations médicales
         $this->sexe = $data['sexe'] ?? null;
         $this->specialite = $data['specialite'] ?? null;
 
-        // Gestion de la vérification d'email
-        $this->emailVerified = (bool) ($data['email_verified'] ?? false);
-        $this->verificationToken = $data['email_verification_token'] ?? null;
-        $this->verificationExpires = $data['email_verification_expires'] ?? null;
+        // Vérification d'email
+        // Gère le cas où la base retourne 0/1 ou false/true
+        $this->emailVerified = !empty($data['email_verified']);
+        $this->verificationToken = $data['verification_token'] ?? $data['email_verification_token'] ?? null;
+        $this->verificationExpires = $data['verification_expires'] ?? $data['email_verification_expires'] ?? null;
     }
 
-    // --- Méthodes pour récupérer les infos (Getters) ---
+    // Getters
 
     /**
-     * @return int Identifiant unique de l'utilisateur
+     * @return int Identifiant unique
      */
     public function getId(): int
     {
@@ -63,7 +68,7 @@ class User
     }
 
     /**
-     * @return string Prénom de l'utilisateur
+     * @return string Prénom
      */
     public function getPrenom(): string
     {
@@ -71,7 +76,7 @@ class User
     }
 
     /**
-     * @return string Nom de l'utilisateur
+     * @return string Nom de famille
      */
     public function getNom(): string
     {
@@ -79,7 +84,7 @@ class User
     }
 
     /**
-     * @return string Email de l'utilisateur
+     * @return string Adresse email
      */
     public function getEmail(): string
     {
@@ -87,7 +92,7 @@ class User
     }
 
     /**
-     * @return string Hash du mot de passe de l'utilisateur
+     * @return string Mot de passe haché
      */
     public function getPasswordHash(): string
     {
@@ -95,31 +100,15 @@ class User
     }
 
     /**
-     * @return bool Vrai si confirmé, Faux sinon
+     * @return string Rôle de l'utilisateur (ex: ADMIN, MEDECIN)
      */
-    public function isEmailVerified(): bool
+    public function getRole(): string
     {
-        return $this->emailVerified;
+        return $this->role;
     }
 
     /**
-     * @return string|null Token ou null
-     */
-    public function getVerificationToken(): ?string
-    {
-        return $this->verificationToken;
-    }
-
-    /**
-     * @return string|null Date d'expiration ou null
-     */
-    public function getVerificationExpires(): ?string
-    {
-        return $this->verificationExpires;
-    }
-
-    /**
-     * @return string|null Sexe de l'utilisateur ou null
+     * @return string|null Sexe (M/F) ou null si non défini
      */
     public function getSexe(): ?string
     {
@@ -127,7 +116,7 @@ class User
     }
 
     /**
-     * @return string|null Spécialité médicale de l'utilisateur ou null
+     * @return string|null Spécialité médicale ou null si non défini
      */
     public function getSpecialite(): ?string
     {
@@ -135,20 +124,43 @@ class User
     }
 
     /**
-     * Prépare les données pour la session
+     * @return bool Vrai si l'email a été vérifié
+     */
+    public function isEmailVerified(): bool
+    {
+        return $this->emailVerified;
+    }
+
+    /**
+     * @return string|null Token de vérification d'email
+     */
+    public function getVerificationToken(): ?string
+    {
+        return $this->verificationToken;
+    }
+
+    /**
+     * @return string|null Date d'expiration du token
+     */
+    public function getVerificationExpires(): ?string
+    {
+        return $this->verificationExpires;
+    }
+
+    /**
+     * Convertit l'objet en tableau pour le stockage en session.
+     * Exclut les données sensibles comme le mot de passe.
      *
-     * Sélectionne uniquement les info nécessaires à garder en mémoire
-     * une fois l'utilisateur connecté (évite de stocker le mot de passe en session)
-     *
-     * @return array Tableau simplifié pour $_SESSION
+     * @return array
      */
     public function toSessionArray(): array
     {
         return [
             'id' => $this->id,
             'email' => $this->email,
-            'name' => $this->prenom,
-            'last_name' => $this->nom,
+            'prenom' => $this->prenom,
+            'nom' => $this->nom,
+            'role' => $this->role,
             'sexe' => $this->sexe,
             'specialite' => $this->specialite,
             'email_verified' => $this->emailVerified,

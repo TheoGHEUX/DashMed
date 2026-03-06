@@ -29,7 +29,7 @@ class ConsoleRepository
     private const VALID_ACTIONS = ['ajouter', 'supprimer', 'réduire', 'agrandir'];
 
     /**
-     * Mapping action ↔ entier (identique à type_action_id dans la BD)
+     * Mapping action <-> entier (identique à type_action_id dans la BD)
      */
     private const ACTION_IDS = [
         'ajouter'   => 0,
