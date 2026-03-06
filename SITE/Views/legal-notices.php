@@ -29,91 +29,74 @@ include __DIR__ . '/partials/head.php';
 <main class="content">
     <div class="container">
         <h1>Mentions légales</h1>
-        <p class="muted">Dernière mise à jour: 22 octobre 2025</p>
+        <p class="muted">Dernière mise à jour : 6 mars 2026</p>
 
         <section class="legal-grid">
             <div class="panel short">
                 <h3>Politique de confidentialité</h3>
                 <p>
-                    Nous protégeons les données personnelles et de santé selon
-                    les normes en vigueur (RGPD, hébergement sécurisé).
-                    Les finalités et durées de conservation sont précisées
-                    dans notre politique complète.
+                    DashMed s'engage à protéger les données personnelles et de santé
+                    conformément au RGPD et aux réglementations applicables.
+                    Nos traitements sont limités aux finalités de suivi médical
+                    et d'amélioration des soins.
                 </p>
-                <a class="more" href="#privacy-details">En savoir plus</a>
+                <p style="margin-top: 12px;">
+                    <strong>Vos droits :</strong> accès, rectification, effacement,
+                    portabilité et opposition. Contactez notre DPO pour toute demande.
+                </p>
             </div>
 
             <div class="panel">
-                <h3>Conditions d'utilisation</h3>
+                <h3>Sécurité & Hébergement</h3>
                 <p>
-                    Ces conditions définissent l'usage professionnel de la
-                    plateforme DashMed par les établissements de santé.
-                    Elles couvrent les obligations de l'établissement
-                    utilisatrice, les engagements de DashMed en matière
-                    de sécurité et les limites de responsabilité.
+                    La plateforme DashMed respecte les normes de sécurité
+                    les plus strictes pour les données de santé :
                 </p>
                 <ul>
                     <li>
-                        <strong>Habilitations</strong> — gestion des accès
-                        par l'établissement ; identifiants personnels requis.
+                        <strong>Hébergement HDS</strong> — certifié Hébergeur de Données de Santé
                     </li>
                     <li>
-                        <strong>Sécurité</strong> — chiffrement, journaux
-                        d'audit et hébergement sécurisé conformes aux
-                        obligations applicables aux données de santé.
+                        <strong>Chiffrement</strong> — TLS/SSL en transit, chiffrement au repos
                     </li>
                     <li>
-                        <strong>SLA</strong> — disponibilités et procédures
-                        d'incident précisées contractuellement ; maintenance
-                        planifiée annoncée à l'avance.
+                        <strong>Authentification</strong> — politique de mots de passe renforcée,
+                        limitation des tentatives
                     </li>
                     <li>
-                        <strong>Responsabilités</strong> — l'établissement
-                        reste responsable du contenu clinique et des décisions
-                        médicales ; DashMed assure la plateforme et son
-                        intégrité technique.
+                        <strong>Traçabilité</strong> — journalisation complète des accès
+                        et actions utilisateur
                     </li>
                 </ul>
-                <a class="more" href="#terms-details">Lire les détails</a>
             </div>
 
             <div class="panel full long">
-                <h3>Droits des utilisateurs et gestion des données</h3>
+                <h3>Conditions d'utilisation</h3>
                 <p>
-                    Les utilisateurs et les patients bénéficient de droits
-                    encadrés par le RGPD et la réglementation relative aux
-                    données de santé. Les demandes d'accès, de rectification
-                    ou d'effacement sont traitées selon des procédures définies
-                    en collaboration avec l'établissement.
+                    L'accès à DashMed est réservé aux professionnels de santé
+                    dûment habilités. Chaque utilisateur est responsable de
+                    la confidentialité de ses identifiants.
                 </p>
                 <ul>
                     <li>
-                        <strong>Droit d'accès :</strong> possibilité de demander
-                        une copie des données détenues vous concernant.
+                        <strong>Cookies :</strong> PHPSESSID (session), theme_preference
+                        et dashboard_layout (préférences utilisateur, 1 an). Aucun cookie
+                        publicitaire ou de tracking tiers n'est utilisé.
                     </li>
                     <li>
-                        <strong>Droit de rectification :</strong> correction des
-                        données inexactes via les procédures internes de
-                        l'établissement.
+                        <strong>Responsabilités :</strong> Les décisions médicales restent
+                        sous la responsabilité exclusive du praticien. DashMed fournit
+                        un outil de visualisation et ne se substitue pas au jugement clinique.
                     </li>
                     <li>
-                        <strong>Droit à l'effacement :</strong> supprimable sous
-                        réserve des obligations légales de conservation (dossiers
-                        médicaux, archives réglementaires).
+                        <strong>Disponibilité :</strong> Objectif de 99,5% hors maintenance.
+                        Les interventions planifiées sont annoncées 48h à l'avance.
                     </li>
                     <li>
-                        <strong>Logs et traçabilité :</strong> toutes les
-                        consultations et actions sont journalisées pour garantir
-                        la traçabilité et la sécurité.
-                    </li>
-                    <li>
-                        <strong>Procédure de demande :</strong> les demandes
-                        doivent être adressées au DPO ou contact indiqué par
-                        l'établissement ; DashMed assiste techniquement le
-                        traitement de ces demandes.
+                        <strong>Contact :</strong> Pour toute question, contactez notre
+                        équipe support ou notre Délégué à la Protection des Données (DPO).
                     </li>
                 </ul>
-                <a class="more" href="#rights-details">Procédure complète</a>
             </div>
         </section>
     </div>
