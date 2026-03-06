@@ -633,9 +633,25 @@ final class DashboardController
                 exit;
             }
 
-            $pythonBin = 'python';
+            // Vérifier que le modèle entraîné est présent
+            $storagePath = dirname(__DIR__) . '/storage';
+            if (!file_exists($storagePath . '/action_model.joblib')) {
+                http_response_code(503);
+                echo json_encode(['error' => 'Modèle IA non disponible sur ce serveur']);
+                exit;
+            }
+
+            // Résoudre le binaire Python
+            $pythonBin = 'python3';
             if (PHP_OS_FAMILY === 'Windows' && file_exists('C:\\Python313\\python.exe')) {
                 $pythonBin = 'C:\\Python313\\python.exe';
+            }
+
+            // Vérifier que exec() est disponible
+            if (!function_exists('exec') || in_array('exec', array_map('trim', explode(',', ini_get('disable_functions'))), true)) {
+                http_response_code(503);
+                echo json_encode(['error' => 'Prédiction IA non disponible (exec désactivé)']);
+                exit;
             }
 
             // Forcer l'encodage UTF-8 pour éviter les caractères corrompus sous Windows
