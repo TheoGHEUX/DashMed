@@ -669,7 +669,7 @@
         grid-template-columns: repeat(2, 1fr);
     }
 
-    
+
     .page-title {
         font-size: 1.5rem;
         font-weight: 700;
@@ -726,7 +726,7 @@
         display: none !important;
     }
 
-    
+
     .card-title {
         font-size: 0.95rem;
         font-weight: 600;
@@ -1089,10 +1089,10 @@
     top: 80px;
     right: 20px;
     width: 350px;
-    z-index: 9999;
+    z-index: 1000;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    max-height: 90vh;
 }
 
 .notification-toast {
@@ -1135,6 +1135,29 @@
     display: flex;
     justify-content: space-between;
     margin-top: 5px;
+}
+
+.notifications-scrollable {
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;             /* espace entre les notifications si vous n'en avez pas déjà */
+    padding-right: 4px;   /* évite que la scrollbar masque le contenu */
+}
+
+/* Scrollbar discrète */
+.notifications-scrollable::-webkit-scrollbar {
+    width: 4px;
+}
+.notifications-scrollable::-webkit-scrollbar-track {
+    background: transparent;
+}
+.notifications-scrollable::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.2);
+    border-radius: 2px;
+}
+[data-theme="dark"] .notifications-scrollable::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.2);
 }
 
 .btn-notif {
@@ -1274,6 +1297,7 @@
 /* Bouton pour tout ignorer */
 
 .btn-dismiss-all {
+    flex-shrink: 0;
     display: block;
     width: 100%;
     margin-bottom: 8px;
