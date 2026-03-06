@@ -156,12 +156,12 @@ document.addEventListener('DOMContentLoaded', function () {
         title.className = 'notification-title';
         title.textContent = '🤖 Suggestion IA';
         
-        const confidence = document.createElement('span');
-        confidence.className = 'prediction-confidence';
-        confidence.textContent = confidencePercent + ' %';
+        const confidenceBadge = document.createElement('span');
+        confidenceBadge.className = 'prediction-confidence';
+        confidenceBadge.textContent = confidencePercent + ' %';
         
         header.appendChild(title);
-        header.appendChild(confidence);
+        header.appendChild(confidenceBadge);
         
         const message = document.createElement('div');
         message.className = 'notification-message';
