@@ -32,9 +32,18 @@ final class Database
     {
         if (self::$pdo === null) {
             // Lecture optionnelle d'un fichier .env à la racine du projet (avec cache)
+            // Fallback : ~/config/.env (persistant hors du dépôt git)
             if (self::$envCache === null) {
                 $root = dirname(__DIR__, 2);
                 $envFile = $root . DIRECTORY_SEPARATOR . '.env';
+                // Si pas de .env dans le projet, chercher dans ~/config/.env
+                if (!is_file($envFile)) {
+                    $home = $_SERVER['HOME'] ?? getenv('HOME') ?: '';
+                    $fallback = $home . '/config/.env';
+                    if ($home !== '' && is_file($fallback)) {
+                        $envFile = $fallback;
+                    }
+                }
                 $env = [];
             if (is_file($envFile) && is_readable($envFile)) {
                 $lines = @file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
