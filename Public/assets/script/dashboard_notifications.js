@@ -3,7 +3,45 @@ document.addEventListener('DOMContentLoaded', function () {
     const chartData = window.patientChartData || {};
     const container = document.getElementById('notification-container');
 
-    if (!container || Object.keys(chartData).length === 0) return;
+    if (!container) return;
+
+    // Création du wrapper et du bouton toggle
+    // Le wrapper englobe [bouton toggle] + [panneau de notifications]
+    const wrapper = document.createElement('div');
+    wrapper.className = 'notification-wrapper';
+
+    const toggleBtn = document.createElement('button');
+    toggleBtn.className = 'notification-toggle-btn';
+    toggleBtn.setAttribute('aria-label', 'Ouvrir/fermer les notifications');
+    toggleBtn.innerHTML = `
+        <span class="toggle-arrow">❯</span>
+        <span class="notif-count"></span>
+    `;
+
+    // Insérer le wrapper autour du container existant
+    container.parentNode.insertBefore(wrapper, container);
+    wrapper.appendChild(toggleBtn);
+    wrapper.appendChild(container);
+
+    // Replié par défaut si aucune donnée
+    if (Object.keys(chartData).length === 0) {
+        wrapper.classList.add('collapsed');
+    }
+
+    toggleBtn.addEventListener('click', () => {
+        wrapper.classList.toggle('collapsed');
+    });
+
+    function updateToggleBadge() {
+        const count = activeNotifications.size;
+        const badge = toggleBtn.querySelector('.notif-count');
+        badge.textContent = count > 0 ? count : '';
+    }
+
+    // Si pas de données patient, on s'arrête ici
+    if (Object.keys(chartData).length === 0) return;
+
+    // État des notifications
 
     // Métriques dont une notification est actuellement ouverte
     const activeNotifications = new Set();
@@ -14,28 +52,36 @@ document.addEventListener('DOMContentLoaded', function () {
         notifiedValues[key] = chartData[key]?.lastValue ?? null;
     });
 
+    // Wrapper scrollable
     const scrollable = document.createElement('div');
     scrollable.id = 'notifications-scrollable';
     scrollable.className = 'notifications-scrollable';
     container.appendChild(scrollable);
 
+    const panelLabel = document.createElement('div');
+    panelLabel.className = 'notifications-panel-label';
+    panelLabel.textContent = 'Menu des alertes';
+    container.insertBefore(panelLabel, scrollable);
+
+    // Détermine le niveau d'alerte d'une mesure
     function getAlertLevel(metricKey, data) {
         const val = parseFloat(data.lastValue);
         if (isNaN(val)) return null;
 
         // Seuils MAX
-        if (data.seuil_critique   && val >= data.seuil_critique)   return 'critique';
-        if (data.seuil_urgent     && val >= data.seuil_urgent)     return 'urgent';
+        if (data.seuil_critique    && val >= data.seuil_critique)    return 'critique';
+        if (data.seuil_urgent      && val >= data.seuil_urgent)      return 'urgent';
         if (data.seuil_preoccupant && val >= data.seuil_preoccupant) return 'préoccupant';
 
         // Seuils MIN
-        if (data.seuil_critique_min   && val <= data.seuil_critique_min)   return 'critique';
-        if (data.seuil_urgent_min     && val <= data.seuil_urgent_min)     return 'urgent';
+        if (data.seuil_critique_min    && val <= data.seuil_critique_min)    return 'critique';
+        if (data.seuil_urgent_min      && val <= data.seuil_urgent_min)      return 'urgent';
         if (data.seuil_preoccupant_min && val <= data.seuil_preoccupant_min) return 'préoccupant';
 
         return null;
     }
 
+    // Gestion du bouton "Ignorer tout"
     function getOrCreateDismissAllBtn() {
         let btn = document.getElementById('dismiss-all-btn');
         if (!btn) {
@@ -46,9 +92,9 @@ document.addEventListener('DOMContentLoaded', function () {
             btn.addEventListener('click', () => {
                 scrollable.querySelectorAll('.notification-toast').forEach(n => closeNotification(n));
                 activeNotifications.clear();
+                updateToggleBadge();
                 btn.remove();
             });
-            // Inséré avant le wrapper scrollable → toujours visible en haut
             container.insertBefore(btn, scrollable);
         }
         return btn;
@@ -61,12 +107,15 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Création d'une notification
+    // -------------------------------------------------------------------------
     function createNotification(metricKey, level, value, unit) {
         // Bloquer si une notification est déjà ouverte pour cette métrique
         if (activeNotifications.has(metricKey)) return;
         activeNotifications.add(metricKey);
+        updateToggleBadge();
 
-        // S'assurer que le bouton "Ignorer tout" est présent
         getOrCreateDismissAllBtn();
 
         const titleMap = {
@@ -96,9 +145,12 @@ document.addEventListener('DOMContentLoaded', function () {
         // Voir l'alerte
         notif.querySelector('.btn-notif-view').addEventListener('click', () => {
             activeNotifications.delete(metricKey);
+            updateToggleBadge();
+
+            // Replier le panneau pour laisser la vue libre
+            wrapper.classList.add('collapsed');
 
             const isVisible = window.dashboardIsChartVisible && window.dashboardIsChartVisible(metricKey);
-
             if (!isVisible && window.dashboardAddChart) {
                 window.dashboardAddChart(metricKey);
                 setTimeout(() => scrollToChart(metricKey), 100);
@@ -112,13 +164,14 @@ document.addEventListener('DOMContentLoaded', function () {
         // Ignorer
         notif.querySelector('.btn-notif-ignore').addEventListener('click', () => {
             activeNotifications.delete(metricKey);
+            updateToggleBadge();
             closeNotification(notif);
         });
 
-        // Insérer dans le wrapper scrollable
         scrollable.appendChild(notif);
     }
 
+    // Scroll vers la carte graphique avec effet de surbrillance
     function scrollToChart(metricKey) {
         const chartCard = document.querySelector(`article[data-chart-id="${metricKey}"]`);
         if (!chartCard) return;
@@ -128,14 +181,17 @@ document.addEventListener('DOMContentLoaded', function () {
         setTimeout(() => { chartCard.style.boxShadow = ''; }, 2000);
     }
 
+    // Fermeture d'une notification
     function closeNotification(element) {
         element.classList.add('closing');
         setTimeout(() => {
             if (element.parentNode) element.parentNode.removeChild(element);
             removeDismissAllBtnIfEmpty();
+            updateToggleBadge();
         }, 300);
     }
 
+    // Affichage initial des alertes au chargement
     Object.keys(chartData).forEach(key => {
         const metric = chartData[key];
         const level = getAlertLevel(key, metric);
@@ -144,6 +200,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // Si aucune alerte au chargement, replier le panneau
+    if (activeNotifications.size === 0) {
+        wrapper.classList.add('collapsed');
+    }
+
+    // Mise à jour en temps réel
     window.addEventListener('chartDataUpdated', (e) => {
         const newData = e.detail.chartData;
 
@@ -151,7 +213,6 @@ document.addEventListener('DOMContentLoaded', function () {
             const metric = newData[key];
             const newValue = metric.lastValue;
 
-            // Ne notifier que si la valeur a changé depuis la dernière notification
             if (newValue === notifiedValues[key]) return;
             notifiedValues[key] = newValue;
 
