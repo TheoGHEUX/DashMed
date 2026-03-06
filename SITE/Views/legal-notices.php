@@ -33,22 +33,23 @@ include __DIR__ . '/partials/head.php';
 
         <section class="legal-grid">
             <div class="panel short">
-                <h3>Projet pédagogique</h3>
+                <h3>À propos de DashMed</h3>
                 <p>
-                    DashMed est un projet étudiant développé dans un cadre éducatif.
-                    Toutes les données affichées sont <strong>fictives et générées aléatoirement</strong>.
-                    Ce site n'a aucune vocation médicale réelle et ne traite aucune donnée personnelle.
+                    DashMed est une plateforme de démonstration conçue pour illustrer
+                    les bonnes pratiques de développement d'applications médicales.
+                    Les données affichées sont <strong>exclusivement fictives</strong>
+                    et générées pour des besoins de présentation.
                 </p>
-                <p style="margin-top: 12px; font-size: 12px; font-style: italic;">
-                    🎓 Réalisé par des étudiants — 2025-2026
+                <p style="margin-top: 12px; font-size: 11px; color: var(--text-secondary, #6f7580);">
+                    Développé dans un cadre pédagogique — 2025-2026
                 </p>
             </div>
 
             <div class="panel">
                 <h3>Technologies & Sécurité</h3>
                 <p>
-                    Malgré son caractère pédagogique, DashMed implémente
-                    les bonnes pratiques de développement web sécurisé :
+                    DashMed est développé selon les standards de l'industrie
+                    et implémente les meilleures pratiques de sécurité :
                 </p>
                 <ul>
                     <li>
@@ -85,10 +86,10 @@ include __DIR__ . '/partials/head.php';
                         <strong>dashboard_layout</strong> — Sauvegarde de l'agencement des graphiques (1 an)
                     </li>
                 </ul>
-                <p style="margin-top: 14px; font-size: 12px;">
-                    <strong>Note importante :</strong> En production réelle avec de vraies données de santé,
-                    un hébergement certifié HDS et un DPO seraient obligatoires (RGPD).
-                    Ce projet respecte les bonnes pratiques mais reste dans un cadre uniquement éducatif.
+                <p style="margin-top: 14px; font-size: 11px; color: var(--text-secondary, #6f7580);">
+                    <strong>Note :</strong> Cette plateforme de démonstration utilise des données fictives.
+                    En environnement de production avec données réelles, un hébergement certifié HDS
+                    et la désignation d'un DPO seraient requis conformément au RGPD.
                 </p>
             </div>
         </section>
