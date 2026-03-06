@@ -1,6 +1,8 @@
 # DashMed 🏥
 
-**DashMed** est une plateforme web de suivi médical permettant aux professionnels de santé de centraliser et visualiser les données vitales de leurs patients en temps réel.
+**DashMed** est une plateforme web moderne de suivi médical permettant aux professionnels de santé de centraliser et visualiser les données vitales de leurs patients en temps réel.
+
+> 📌 **Note :** Ce projet est développé dans un cadre pédagogique et utilise des données fictives à des fins de démonstration.
 
 ---
 
@@ -28,11 +30,13 @@
 
 ---
 
-## 🚀 Public cible
+## 🚀 Cas d'usage
 
-- Médecins généralistes et spécialistes
-- Équipes soignantes en établissement
-- Structures médicales nécessitant une centralisation des données patients
+DashMed s'adresse aux professionnels de santé nécessitant :
+- Une vue centralisée des données vitales de leurs patients
+- Un système d'alertes automatiques sur les paramètres critiques
+- Une interface personnalisable et intuitive
+- Un suivi longitudinal avec historique complet
 
 ---
 
