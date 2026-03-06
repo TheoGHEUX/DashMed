@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Core\Database;
 
 function generatePatientData(int $patientId): void
