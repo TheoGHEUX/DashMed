@@ -27,12 +27,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Appelle l'API de prédiction après une action utilisateur
     function fetchAndShowPrediction(action, chartId) {
+        console.log('[IA] fetchAndShowPrediction appelé :', action, chartId);
+
         // Ne pas empiler les suggestions
-        if (predictionActive) return;
+        if (predictionActive) { console.log('[IA] bloqué : prédiction déjà active'); return; }
 
         // Résoudre le nom de mesure depuis le chartId
         const mesure = chartId ? CHART_TO_MESURE[chartId] : null;
-        if (!mesure) return;
+        if (!mesure) { console.log('[IA] bloqué : mesure introuvable pour', chartId); return; }
 
         predictionActive = true;
         sessionActionCount++;
@@ -51,50 +53,68 @@ document.addEventListener('DOMContentLoaded', function () {
             })
         })
         .then(response => {
-            if (!response.ok) throw new Error('Erreur API prédiction');
+            console.log('[IA] réponse API :', response.status);
+            if (!response.ok) throw new Error('Erreur API prédiction : ' + response.status);
             return response.json();
         })
         .then(data => {
+            console.log('[IA] données reçues :', data);
             if (data.error || !data.prediction) {
+                console.log('[IA] bloqué : erreur ou pas de prédiction', data.error);
                 predictionActive = false;
                 return;
             }
 
-            const predictedAction = data.prediction.action;
-            const predictedMesure = data.prediction.mesure;
-            const confidence = data.confidence || 0;
+            // Construire la liste de candidats : meilleure prédiction + top_predictions
+            const candidates = [
+                { action: data.prediction.action, mesure: data.prediction.mesure, probability: data.confidence || 0 },
+                ...(data.top_predictions || [])
+            ];
 
-            // Ne pas suggérer si la confiance est trop faible
-            if (confidence < MIN_CONFIDENCE) {
-                predictionActive = false;
-                return;
-            }
+            // Parcourir les candidats et prendre le premier cohérent
+            for (const candidate of candidates) {
+                const pAction = candidate.action;
+                const pMesure = candidate.mesure;
+                const pConf = candidate.probability;
 
-            // Ne pas suggérer la même action sur la même mesure
-            if (predictedAction === action && predictedMesure === mesure) {
-                predictionActive = false;
-                return;
-            }
-
-            // Vérifier la cohérence avec l'état actuel du dashboard
-            const targetChartId = MESURE_TO_CHART[predictedMesure] || null;
-            if (targetChartId && typeof window.dashboardIsChartVisible === 'function') {
-                const isVisible = window.dashboardIsChartVisible(targetChartId);
-                // Ne pas proposer d'ajouter un graphique déjà affiché
-                if (predictedAction === 'ajouter' && isVisible) {
-                    predictionActive = false;
-                    return;
+                // Confiance trop faible
+                if (pConf < MIN_CONFIDENCE) {
+                    console.log('[IA] candidat ignoré (confiance faible) :', pAction, pMesure, pConf);
+                    continue;
                 }
-                // Ne pas proposer de supprimer/réduire/agrandir un graphique absent
-                if (['supprimer', 'réduire', 'agrandir'].includes(predictedAction) && !isVisible) {
-                    predictionActive = false;
-                    return;
+
+                // Même action sur la même mesure que celle qu'on vient de faire
+                if (pAction === action && pMesure === mesure) {
+                    console.log('[IA] candidat ignoré (même action/mesure) :', pAction, pMesure);
+                    continue;
                 }
+
+                // Vérifier la cohérence avec le dashboard
+                const targetChartId = MESURE_TO_CHART[pMesure] || null;
+                if (targetChartId && typeof window.dashboardIsChartVisible === 'function') {
+                    const isVisible = window.dashboardIsChartVisible(targetChartId);
+                    if (pAction === 'ajouter' && isVisible) {
+                        console.log('[IA] candidat ignoré (déjà visible) :', pAction, pMesure);
+                        continue;
+                    }
+                    if (['supprimer', 'réduire', 'agrandir'].includes(pAction) && !isVisible) {
+                        console.log('[IA] candidat ignoré (absent) :', pAction, pMesure);
+                        continue;
+                    }
+                }
+
+                // Ce candidat est cohérent → afficher
+                console.log('[IA] ✅ affichage popup :', pAction, pMesure, pConf);
+                showPredictionPopup(pAction, pMesure, pConf);
+                return;
             }
 
-            showPredictionPopup(predictedAction, predictedMesure, confidence);
+            // Aucun candidat cohérent trouvé
+            console.log('[IA] aucun candidat cohérent parmi', candidates.length, 'prédictions');
+            predictionActive = false;
         })
-        .catch(() => {
+        .catch(err => {
+            console.error('[IA] ❌ erreur fetch :', err);
             predictionActive = false;
         });
     }
@@ -147,13 +167,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         container.appendChild(popup);
-
-        // Auto-fermeture après 8 secondes
-        setTimeout(() => {
-            if (popup.parentNode) {
-                closePrediction(popup);
-            }
-        }, 8000);
     }
 
     // Ferme un pop-up avec l'animation CSS .closing
