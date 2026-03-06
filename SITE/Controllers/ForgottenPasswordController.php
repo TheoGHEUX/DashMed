@@ -80,9 +80,8 @@ final class ForgottenPasswordController
         $errors = [];
         $success = '';
         // Simple rate-limiting per session to avoid abuse of password reset endpoint
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_start();
-        }
+        // Session déjà démarrée dans index.php
+        
         $maxAttempts = 5;
         $windowSeconds = 3600; // 1 hour
         $now = time();

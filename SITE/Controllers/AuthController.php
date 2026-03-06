@@ -293,7 +293,7 @@ final class AuthController
      */
     public function logout(): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+        // Session déjà démarrée dans index.php
 
         $csrf = $_POST['csrf_token'] ?? '';
         if (!Csrf::validate($csrf)) {

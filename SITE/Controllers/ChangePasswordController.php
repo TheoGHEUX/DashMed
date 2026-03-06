@@ -35,9 +35,7 @@ final class ChangePasswordController
      */
     public function showForm(): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_start();
-        }
+        // Session déjà démarrée dans index.php
 
         if (empty($_SESSION['user'])) {
             header('Location: /login');
@@ -64,9 +62,7 @@ final class ChangePasswordController
      */
     public function submit(): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_start();
-        }
+        // Session déjà démarrée dans index.php
 
         if (empty($_SESSION['user'])) {
             header('Location: /login');

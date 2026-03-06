@@ -30,9 +30,8 @@ final class ProfileController
      */
     public function show(): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_start();
-        }
+        // Session déjà démarrée dans index.php
+        
         if (empty($_SESSION['user'])) {
             header('Location: /login');
             exit;

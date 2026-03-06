@@ -1486,3 +1486,54 @@
 [data-theme="dark"] .btn-notif-accept:hover {
     background-color: #4f46e5;
 }
+
+/* ================================================
+   BOUTON RETOUR EN HAUT
+   ================================================ */
+
+.scroll-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 48px;
+    height: 48px;
+    background: var(--accent-primary, #0b6e4f);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 24px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(11, 110, 79, 0.3);
+    transition: all 0.3s ease;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    z-index: 999;
+}
+
+.scroll-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.scroll-to-top:hover {
+    background: var(--accent-hover, #0a5d42);
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(11, 110, 79, 0.4);
+}
+
+[data-theme="dark"] .scroll-to-top {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+@media (max-width: 768px) {
+    .scroll-to-top {
+        bottom: 20px;
+        right: 20px;
+        width: 44px;
+        height: 44px;
+        font-size: 20px;
+    }
+}

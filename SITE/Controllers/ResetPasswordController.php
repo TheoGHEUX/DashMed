@@ -74,10 +74,7 @@ final class ResetPasswordController
      */
     public function submit(): void
     {
-        // Démarrer la session pour la limitation de débit
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_start();
-        }
+        // Session déjà démarrée dans index.php
 
         // Protection contre le brute force : 5 tentatives max par session sur 15 minutes
         $maxAttempts = 5;
