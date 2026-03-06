@@ -54,10 +54,16 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .then(response => {
             console.log('[IA] réponse API :', response.status);
+            // 503 = IA non disponible sur ce serveur (pas de modèle ou exec désactivé)
+            if (response.status === 503) {
+                predictionActive = false;
+                return null;
+            }
             if (!response.ok) throw new Error('Erreur API prédiction : ' + response.status);
             return response.json();
         })
         .then(data => {
+            if (!data) return;
             console.log('[IA] données reçues :', data);
             if (data.error || !data.prediction) {
                 console.log('[IA] bloqué : erreur ou pas de prédiction', data.error);
