@@ -135,13 +135,13 @@ body {
     border-bottom: 1px solid var(--border-color);
 }
 
-.brand-name,
-.mainnav a {
-    color: var(--header-text) !important;
+.topbar .brand-name,
+.topbar .mainnav a {
+    color: var(--header-text);
 }
 
-.mainnav a:hover {
-    color: var(--accent-primary) !important;
+.topbar .mainnav a:hover {
+    color: var(--accent-primary);
 }
 
 .card {
