@@ -33,70 +33,63 @@ include __DIR__ . '/partials/head.php';
 
         <section class="legal-grid">
             <div class="panel short">
-                <h3>Politique de confidentialité</h3>
+                <h3>Projet pédagogique</h3>
                 <p>
-                    DashMed s'engage à protéger les données personnelles et de santé
-                    conformément au RGPD et aux réglementations applicables.
-                    Nos traitements sont limités aux finalités de suivi médical
-                    et d'amélioration des soins.
+                    DashMed est un projet étudiant développé dans un cadre éducatif.
+                    Toutes les données affichées sont <strong>fictives et générées aléatoirement</strong>.
+                    Ce site n'a aucune vocation médicale réelle et ne traite aucune donnée personnelle.
                 </p>
-                <p style="margin-top: 12px;">
-                    <strong>Vos droits :</strong> accès, rectification, effacement,
-                    portabilité et opposition. Contactez notre DPO pour toute demande.
+                <p style="margin-top: 12px; font-size: 12px; font-style: italic;">
+                    🎓 Réalisé par des étudiants — 2025-2026
                 </p>
             </div>
 
             <div class="panel">
-                <h3>Sécurité & Hébergement</h3>
+                <h3>Technologies & Sécurité</h3>
                 <p>
-                    La plateforme DashMed respecte les normes de sécurité
-                    les plus strictes pour les données de santé :
+                    Malgré son caractère pédagogique, DashMed implémente
+                    les bonnes pratiques de développement web sécurisé :
                 </p>
                 <ul>
                     <li>
-                        <strong>Hébergement HDS</strong> — certifié Hébergeur de Données de Santé
+                        <strong>Backend</strong> — PHP 8.1+ avec architecture MVC
                     </li>
                     <li>
-                        <strong>Chiffrement</strong> — TLS/SSL en transit, chiffrement au repos
+                        <strong>Sécurité</strong> — Protection CSRF, requêtes préparées,
+                        hashage bcrypt, limitation brute force
                     </li>
                     <li>
-                        <strong>Authentification</strong> — politique de mots de passe renforcée,
-                        limitation des tentatives
+                        <strong>Frontend</strong> — Chart.js pour visualisation,
+                        Leaflet.js pour cartographie
                     </li>
                     <li>
-                        <strong>Traçabilité</strong> — journalisation complète des accès
-                        et actions utilisateur
+                        <strong>Hébergement</strong> — XAMPP local (dev uniquement)
                     </li>
                 </ul>
             </div>
 
             <div class="panel full long">
-                <h3>Conditions d'utilisation</h3>
+                <h3>Cookies & Confidentialité</h3>
                 <p>
-                    L'accès à DashMed est réservé aux professionnels de santé
-                    dûment habilités. Chaque utilisateur est responsable de
-                    la confidentialité de ses identifiants.
+                    Le site utilise uniquement des cookies techniques essentiels
+                    au fonctionnement. Aucun tracking publicitaire ou analytique.
                 </p>
                 <ul>
                     <li>
-                        <strong>Cookies :</strong> PHPSESSID (session), theme_preference
-                        et dashboard_layout (préférences utilisateur, 1 an). Aucun cookie
-                        publicitaire ou de tracking tiers n'est utilisé.
+                        <strong>PHPSESSID</strong> — Gestion de session (durée : session navigateur)
                     </li>
                     <li>
-                        <strong>Responsabilités :</strong> Les décisions médicales restent
-                        sous la responsabilité exclusive du praticien. DashMed fournit
-                        un outil de visualisation et ne se substitue pas au jugement clinique.
+                        <strong>theme_preference</strong> — Mémorisation du mode sombre/clair (1 an)
                     </li>
                     <li>
-                        <strong>Disponibilité :</strong> Objectif de 99,5% hors maintenance.
-                        Les interventions planifiées sont annoncées 48h à l'avance.
-                    </li>
-                    <li>
-                        <strong>Contact :</strong> Pour toute question, contactez notre
-                        équipe support ou notre Délégué à la Protection des Données (DPO).
+                        <strong>dashboard_layout</strong> — Sauvegarde de l'agencement des graphiques (1 an)
                     </li>
                 </ul>
+                <p style="margin-top: 14px; font-size: 12px;">
+                    <strong>Note importante :</strong> En production réelle avec de vraies données de santé,
+                    un hébergement certifié HDS et un DPO seraient obligatoires (RGPD).
+                    Ce projet respecte les bonnes pratiques mais reste dans un cadre uniquement éducatif.
+                </p>
             </div>
         </section>
     </div>
