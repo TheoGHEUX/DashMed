@@ -641,13 +641,9 @@ final class DashboardController
             exit;
 
         } catch (\Throwable $e) {
+            error_log('[PREDICT] ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
             http_response_code(500);
-            echo json_encode([
-                'error' => 'Exception serveur',
-                'message' => $e->getMessage(),
-                'file' => basename($e->getFile()),
-                'line' => $e->getLine()
-            ]);
+            echo json_encode(['error' => 'Erreur interne du serveur']);
             exit;
         }
     }
