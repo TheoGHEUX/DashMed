@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\Entities;
+namespace Models\Patient;
 
 /**
  * Entité Patient

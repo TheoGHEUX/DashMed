@@ -3,7 +3,7 @@
 namespace Models\Repositories;
 
 use Core\Database;
-use Models\Entities\Patient;
+use Models\Patient\Patient;
 use PDO;
 
 /**
