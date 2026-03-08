@@ -13,8 +13,8 @@
     "autoload": {
         "psr-4": {
             "Core\\": "SITE/Core/",
-            "Models\\": "SITE/Models/",
-            "Controllers\\": "SITE/Controllers/"
+            "Models\\": "SITE/App/Models/",
+            "Controllers\\": "SITE/App/Controllers/"
         }
     },
     "autoload-dev": {

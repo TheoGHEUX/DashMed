@@ -1,0 +1,11 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Models\Doctor\Interfaces;
+
+interface ISecurityWriteRepository
+{
+    public function createResetToken(string $email, string $tokenHash, string $expiresAt): void;
+    public function deleteResetToken(string $email): void;
+}

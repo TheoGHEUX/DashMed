@@ -1,0 +1,43 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Models\ConsoleLog\Repositories;
+
+use Core\Database;
+use Models\ConsoleLog\Interfaces\ILogHistoryRepository;
+use PDO;
+
+class LogHistoryRepository implements ILogHistoryRepository
+{
+    private PDO $db;
+
+    public function __construct()
+    {
+        $this->db = Database::getConnection();
+    }
+
+    // On ajoute la valeur par défaut ici aussi pour matcher l'interface
+    public function getHistoryByMedId(int $medId, int $limit = 100): array
+    {
+        $stmt = $this->db->prepare("
+            SELECT 
+                c.action, 
+                DATE_FORMAT(c.heure, '%H') as heure_seule, 
+                m.type_mesure as nom_mesure
+            FROM console_log c
+            LEFT JOIN mesures m ON c.id_mesure = m.id_mesure
+            WHERE c.med_id = :medId
+            ORDER BY c.heure DESC
+            LIMIT :limit
+        ");
+
+        // PDO::PARAM_INT est important pour LIMIT
+        $stmt->bindValue(':medId', $medId, PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_CLASS);
+    }
+}

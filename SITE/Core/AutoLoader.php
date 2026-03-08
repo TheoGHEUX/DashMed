@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Core;
 
 /**
- * Autoloader PSR-4 Simplifié & Universel
+ * Autoloader PSR-4 Universel
  *
- * Remplace l'ancien système rigide.
- * Transforme automatiquement les Namespaces en chemins de fichiers.
- * Ex: Models\Entities\Patient -> SITE/Models/Entities/Patient.php
+ * Charge automatiquement les classes en fonction de leur namespace.
+ * - App\...  -> SITE/App/...
+ * - Core\... -> SITE/Core/...
  */
 final class AutoLoader
 {
@@ -20,21 +20,23 @@ final class AutoLoader
 
     private static function autoload(string $className): void
     {
-        // 1. Définir la racine "SITE" (dossier parent de Core)
+        // 1. Définir la racine du projet "SITE/" (dossier parent de Core)
         $baseDir = dirname(__DIR__) . DIRECTORY_SEPARATOR;
 
-        // 2. Transformer le namespace (\) en chemin (/)
-        $classPath = str_replace('\\', DIRECTORY_SEPARATOR, $className);
+        // 2. Normalisation du namespace
+        // Transforme les antislashs (\) en séparateurs de dossier (/)
+        // Ex: App\Controllers\Auth\LoginController -> App/Controllers/Auth/LoginController
+        $logicalPath = str_replace('\\', DIRECTORY_SEPARATOR, $className);
 
-        // 3. Construire le chemin complet
-        $file = $baseDir . $classPath . '.php';
+        // 3. Construction du chemin final
+        $file = $baseDir . $logicalPath . '.php';
 
-        // 4. Charger si le fichier existe
+        // 4. Chargement du fichier s'il existe
         if (is_file($file)) {
             require $file;
         }
     }
 }
 
-// Lancement automatique
+// Lancement automatique dès l'inclusion du fichier
 AutoLoader::register();

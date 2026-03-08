@@ -4,18 +4,17 @@ declare(strict_types=1);
 
 namespace Core;
 
-use Controllers\ConnectedHomeController;
 use Controllers\AuthController;
-use Controllers\DashboardController;
-use Controllers\ForgottenPasswordController;
-use Controllers\HomeController;
-use Controllers\LegalNoticesController;
-use Controllers\MapController;
-use Controllers\ProfileController;
-use Controllers\ResetPasswordController;
-use Controllers\ChangePasswordController;
-use Controllers\ChangeEmailController;
-use Core\Database;
+use Controllers\Authentication\ForgottenPasswordController;
+use Controllers\Authentication\ResetPasswordController;
+use Controllers\Dashboard\DashboardController;
+use Controllers\Private\ConnectedHomeController;
+use Controllers\Private\ProfileController;
+use Controllers\Profile\ChangeEmailController;
+use Controllers\Profile\ChangePasswordController;
+use Controllers\Public\HomeController;
+use Controllers\Public\LegalNoticesController;
+use Controllers\Public\MapController;
 
 /**
  * Router principal de l'application
