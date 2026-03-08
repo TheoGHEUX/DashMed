@@ -52,77 +52,77 @@ document.addEventListener('DOMContentLoaded', function () {
                 position: sessionActionCount
             })
         })
-        .then(response => {
-            console.log('[IA] réponse API :', response.status);
-            // 503 = IA non disponible sur ce serveur (pas de modèle ou exec désactivé)
-            if (response.status === 503) {
-                predictionActive = false;
-                return null;
-            }
-            if (!response.ok) throw new Error('Erreur API prédiction : ' + response.status);
-            return response.json();
-        })
-        .then(data => {
-            if (!data) return;
-            console.log('[IA] données reçues :', data);
-            if (data.error || !data.prediction) {
-                console.log('[IA] bloqué : erreur ou pas de prédiction', data.error);
-                predictionActive = false;
-                return;
-            }
-
-            // Construire la liste de candidats : meilleure prédiction + top_predictions
-            const candidates = [
-                { action: data.prediction.action, mesure: data.prediction.mesure, probability: data.confidence || 0 },
-                ...(data.top_predictions || [])
-            ];
-
-            // Parcourir les candidats et prendre le premier cohérent
-            for (const candidate of candidates) {
-                const pAction = candidate.action;
-                const pMesure = candidate.mesure;
-                const pConf = candidate.probability;
-
-                // Confiance trop faible
-                if (pConf < MIN_CONFIDENCE) {
-                    console.log('[IA] candidat ignoré (confiance faible) :', pAction, pMesure, pConf);
-                    continue;
+            .then(response => {
+                console.log('[IA] réponse API :', response.status);
+                // 503 = IA non disponible sur ce serveur (pas de modèle ou exec désactivé)
+                if (response.status === 503) {
+                    predictionActive = false;
+                    return null;
+                }
+                if (!response.ok) throw new Error('Erreur API prédiction : ' + response.status);
+                return response.json();
+            })
+            .then(data => {
+                if (!data) return;
+                console.log('[IA] données reçues :', data);
+                if (data.error || !data.prediction) {
+                    console.log('[IA] bloqué : erreur ou pas de prédiction', data.error);
+                    predictionActive = false;
+                    return;
                 }
 
-                // Même action sur la même mesure que celle qu'on vient de faire
-                if (pAction === action && pMesure === mesure) {
-                    console.log('[IA] candidat ignoré (même action/mesure) :', pAction, pMesure);
-                    continue;
-                }
+                // Construire la liste de candidats : meilleure prédiction + top_predictions
+                const candidates = [
+                    { action: data.prediction.action, mesure: data.prediction.mesure, probability: data.confidence || 0 },
+                    ...(data.top_predictions || [])
+                ];
 
-                // Vérifier la cohérence avec le dashboard
-                const targetChartId = MESURE_TO_CHART[pMesure] || null;
-                if (targetChartId && typeof window.dashboardIsChartVisible === 'function') {
-                    const isVisible = window.dashboardIsChartVisible(targetChartId);
-                    if (pAction === 'ajouter' && isVisible) {
-                        console.log('[IA] candidat ignoré (déjà visible) :', pAction, pMesure);
+                // Parcourir les candidats et prendre le premier cohérent
+                for (const candidate of candidates) {
+                    const pAction = candidate.action;
+                    const pMesure = candidate.mesure;
+                    const pConf = candidate.probability;
+
+                    // Confiance trop faible
+                    if (pConf < MIN_CONFIDENCE) {
+                        console.log('[IA] candidat ignoré (confiance faible) :', pAction, pMesure, pConf);
                         continue;
                     }
-                    if (['supprimer', 'réduire', 'agrandir'].includes(pAction) && !isVisible) {
-                        console.log('[IA] candidat ignoré (absent) :', pAction, pMesure);
+
+                    // Même action sur la même mesure que celle qu'on vient de faire
+                    if (pAction === action && pMesure === mesure) {
+                        console.log('[IA] candidat ignoré (même action/mesure) :', pAction, pMesure);
                         continue;
                     }
+
+                    // Vérifier la cohérence avec le dashboard
+                    const targetChartId = MESURE_TO_CHART[pMesure] || null;
+                    if (targetChartId && typeof window.dashboardIsChartVisible === 'function') {
+                        const isVisible = window.dashboardIsChartVisible(targetChartId);
+                        if (pAction === 'ajouter' && isVisible) {
+                            console.log('[IA] candidat ignoré (déjà visible) :', pAction, pMesure);
+                            continue;
+                        }
+                        if (['supprimer', 'réduire', 'agrandir'].includes(pAction) && !isVisible) {
+                            console.log('[IA] candidat ignoré (absent) :', pAction, pMesure);
+                            continue;
+                        }
+                    }
+
+                    // Ce candidat est cohérent → afficher
+                    console.log('[IA] ✅ affichage popup :', pAction, pMesure, pConf);
+                    showPredictionPopup(pAction, pMesure, pConf);
+                    return;
                 }
 
-                // Ce candidat est cohérent → afficher
-                console.log('[IA] ✅ affichage popup :', pAction, pMesure, pConf);
-                showPredictionPopup(pAction, pMesure, pConf);
-                return;
-            }
-
-            // Aucun candidat cohérent trouvé
-            console.log('[IA] aucun candidat cohérent parmi', candidates.length, 'prédictions');
-            predictionActive = false;
-        })
-        .catch(err => {
-            console.error('[IA] ❌ erreur fetch :', err);
-            predictionActive = false;
-        });
+                // Aucun candidat cohérent trouvé
+                console.log('[IA] aucun candidat cohérent parmi', candidates.length, 'prédictions');
+                predictionActive = false;
+            })
+            .catch(err => {
+                console.error('[IA] ❌ erreur fetch :', err);
+                predictionActive = false;
+            });
     }
 
     // Affiche le pop-up de suggestion dans le conteneur de notifications
@@ -148,48 +148,48 @@ document.addEventListener('DOMContentLoaded', function () {
         // Création sécurisée du DOM (protection XSS)
         const popup = document.createElement('div');
         popup.className = 'notification-toast prediction-suggestion';
-        
+
         const header = document.createElement('div');
         header.className = 'notification-header';
-        
+
         const title = document.createElement('span');
         title.className = 'notification-title';
         title.textContent = '🤖 Suggestion IA';
-        
+
         const confidenceBadge = document.createElement('span');
         confidenceBadge.className = 'prediction-confidence';
         confidenceBadge.textContent = confidencePercent + ' %';
-        
+
         header.appendChild(title);
         header.appendChild(confidenceBadge);
-        
+
         const message = document.createElement('div');
         message.className = 'notification-message';
-        
+
         const actionStrong = document.createElement('strong');
         actionStrong.textContent = actionLabel;
         const mesureStrong = document.createElement('strong');
         mesureStrong.textContent = mesure;
-        
+
         message.appendChild(actionStrong);
         message.appendChild(document.createTextNode(' le graphique '));
         message.appendChild(mesureStrong);
         message.appendChild(document.createTextNode(' ?'));
-        
+
         const actions = document.createElement('div');
         actions.className = 'notification-actions';
-        
+
         const acceptBtn = document.createElement('button');
         acceptBtn.className = 'btn-notif btn-notif-accept';
         acceptBtn.textContent = 'Appliquer';
-        
+
         const ignoreBtn = document.createElement('button');
         ignoreBtn.className = 'btn-notif btn-notif-ignore';
         ignoreBtn.textContent = 'Ignorer';
-        
+
         actions.appendChild(acceptBtn);
         actions.appendChild(ignoreBtn);
-        
+
         popup.appendChild(header);
         popup.appendChild(message);
         popup.appendChild(actions);
@@ -205,7 +205,16 @@ document.addEventListener('DOMContentLoaded', function () {
             closePrediction(popup);
         });
 
-        container.appendChild(popup);
+        // Insérer dans le wrapper scrollable pour que le toast défile avec les autres
+        const scrollable = document.getElementById('notifications-scrollable');
+        if (scrollable) {
+            scrollable.appendChild(popup);
+        } else {
+            container.appendChild(popup);
+        }
+
+        // Incrémenter le badge du bouton toggle
+        if (window.dashboardNotifBadgeIncrement) window.dashboardNotifBadgeIncrement();
     }
 
     // Ferme un pop-up avec l'animation CSS .closing
@@ -214,6 +223,8 @@ document.addEventListener('DOMContentLoaded', function () {
         setTimeout(() => {
             if (element.parentNode) element.parentNode.removeChild(element);
             predictionActive = false;
+            // Décrémenter le badge du bouton toggle
+            if (window.dashboardNotifBadgeDecrement) window.dashboardNotifBadgeDecrement();
         }, 300);
     }
 
@@ -236,7 +247,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             case 'agrandir':
             case 'réduire':
-                // On peut pas redimensionner par code, on scroll juste vers le graphique
+                // On ne peut pas redimensionner par code, on scroll juste vers le graphique
                 highlightChart(chartId);
                 break;
         }

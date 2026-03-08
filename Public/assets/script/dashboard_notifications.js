@@ -13,14 +13,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const toggleBtn = document.createElement('button');
     toggleBtn.className = 'notification-toggle-btn';
     toggleBtn.setAttribute('aria-label', 'Ouvrir/fermer les notifications');
-    
+
     const arrow = document.createElement('span');
     arrow.className = 'toggle-arrow';
     arrow.textContent = '❯';
-    
+
     const count = document.createElement('span');
     count.className = 'notif-count';
-    
+
     toggleBtn.appendChild(arrow);
     toggleBtn.appendChild(count);
 
@@ -136,42 +136,42 @@ document.addEventListener('DOMContentLoaded', function () {
         // Création sécurisée du DOM (protection XSS)
         const notif = document.createElement('div');
         notif.className = `notification-toast ${level}`;
-        
+
         const header = document.createElement('div');
         header.className = 'notification-header';
-        
+
         const titleSpan = document.createElement('span');
         titleSpan.className = 'notification-title';
         titleSpan.textContent = '⚠️ ' + (titleMap[level] || level);
         header.appendChild(titleSpan);
-        
+
         const message = document.createElement('div');
         message.className = 'notification-message';
-        
+
         const titleStrong = document.createElement('strong');
         titleStrong.textContent = cleanTitle;
         const valueStrong = document.createElement('strong');
         valueStrong.textContent = value + ' ' + unit;
-        
+
         message.appendChild(titleStrong);
         message.appendChild(document.createTextNode(' à '));
         message.appendChild(valueStrong);
         message.appendChild(document.createTextNode('.'));
-        
+
         const actions = document.createElement('div');
         actions.className = 'notification-actions';
-        
+
         const viewBtn = document.createElement('button');
         viewBtn.className = 'btn-notif btn-notif-view';
         viewBtn.textContent = "Voir l'alerte";
-        
+
         const ignoreBtn = document.createElement('button');
         ignoreBtn.className = 'btn-notif btn-notif-ignore';
         ignoreBtn.textContent = 'Ignorer';
-        
+
         actions.appendChild(viewBtn);
         actions.appendChild(ignoreBtn);
-        
+
         notif.appendChild(header);
         notif.appendChild(message);
         notif.appendChild(actions);
@@ -256,4 +256,20 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     });
+
+    // Fonctions exposées pour les notifications de prédiction IA
+    window.dashboardNotifBadgeIncrement = () => {
+        activeNotifications.add('__prediction__' + Date.now());
+        updateToggleBadge();
+    };
+
+    window.dashboardNotifBadgeDecrement = () => {
+        for (const key of activeNotifications) {
+            if (typeof key === 'string' && key.startsWith('__prediction__')) {
+                activeNotifications.delete(key);
+                break;
+            }
+        }
+        updateToggleBadge();
+    };
 });
