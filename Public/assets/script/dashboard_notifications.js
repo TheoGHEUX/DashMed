@@ -5,8 +5,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (!container) return;
 
+    // -------------------------------------------------------------------------
     // Création du wrapper et du bouton toggle
     // Le wrapper englobe [bouton toggle] + [panneau de notifications]
+    // -------------------------------------------------------------------------
     const wrapper = document.createElement('div');
     wrapper.className = 'notification-wrapper';
 
@@ -18,11 +20,15 @@ document.addEventListener('DOMContentLoaded', function () {
     arrow.className = 'toggle-arrow';
     arrow.textContent = '❯';
 
-    const count = document.createElement('span');
-    count.className = 'notif-count';
+    const alertBadge = document.createElement('span');
+    alertBadge.className = 'notif-count notif-count-alert';
+
+    const predictBadge = document.createElement('span');
+    predictBadge.className = 'notif-count notif-count-predict';
 
     toggleBtn.appendChild(arrow);
-    toggleBtn.appendChild(count);
+    toggleBtn.appendChild(alertBadge);
+    toggleBtn.appendChild(predictBadge);
 
     // Insérer le wrapper autour du container existant
     container.parentNode.insertBefore(wrapper, container);
@@ -39,15 +45,19 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     function updateToggleBadge() {
-        const count = activeNotifications.size;
-        const badge = toggleBtn.querySelector('.notif-count');
-        badge.textContent = count > 0 ? count : '';
+        const alertCount   = [...activeNotifications].filter(k => !String(k).startsWith('__prediction__')).length;
+        const predictCount = [...activeNotifications].filter(k =>  String(k).startsWith('__prediction__')).length;
+
+        alertBadge.textContent   = alertCount   > 0 ? alertCount   : '';
+        predictBadge.textContent = predictCount > 0 ? predictCount : '';
     }
 
     // Si pas de données patient, on s'arrête ici
     if (Object.keys(chartData).length === 0) return;
 
+    // -------------------------------------------------------------------------
     // État des notifications
+    // -------------------------------------------------------------------------
 
     // Métriques dont une notification est actuellement ouverte
     const activeNotifications = new Set();
@@ -58,7 +68,9 @@ document.addEventListener('DOMContentLoaded', function () {
         notifiedValues[key] = chartData[key]?.lastValue ?? null;
     });
 
+    // -------------------------------------------------------------------------
     // Wrapper scrollable
+    // -------------------------------------------------------------------------
     const scrollable = document.createElement('div');
     scrollable.id = 'notifications-scrollable';
     scrollable.className = 'notifications-scrollable';
@@ -69,7 +81,9 @@ document.addEventListener('DOMContentLoaded', function () {
     panelLabel.textContent = 'Menu des alertes';
     container.insertBefore(panelLabel, scrollable);
 
+    // -------------------------------------------------------------------------
     // Détermine le niveau d'alerte d'une mesure
+    // -------------------------------------------------------------------------
     function getAlertLevel(metricKey, data) {
         const val = parseFloat(data.lastValue);
         if (isNaN(val)) return null;
@@ -87,7 +101,9 @@ document.addEventListener('DOMContentLoaded', function () {
         return null;
     }
 
+    // -------------------------------------------------------------------------
     // Gestion du bouton "Ignorer tout"
+    // -------------------------------------------------------------------------
     function getOrCreateDismissAllBtn() {
         let btn = document.getElementById('dismiss-all-btn');
         if (!btn) {
@@ -114,7 +130,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // -------------------------------------------------------------------------
-    // Création d'une notification
+    // Création d'une notification d'alerte
     // -------------------------------------------------------------------------
     function createNotification(metricKey, level, value, unit) {
         // Bloquer si une notification est déjà ouverte pour cette métrique
@@ -205,7 +221,9 @@ document.addEventListener('DOMContentLoaded', function () {
         scrollable.appendChild(notif);
     }
 
+    // -------------------------------------------------------------------------
     // Scroll vers la carte graphique avec effet de surbrillance
+    // -------------------------------------------------------------------------
     function scrollToChart(metricKey) {
         const chartCard = document.querySelector(`article[data-chart-id="${metricKey}"]`);
         if (!chartCard) return;
@@ -215,7 +233,9 @@ document.addEventListener('DOMContentLoaded', function () {
         setTimeout(() => { chartCard.style.boxShadow = ''; }, 2000);
     }
 
+    // -------------------------------------------------------------------------
     // Fermeture d'une notification
+    // -------------------------------------------------------------------------
     function closeNotification(element) {
         element.classList.add('closing');
         setTimeout(() => {
@@ -225,7 +245,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 300);
     }
 
+    // -------------------------------------------------------------------------
     // Affichage initial des alertes au chargement
+    // -------------------------------------------------------------------------
     Object.keys(chartData).forEach(key => {
         const metric = chartData[key];
         const level = getAlertLevel(key, metric);
@@ -239,7 +261,9 @@ document.addEventListener('DOMContentLoaded', function () {
         wrapper.classList.add('collapsed');
     }
 
+    // -------------------------------------------------------------------------
     // Mise à jour en temps réel
+    // -------------------------------------------------------------------------
     window.addEventListener('chartDataUpdated', (e) => {
         const newData = e.detail.chartData;
 
@@ -257,7 +281,9 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    // -------------------------------------------------------------------------
     // Fonctions exposées pour les notifications de prédiction IA
+    // -------------------------------------------------------------------------
     window.dashboardNotifBadgeIncrement = () => {
         activeNotifications.add('__prediction__' + Date.now());
         updateToggleBadge();

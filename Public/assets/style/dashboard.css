@@ -1142,9 +1142,8 @@
 }
 
 /* Badge compteur */
-.notification-toggle-btn .notif-count {
-    background: #e53e3e;
-    color: white;
+.notif-count-alert,
+.notif-count-predict {
     font-size: 0.65rem;
     font-weight: 700;
     min-width: 16px;
@@ -1155,14 +1154,20 @@
     justify-content: center;
     padding: 0 3px;
     line-height: 1;
+    color: white;
 }
 
-.notification-toggle-btn .notif-count:empty {
+.notif-count-alert:empty,
+.notif-count-predict:empty {
     display: none;
 }
 
-[data-theme="dark"] .notification-toggle-btn {
-    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.4);
+.notif-count-alert {
+    background: #e53e3e;
+}
+
+.notif-count-predict {
+    background: #6366f1;
 }
 
 /* Panneau de notifications */
@@ -1181,6 +1186,17 @@
 [data-theme="dark"] .notification-container {
     background: var(--bg-card, #1e293b);
     box-shadow: -4px 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+
+@media (max-width: 400px) {
+    .notification-container {
+        width: calc(100vw - 28px); /* 28px = largeur du bouton toggle */
+    }
+
+    .notification-wrapper.collapsed {
+        transform: translateX(calc(100vw - 28px));
+    }
 }
 
 .notification-toast {
