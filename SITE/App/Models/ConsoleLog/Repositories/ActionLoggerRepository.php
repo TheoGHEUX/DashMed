@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Models\ConsoleLog\Repositories;
+namespace App\Models\ConsoleLog\Repositories;
 
 use Core\Database;
-use Models\ConsoleLog\Interfaces\IActionLoggerRepository;
+use App\Models\ConsoleLog\Interfaces\IActionLoggerRepository;
 use PDO;
 
 class ActionLoggerRepository implements IActionLoggerRepository

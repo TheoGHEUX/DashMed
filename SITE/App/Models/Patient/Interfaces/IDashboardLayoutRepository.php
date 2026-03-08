@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Models\Patient\Interfaces;
+namespace App\Models\Patient\Interfaces;
 
 interface IDashboardLayoutRepository
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Controllers\Dashboard;
+namespace App\Controllers\Private;
 
 use Core\Controller\AbstractController;
 

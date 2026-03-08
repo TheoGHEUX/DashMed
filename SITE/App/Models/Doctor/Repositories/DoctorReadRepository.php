@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Models\Doctor\Repositories;
+namespace App\Models\Doctor\Repositories;
 
 use Core\Database;
-use Models\Doctor\Entities\Doctor;
-use Models\Doctor\Interfaces\IDoctorReadRepository;
+use App\Models\Doctor\Entities\Doctor;
+use App\Models\Doctor\Interfaces\IDoctorReadRepository;
 use PDO;
 
 class DoctorReadRepository implements IDoctorReadRepository

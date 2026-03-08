@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Models\Doctor\Repositories;
+namespace App\Models\Doctor\Repositories;
 
 use Core\Database;
-use Models\Doctor\Interfaces\IDoctorWriteRepository;
+use App\Models\Doctor\Interfaces\IDoctorWriteRepository;
 use PDO;
 
 class DoctorWriteRepository implements IDoctorWriteRepository

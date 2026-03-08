@@ -16,20 +16,23 @@
  * @package Views
  */
 
+// 1. Sécurité CSRF
 $csrf_token = '';
 if (class_exists('\Core\Csrf') && method_exists('\Core\Csrf', 'token')) {
     $csrf_token = \Core\Csrf::token();
 }
 
+// 2. Initialisation des variables
 $old     = $old ?? [];
 $errors  = $errors ?? [];
 $success = $success ?? '';
 
 $pageTitle       = $pageTitle ?? "Mot de passe oublié";
 $pageDescription = $pageDescription ?? "Recevez un lien par email pour réinitialiser votre mot de passe";
-$pageStyles     = $pageStyles ?? ["/assets/style/forgotten_password.css"];
-$pageScripts    = $pageScripts ?? [];
+$pageStyles      = $pageStyles ?? ["/assets/style/forgotten_password.css"];
+$pageScripts     = $pageScripts ?? [];
 
+// 3. Inclusion du Head (Chemin correct : on remonte d'un niveau)
 include __DIR__ . '/../partials/head.php';
 ?>
 <body>
@@ -63,6 +66,7 @@ include __DIR__ . '/../partials/head.php';
             <input type="hidden"
                    name="csrf_token"
                    value="<?= htmlspecialchars($csrf_token ?? '', ENT_QUOTES, 'UTF-8') ?>">
+
             <div class="field">
                 <label for="email" class="sr-only">Adresse email</label>
                 <input
@@ -75,6 +79,7 @@ include __DIR__ . '/../partials/head.php';
                         autocomplete="email"
                 />
             </div>
+
             <button class="btn" type="submit">Envoyer le lien</button>
         </form>
     </section>

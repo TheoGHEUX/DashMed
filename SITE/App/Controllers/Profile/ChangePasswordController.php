@@ -7,7 +7,7 @@ namespace App\Controllers\Profile;
 use Core\Controller\AbstractController;
 use App\Models\Doctor\Repositories\DoctorReadRepository;
 use App\Models\Doctor\Repositories\DoctorWriteRepository;
-use Models\Doctor\UseCases\Profile\ChangePassword;
+use App\Models\Doctor\UseCases\Profile\ChangePassword;
 
 final class ChangePasswordController extends AbstractController
 {

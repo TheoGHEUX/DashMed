@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Models\Patient\UseCases\Monitoring;
+namespace App\Models\Patient\UseCases\Monitoring;
 
-use Models\Patient\Interfaces\IPatientMonitoringRepository;
+use App\Models\Patient\Interfaces\IPatientMonitoringRepository;
 
 class GetPatientChartData
 {

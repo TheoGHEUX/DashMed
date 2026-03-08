@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Models\ConsoleLog\Services;
+namespace App\Models\ConsoleLog\Services;
 
 class TreePredictor
 {

@@ -53,10 +53,10 @@ include __DIR__ . '/../partials/head.php';
                 <tr>
                     <th scope="row">Sexe</th>
                     <td><?= htmlspecialchars(
-                        ($user['sexe'] ?? '') === 'M' ? 'Homme' : 'Femme',
-                        ENT_QUOTES,
-                        'UTF-8'
-                    ) ?></td>
+                                ($user['sexe'] ?? '') === 'M' ? 'Homme' : 'Femme',
+                                ENT_QUOTES,
+                                'UTF-8'
+                        ) ?></td>
                 </tr>
                 <tr>
                     <th scope="row">Spécialité</th>

@@ -12,56 +12,76 @@ use App\Models\Patient\UseCases\Monitoring\GetPatientChartData;
 
 final class DashboardController extends AbstractController
 {
-    private GetDoctorPatients $getPatients;
-    private GetPatientChartData $getCharts;
+    private GetDoctorPatients $getPatientsUseCase;
+    private GetPatientChartData $getChartsUseCase;
 
     public function __construct()
     {
-        $this->getPatients = new GetDoctorPatients(new PatientManagementRepository());
-        $this->getCharts = new GetPatientChartData(new PatientMonitoringRepository());
+        $managementRepo = new PatientManagementRepository();
+        $monitoringRepo = new PatientMonitoringRepository();
+        $this->getPatientsUseCase = new GetDoctorPatients($managementRepo);
+        $this->getChartsUseCase = new GetPatientChartData($monitoringRepo);
     }
 
     public function index(): void
     {
         $this->checkAuth();
-        $medId = $this->getCurrentUserId();
+        $medId = $_SESSION['user']['id'] ?? 0;
 
-        // 1. Récupérer les patients
-        $patientsObjects = $this->getPatients->execute($medId);
+        // 1. Récupération des patients
+        $patientsObjects = $this->getPatientsUseCase->execute($medId);
 
         if (empty($patientsObjects)) {
-            $this->render('connected/dashboard', ['noPatient' => true]);
+            $this->render('Dashboard/dashboard', [
+                'noPatient' => true,
+                'patients' => [],
+                'patient' => null,
+                'chartData' => []
+            ]);
             return;
         }
 
-        // 2. Transformer en tableau pour la vue
         $patientsArray = [];
-        foreach ($patientsObjects as $p) {
-            $patientsArray[] = $p->toArray();
+        foreach ($patientsObjects as $patientObj) {
+            $patientsArray[] = method_exists($patientObj, 'toArray')
+                ? $patientObj->toArray()
+                : (array)$patientObj;
         }
 
-        // 3. Identifier le patient courant
-        $patientId = $this->resolveCurrentPatientId($patientsArray);
+        $currentPatientId = $this->resolveCurrentPatientId($patientsArray);
 
         $currentPatient = null;
         foreach ($patientsArray as $p) {
-            if ($p['pt_id'] === $patientId) {
+            if ((int)$p['pt_id'] === $currentPatientId) {
                 $currentPatient = $p;
                 break;
             }
         }
 
-        // 4. Récupérer les données graphiques
+        // 2. Récupérer les données graphiques (CORRECTION ICI)
         $chartData = [];
-        $metrics = ['Temperature', 'Tension', 'Frequence', 'Oxygene'];
 
-        foreach ($metrics as $type) {
-            if ($data = $this->getCharts->execute($patientId, $type)) {
-                $chartData[$type] = $data;
+        // Mapping : Clé JS => Nom en Base de Données
+        // C'est CRUCIAL pour que le JS trouve les données au chargement
+        $metricsMap = [
+            'temperature'       => 'Temperature',
+            'blood-pressure'    => 'Tension',
+            'heart-rate'        => 'Frequence_Cardiaque',
+            'respiration'       => 'Frequence_Respiratoire', // Vérifie ce nom en BDD !
+            'glucose-trend'     => 'Glycemie',
+            'weight'            => 'Poids',
+            'oxygen-saturation' => 'Oxygene'
+        ];
+
+        foreach ($metricsMap as $jsKey => $dbName) {
+            $data = $this->getChartsUseCase->execute($currentPatientId, $dbName);
+            if (!empty($data)) {
+                $chartData[$jsKey] = $data; // On utilise la clé JS ici
             }
         }
 
-        $this->render('connected/dashboard', [
+        $this->render('Dashboard/dashboard', [
+            'noPatient' => false,
             'patients' => $patientsArray,
             'patient' => $currentPatient,
             'chartData' => $chartData
@@ -70,13 +90,19 @@ final class DashboardController extends AbstractController
 
     private function resolveCurrentPatientId(array $patients): int
     {
-        $requested = (int)($_GET['patient'] ?? 0);
+        $requestedId = (int)($_GET['patient'] ?? 0);
         $authorizedIds = array_column($patients, 'pt_id');
 
-        if ($requested && in_array($requested, $authorizedIds, true)) {
-            $_SESSION['last_patient_id'] = $requested;
-            return $requested;
+        if ($requestedId > 0 && in_array($requestedId, $authorizedIds, true)) {
+            $_SESSION['last_patient_id'] = $requestedId;
+            return $requestedId;
         }
-        return $_SESSION['last_patient_id'] ?? $authorizedIds[0];
+
+        $lastId = $_SESSION['last_patient_id'] ?? 0;
+        if ($lastId > 0 && in_array($lastId, $authorizedIds, true)) {
+            return $lastId;
+        }
+
+        return (int)($authorizedIds[0] ?? 0);
     }
 }

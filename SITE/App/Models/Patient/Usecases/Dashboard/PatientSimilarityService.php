@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Models\Patient\Services;
+namespace App\Models\Patient\Services;
 
 class PatientSimilarityService
 {

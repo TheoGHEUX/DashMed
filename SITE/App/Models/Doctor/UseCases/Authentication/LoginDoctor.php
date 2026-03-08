@@ -2,44 +2,40 @@
 
 declare(strict_types=1);
 
-namespace Models\Doctor\UseCases\Authentication;
+namespace App\Models\Doctor\UseCases\Authentication;
 
-use Models\Doctor\Interfaces\IDoctorReadRepository;
-use Models\Doctor\Entities\Doctor;
+use App\Models\Doctor\Interfaces\IDoctorReadRepository;
 
 class LoginDoctor
 {
-    private IDoctorReadRepository $repository;
+    private IDoctorReadRepository $readRepo;
 
-    public function __construct(IDoctorReadRepository $repository)
+    public function __construct(IDoctorReadRepository $readRepo)
     {
-        $this->repository = $repository;
+        $this->readRepo = $readRepo;
     }
 
-    /**
-     * Tente de connecter un médecin.
-     * @return Doctor|null L'objet médecin si succès, null si échec.
-     * @throws \Exception Si l'email n'est pas vérifié.
-     */
-    public function execute(string $email, string $password): ?Doctor
+    public function execute(string $email, string $password): ?array
     {
-        // 1. Chercher l'utilisateur
-        $user = $this->repository->findByEmail($email);
+        $doctor = $this->readRepo->findByEmail($email);
 
-        if (!$user) {
-            return null; // Utilisateur introuvable
+        if (!$doctor) {
+            return null;
         }
 
-        // 2. Vérifier le mot de passe hashé
-        if (!password_verify($password, $user->getPasswordHash())) {
-            return null; // Mot de passe incorrect
+
+        $hash = $doctor['mdp'] ?? '';
+        if (!password_verify($password, $hash)) {
+            return null;
         }
 
-        // 3. Vérifier si l'email est validé
-        if (!$user->isEmailVerified()) {
-            throw new \Exception("Veuillez vérifier votre adresse email avant de vous connecter.");
+        $isVerified = !empty($doctor['email_verified'])  == 1;
+
+        if (!$isVerified) {
+
+            throw new \Exception('Adresse email non vérifiée. Vérifiez vos spams.');
         }
 
-        return $user;
+        return $doctor;
     }
 }

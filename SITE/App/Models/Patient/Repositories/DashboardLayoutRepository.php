@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Models\Patient\Repositories;
+namespace App\Models\Patient\Repositories;
 
 use Core\Database;
-use Models\Patient\Interfaces\IDashboardLayoutRepository;
+use App\Models\Patient\Interfaces\IDashboardLayoutRepository;
 use PDO;
 
 class DashboardLayoutRepository implements IDashboardLayoutRepository

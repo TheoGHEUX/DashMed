@@ -6,6 +6,6 @@ namespace App\Models\Doctor\Interfaces;
 
 interface ISecurityWriteRepository
 {
-    public function createResetToken(string $email, string $tokenHash, string $expiresAt): void;
-    public function deleteResetToken(string $email): void;
+
+    public function storeResetToken(string $email, string $tokenHash, string $expiresAt): void;
 }

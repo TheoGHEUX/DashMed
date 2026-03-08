@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Changement d'adresse email
+ * Changement de mot de passe
  *
- * Permet aux utilisateurs connectés de modifier leur adresse email.
+ * Permet à l'utilisateur connecté de modifier son mot de passe.
  *
  * Affiche le formulaire sécurisé par CSRF et les messages d'état.
  *
@@ -14,24 +14,24 @@
  * @package Views
  */
 
-$csrf_token = \Core\Csrf::token();
+$csrf_token = (class_exists('\Core\Csrf') && method_exists('\Core\Csrf', 'token'))
+        ? \Core\Csrf::token()
+        : '';
 
-
-$pageTitle = "Changer mon adresse email";
-$pageDescription = "Modifiez votre adresse email en toute sécurité";
-$pageStyles = ["/assets/style/authentication.css"]; // on réutilise le style d'auth
+$pageTitle = "Changer mon mot de passe";
+$pageDescription = "Modifiez votre mot de passe en toute sécurité";
+$pageStyles = ["/assets/style/authentication.css"];
 $pageScripts = [];
+
+include __DIR__ . '/../partials/head.php';
 ?>
-<!doctype html>
-<html lang="fr">
-<?php include __DIR__ . '/../partials/head.php'; ?>
 <body>
 <?php include __DIR__ . '/../partials/headerPrivate.php'; ?>
 
 <main class="main">
     <section class="hero">
-        <h1>Changer mon adresse email</h1>
-        <p class="subtitle">Saisissez votre mot de passe actuel puis votre nouvelle adresse email.</p>
+        <h1>Changer mon mot de passe</h1>
+        <p class="subtitle">Saisissez votre ancien mot de passe puis le nouveau.</p>
 
         <?php if (!empty($errors)) : ?>
             <div class="alert alert-error">
@@ -47,18 +47,18 @@ $pageScripts = [];
             <div class="alert alert-success"><?= nl2br(htmlspecialchars($success, ENT_QUOTES, 'UTF-8')) ?></div>
         <?php endif; ?>
 
-        <form class="form" action="/change-email" method="post" novalidate>
+        <form class="form" action="/change-password" method="post" novalidate>
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token, ENT_QUOTES, 'UTF-8') ?>" />
             <div class="field">
-                <input type="password" name="current_password" placeholder="Mot de passe actuel" required />
+                <input type="password" name="old_password" placeholder="Ancien mot de passe" required />
             </div>
             <div class="field">
-                <input type="email" name="new_email" placeholder="Nouvelle adresse email" required />
+                <input type="password" name="password" placeholder="Nouveau mot de passe" required />
             </div>
             <div class="field">
-                <input type="email"
-                       name="new_email_confirm"
-                       placeholder="Confirmez la nouvelle adresse email"
+                <input type="password"
+                       name="password_confirm"
+                       placeholder="Confirmez le nouveau mot de passe"
                        required />
             </div>
             <button class="btn" type="submit">Mettre à jour</button>

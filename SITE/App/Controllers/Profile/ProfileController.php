@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Controllers\Private;
+namespace App\Controllers\Profile;
 
 use Core\Controller\AbstractController;
+
 /**
  * Profil utilisateur
  *

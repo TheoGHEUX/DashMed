@@ -17,17 +17,18 @@ class SecurityWriteRepository implements ISecurityWriteRepository
         $this->db = Database::getConnection();
     }
 
-    public function createResetToken(string $email, string $tokenHash, string $expiresAt): void
+    public function storeResetToken(string $email, string $tokenHash, string $expiresAt): void
     {
-        $this->deleteResetToken($email); // Nettoyage avant insertion
+        // 1. Nettoyage : On supprime les tokens de cet email OU les tokens expirés (Maintenance)
+        // C'est la fonctionnalité "Garbage Collection" de ton ancienne app
+        $del = $this->db->prepare("DELETE FROM password_resets WHERE email = ? OR expires_at < NOW()");
+        $del->execute([$email]);
 
-        $stmt = $this->db->prepare("INSERT INTO password_resets (email, token_hash, expires_at) VALUES (?, ?, ?)");
+        // 2. Insertion
+        $stmt = $this->db->prepare("
+            INSERT INTO password_resets (email, token_hash, expires_at, created_at) 
+            VALUES (?, ?, ?, NOW())
+        ");
         $stmt->execute([$email, $tokenHash, $expiresAt]);
-    }
-
-    public function deleteResetToken(string $email): void
-    {
-        $stmt = $this->db->prepare("DELETE FROM password_resets WHERE email = ?");
-        $stmt->execute([$email]);
     }
 }

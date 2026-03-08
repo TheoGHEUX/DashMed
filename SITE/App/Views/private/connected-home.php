@@ -17,11 +17,10 @@
  */
 
 $csrf_token = function_exists('\\Core\\Csrf::token') ? \Core\Csrf::token() : '';
-
-$pageTitle       = $pageTitle ?? "Accueil";
-$pageDescription = $pageDescription ?? "Page d'accueil accessible une fois connecté";
-$pageStyles      = $pageStyles ?? ["/assets/style/accueil.css"];
-$pageScripts     = $pageScripts ?? ["/assets/script/header_responsive.js"];
+$pageTitle = $pageTitle ?? "Accueil";
+$pageDescription = "Page d'accueil accessible une fois connecté";
+$pageStyles = ["/assets/style/accueil.css"];
+$pageScripts = ["/assets/script/header_responsive.js"];
 
 include __DIR__ . '/../partials/head.php';
 ?>

@@ -4,15 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models\Doctor\UseCases\Security;
 
-// Interfaces
 use App\Models\Doctor\Interfaces\IDoctorReadRepository;
 use App\Models\Doctor\Interfaces\IDoctorWriteRepository;
 use App\Models\Doctor\Interfaces\ISecurityReadRepository;
 use App\Models\Doctor\Interfaces\ISecurityWriteRepository;
-use App\Models\Doctor\Repositories\DoctorReadRepository;
-use App\Models\Doctor\Repositories\DoctorWriteRepository;
-use App\Models\Doctor\Repositories\SecurityReadRepository;
-use App\Models\Doctor\Repositories\SecurityWriteRepository;
 
 class ResetPassword
 {
@@ -21,12 +16,16 @@ class ResetPassword
     private ISecurityReadRepository $securityRead;
     private ISecurityWriteRepository $securityWrite;
 
-    public function __construct()
-    {
-        $this->doctorRead = new DoctorReadRepository();
-        $this->doctorWrite = new DoctorWriteRepository();
-        $this->securityRead = new SecurityReadRepository();
-        $this->securityWrite = new SecurityWriteRepository();
+    public function __construct(
+        IDoctorReadRepository $doctorRead,
+        IDoctorWriteRepository $doctorWrite,
+        ISecurityReadRepository $securityRead,
+        ISecurityWriteRepository $securityWrite
+    ) {
+        $this->doctorRead = $doctorRead;
+        $this->doctorWrite = $doctorWrite;
+        $this->securityRead = $securityRead;
+        $this->securityWrite = $securityWrite;
     }
 
     public function execute(string $email, string $token, string $newPassword): array
@@ -44,7 +43,6 @@ class ResetPassword
 
         $newHash = password_hash($newPassword, PASSWORD_DEFAULT);
         $this->doctorWrite->updatePassword($doctor->getId(), $newHash);
-
         $this->securityWrite->deleteResetToken($email);
 
         return ['success' => true];

@@ -6,10 +6,10 @@ namespace App\Controllers\Profile;
 
 use Core\Controller\AbstractController;
 use Core\Services\MailerService;
-use Models\Doctor\Repositories\DoctorReadRepository;
-use Models\Doctor\Repositories\DoctorWriteRepository;
-use Models\Doctor\Repositories\DoctorVerificationRepository;
-use Models\Doctor\UseCases\Profile\ChangeEmail;
+use App\Models\Doctor\Repositories\DoctorReadRepository;
+use App\Models\Doctor\Repositories\DoctorWriteRepository;
+use App\Models\Doctor\Repositories\DoctorVerificationRepository;
+use App\Models\Doctor\UseCases\Profile\ChangeEmail;
 
 final class ChangeEmailController extends AbstractController
 {

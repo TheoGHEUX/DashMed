@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Models\Doctor\Repositories;
+namespace App\Models\Doctor\Repositories;
 
+use App\Models\Doctor\Interfaces\IDoctorVerificationRepository;
 use Core\Database;
-use Models\Doctor\Entities\Doctor;
-use Models\Doctor\Interfaces\IDoctorVerificationRepository;
 use PDO;
 
 class DoctorVerificationRepository implements IDoctorVerificationRepository
@@ -18,29 +17,58 @@ class DoctorVerificationRepository implements IDoctorVerificationRepository
         $this->db = Database::getConnection();
     }
 
-    public function findByVerificationToken(string $token): ?Doctor
-    {
-        $stmt = $this->db->prepare('SELECT * FROM medecin WHERE email_verification_token = ? LIMIT 1');
-        $stmt->execute([$token]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $row ? new Doctor($row) : null;
-    }
-
+    /**
+     * Enregistre le token (Implémentation de setVerificationToken)
+     */
     public function setVerificationToken(string $email, string $token, string $expires): bool
     {
-        $stmt = $this->db->prepare('UPDATE medecin SET email_verification_token = ?, email_verification_expires = ? WHERE email = ?');
-        return $stmt->execute([$token, $expires, $email]);
+        // On supprime d'abord les anciens tokens pour cet email (optionnel mais propre)
+        $stmtDel = $this->db->prepare("DELETE FROM email_verifications WHERE email = ?");
+        $stmtDel->execute([$email]);
+
+        // On insère le nouveau
+        $stmt = $this->db->prepare("
+            INSERT INTO email_verifications (email, token, expires_at, created_at)
+            VALUES (:email, :token, :expires, NOW())
+        ");
+
+        return $stmt->execute([
+            ':email' => $email,
+            ':token' => $token,
+            ':expires' => $expires
+        ]);
     }
 
+    /**
+     * Trouve un médecin via son token (Implémentation requise par l'interface)
+     */
+    public function findByVerificationToken(string $token)
+    {
+        $stmt = $this->db->prepare("SELECT * FROM email_verifications WHERE token = ? LIMIT 1");
+        $stmt->execute([$token]);
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+    }
+
+    /**
+     * Valide le token (Implémentation requise par l'interface)
+     */
     public function verifyEmailToken(string $token): bool
     {
-        $stmt = $this->db->prepare('SELECT med_id FROM medecin WHERE email_verification_token = ? AND email_verification_expires > NOW()');
-        $stmt->execute([$token]);
-        $id = $stmt->fetchColumn();
+        // 1. Récupérer l'email associé au token
+        $data = $this->findByVerificationToken($token);
+        if (!$data) return false;
 
-        if (!$id) return false;
+        // 2. Mettre à jour la table medecin
+        // Note: Vérifie le nom de ta colonne (is_verified, email_verified_at, etc.)
+        $stmt = $this->db->prepare("UPDATE medecin SET email_verified = 1 WHERE email = ?");
+        $res = $stmt->execute([$data['email']]);
 
-        $update = $this->db->prepare('UPDATE medecin SET email_verified = 1, email_verification_token = NULL WHERE med_id = ?');
-        return $update->execute([$id]);
+        // 3. Supprimer le token utilisé
+        if ($res) {
+            $del = $this->db->prepare("DELETE FROM email_verifications WHERE token = ?");
+            $del->execute([$token]);
+        }
+
+        return $res;
     }
 }

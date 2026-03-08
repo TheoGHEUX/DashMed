@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Models\ConsoleLog\UseCases\Intelligence;
+namespace App\Models\ConsoleLog\UseCases\Intelligence;
 
-use Models\ConsoleLog\Interfaces\ILogHistoryRepository;
-use Models\ConsoleLog\Services\TreePredictor;
+use App\Models\ConsoleLog\Interfaces\ILogHistoryRepository;
+use App\Models\ConsoleLog\Services\TreePredictor;
 
 class PredictNextAction
 {

@@ -56,7 +56,7 @@ include __DIR__ . '/../partials/head.php';
             </div>
         <?php endif; ?>
 
-        <form class="form" action="/inscription" method="post" novalidate>
+        <form class="form" action="/register" method="post" novalidate>
             <input type="hidden"
                    name="csrf_token"
                    value="<?= htmlspecialchars($csrf_token ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
@@ -105,7 +105,7 @@ include __DIR__ . '/../partials/head.php';
                     ];
                     foreach ($specialites as $sp) : ?>
                         <option value="<?= htmlspecialchars($sp, ENT_QUOTES, 'UTF-8') ?>"
-                            <?= ($old['specialite'] ?? '') === $sp ? 'selected' : '' ?>>
+                                <?= ($old['specialite'] ?? '') === $sp ? 'selected' : '' ?>>
                             <?= htmlspecialchars($sp, ENT_QUOTES, 'UTF-8') ?>
                         </option>
                     <?php endforeach; ?>

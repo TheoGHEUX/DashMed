@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Models\ConsoleLog\Interfaces;
+namespace App\Models\ConsoleLog\Interfaces;
 
-use Models\ConsoleLog\Entities\ConsoleLog;
+use App\Models\ConsoleLog\Entities\ConsoleLog;
 
 interface ILogHistoryRepository
 {

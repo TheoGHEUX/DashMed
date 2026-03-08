@@ -6,26 +6,31 @@ namespace Core\Controller;
 
 trait JsonResponseTrait
 {
-    protected function jsonSuccess(array $data = []): void
+    /**
+     * Envoie une réponse JSON (Méthode principale utilisée par les contrôleurs).
+     */
+    protected function json(array $data, int $status = 200): void
     {
-        $this->sendJson(['success' => true, ...$data]);
-    }
-
-    protected function jsonError(string $message, int $code = 400): void
-    {
-        http_response_code($code);
-        $this->sendJson(['success' => false, 'error' => $message]);
-    }
-
-    private function sendJson(array $data): void
-    {
+        http_response_code($status);
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode($data);
         exit;
     }
 
+    // Helpers (Bonus)
+    protected function jsonSuccess(array $data = []): void
+    {
+        $this->json(['success' => true, ...$data]);
+    }
+
+    protected function jsonError(string $message, int $code = 400): void
+    {
+        $this->json(['success' => false, 'error' => $message], $code);
+    }
+
     protected function getJsonInput(): array
     {
-        return json_decode(file_get_contents('php://input'), true) ?? [];
+        $content = file_get_contents('php://input');
+        return json_decode($content, true) ?? [];
     }
 }

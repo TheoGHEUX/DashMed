@@ -16,11 +16,9 @@
 
 http_response_code(404);
 
-// Valeurs par défaut pour le partial head
-$pageTitle       = $pageTitle ?? "Page non trouvée - Erreur 404";
-$pageDescription = $pageDescription ?? "La page que vous recherchez n'existe pas.";
-$pageStyles      = $pageStyles ?? ["/assets/style/404.css"];
-$pageScripts     = $pageScripts ?? [];
+$pageTitle       = "Page non trouvée - Erreur 404";
+$pageDescription = "La page que vous recherchez n'existe pas.";
+$pageStyles      = ["/assets/style/404.css"];
 
 include __DIR__ . '/../partials/head.php';
 ?>
@@ -37,7 +35,7 @@ include __DIR__ . '/../partials/head.php';
             </p>
             <div class="error-actions">
                 <a href="/" class="btn btn-primary">Retour à l'accueil</a>
-                <a href="/dashboard" class="btn btn-secondary">Tableau de bord</a>
+                <a href="/home" class="btn btn-secondary">Tableau de bord</a>
             </div>
         </div>
     </div>

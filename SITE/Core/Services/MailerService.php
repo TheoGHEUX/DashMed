@@ -4,66 +4,66 @@ declare(strict_types=1);
 
 namespace Core\Services;
 
-use App\Interfaces\IMailer;
-
-class MailerService implements IMailer
+class MailerService
 {
-    private const FROM_EMAIL = 'dashmed-site@alwaysdata.net';
-
-    public function send(string $to, string $subject, string $templateName, array $data = []): bool
+    public function send(string $to, string $subject, string $body): bool
     {
-        // 1. Charger la vue HTML
-        $htmlBody = $this->renderView($templateName, $data);
-        if (!$htmlBody) return false;
+        // 1. Essai d'envoi réel (SMTP)
+        $headers = "MIME-Version: 1.0" . "\r\n";
+        $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+        $headers .= 'From: no-reply@dashmed.com' . "\r\n";
 
-        // 2. Préparer les headers
-        $headers = [
-            'From: DashMed <' . self::FROM_EMAIL . '>',
-            'Reply-To: ' . self::FROM_EMAIL,
-            'MIME-Version: 1.0',
-            'Content-Type: text/html; charset=UTF-8',
-        ];
-        $headersStr = implode("\r\n", $headers);
+        // Le @ cache les erreurs PHP, mais renvoie false si ça échoue
+        $sent = @mail($to, $subject, $body, $headers);
 
-        // 3. Envoyer (Compatible Windows/Linux)
-        if (PHP_OS_FAMILY === 'Windows') {
-            $sent = @mail($to, $subject, $htmlBody, $headersStr);
-        } else {
-            $sent = @mail($to, $subject, $htmlBody, $headersStr, '-f ' . self::FROM_EMAIL);
-        }
-
-        // 4. Sauvegarde locale si échec (Fallback)
+        // 2. Si l'envoi échoue OU si on est en local (souvent le cas sur XAMPP)
+        // On sauvegarde dans un fichier
         if (!$sent) {
-            $this->saveToStorage($to, $subject, $htmlBody);
+            return $this->saveToDisk($to, $subject, $body);
         }
 
         return true;
     }
 
-    private function renderView(string $path, array $data): ?string
+    private function saveToDisk(string $to, string $subject, string $body): bool
     {
-        // On remonte de Core/Services vers App/Views
-        $file = dirname(__DIR__, 2) . '/App/Views/' . $path . '.php';
+        // On remonte de 2 niveaux : Core/Services -> Core -> SITE
+        // Le chemin absolu est plus sûr
+        $rootDir = dirname(__DIR__, 2);
+        $storageDir = $rootDir . '/storage/mails';
 
-        if (!file_exists($file)) {
-            error_log("[MAILER] Vue introuvable : $file");
-            return null;
+        // Création du dossier s'il n'existe pas
+        if (!is_dir($storageDir)) {
+            if (!mkdir($storageDir, 0777, true)) {
+                error_log("[MailerService] Impossible de créer le dossier : $storageDir");
+                return false;
+            }
         }
 
-        extract($data);
-        ob_start();
-        include $file;
-        return ob_get_clean();
-    }
+        // Nettoyage du sujet pour le nom de fichier
+        $safeSubject = preg_replace('/[^a-zA-Z0-9_-]/', '_', substr($subject, 0, 50));
+        $filename = sprintf(
+            '%s/%s_%s.html',
+            $storageDir,
+            date('Y-m-d_H-i-s'),
+            $safeSubject
+        );
 
-    private function saveToStorage(string $to, string $subject, string $body): void
-    {
-        $dir = dirname(__DIR__, 2) . '/storage/mails';
-        if (!is_dir($dir)) { @mkdir($dir, 0755, true); }
+        // Contenu du fichier
+        $content = "<!-- \n";
+        $content .= "TO: $to \n";
+        $content .= "SUBJECT: $subject \n";
+        $content .= "DATE: " . date('Y-m-d H:i:s') . "\n";
+        $content .= "-->\n\n";
+        $content .= $body;
 
-        $filename = $dir . '/mail_' . date('Ymd_His') . '_' . uniqid() . '.html';
-        $content = "<!-- To: $to | Subject: $subject -->\n" . $body;
+        $result = file_put_contents($filename, $content);
 
-        file_put_contents($filename, $content);
+        if ($result === false) {
+            error_log("[MailerService] Erreur d'écriture dans le fichier : $filename");
+            return false;
+        }
+
+        return true;
     }
 }

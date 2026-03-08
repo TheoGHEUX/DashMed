@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Models\ConsoleLog\Entities;
+namespace App\Models\ConsoleLog\Entities;
 
 class ConsoleLog
 {

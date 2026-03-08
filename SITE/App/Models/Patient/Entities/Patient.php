@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Models\Patient\Entities;
+namespace App\Models\Patient\Entities;
 
 class Patient
 {

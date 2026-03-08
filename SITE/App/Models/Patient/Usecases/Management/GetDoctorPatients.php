@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Models\Patient\UseCases\Management;
+namespace App\Models\Patient\UseCases\Management;
 
-use Models\Patient\Interfaces\IPatientManagementRepository;
-use Models\Patient\Entities\Patient;
+use App\Models\Patient\Interfaces\IPatientManagementRepository;
+use App\Models\Patient\Entities\Patient;
 
 class GetDoctorPatients
 {

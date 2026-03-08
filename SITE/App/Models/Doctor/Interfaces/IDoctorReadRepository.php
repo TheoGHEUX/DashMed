@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Models\Doctor\Interfaces;
+namespace App\Models\Doctor\Interfaces;
 
-use Models\Doctor\Entities\Doctor;
+use App\Models\Doctor\Entities\Doctor;
 
 interface IDoctorReadRepository
 {

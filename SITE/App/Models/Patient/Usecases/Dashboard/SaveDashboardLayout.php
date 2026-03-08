@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Models\Patient\UseCases\Dashboard;
+namespace App\Models\Patient\UseCases\Dashboard;
 
-use Models\Patient\Interfaces\IDashboardLayoutRepository;
+use App\Models\Patient\Interfaces\IDashboardLayoutRepository;
 
 class SaveDashboardLayout
 {

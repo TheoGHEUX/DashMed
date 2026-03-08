@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Controllers\Dashboard;
 
 use Core\Controller\AbstractController;
-use Models\Patient\Repositories\DashboardLayoutRepository;
-use Models\Patient\Services\PatientSimilarityService; // Le Service KNN
-use Models\Patient\UseCases\Dashboard\GetDashboardLayout;
-use Models\Patient\UseCases\Dashboard\SaveDashboardLayout;
-use Models\Patient\UseCases\Dashboard\SuggestLayout;
+use App\Models\Patient\Repositories\DashboardLayoutRepository;
+use App\Models\Patient\Services\PatientSimilarityService;
+use App\Models\Patient\UseCases\Dashboard\GetDashboardLayout;
+use App\Models\Patient\UseCases\Dashboard\SaveDashboardLayout;
+use App\Models\Patient\UseCases\Dashboard\SuggestLayout;
 
 final class LayoutApiController extends AbstractController
 {
@@ -19,34 +19,76 @@ final class LayoutApiController extends AbstractController
 
     public function __construct()
     {
-        // 1. Instanciation des dépendances de bas niveau
         $repo = new DashboardLayoutRepository();
-        $similarityService = new PatientSimilarityService(); // On instancie le service
+        $similarityService = new PatientSimilarityService();
 
-        // 2. Injection dans les UseCases
         $this->getLayout = new GetDashboardLayout($repo);
         $this->saveLayout = new SaveDashboardLayout($repo);
-
-        // C'est ici que ça change : on injecte Repo + Service
         $this->suggestLayout = new SuggestLayout($repo, $similarityService);
     }
 
-    // ... Tes méthodes get(), save() et suggest() restent identiques ...
+    /**
+     * GET /api/dashboard-layout
+     */
+    public function load(): void
+    {
+        $this->checkAuth();
+        $ptId = (int)($_GET['ptId'] ?? 0);
+        $medId = $this->getCurrentUserId();
 
+        if (!$ptId) {
+            $this->json(['success' => false, 'error' => 'Patient ID manquant']);
+            return;
+        }
+
+        $layout = $this->getLayout->execute($medId, $ptId);
+
+        if ($layout) {
+            $this->json(['success' => true, 'layout' => $layout]);
+        } else {
+            // Pas de layout personnalisé, succès quand même (le JS utilisera le défaut)
+            $this->json(['success' => true, 'layout' => null]);
+        }
+    }
+
+    /**
+     * POST /api/save-dashboard-layout
+     */
+    public function save(): void
+    {
+        $this->checkAuth();
+
+        // Récupérer le JSON envoyé par fetch()
+        $input = json_decode(file_get_contents('php://input'), true);
+
+        $ptId = (int)($input['ptId'] ?? 0);
+        $config = $input['config'] ?? null;
+        $medId = $this->getCurrentUserId();
+
+        if (!$ptId || !$config) {
+            $this->json(['success' => false, 'error' => 'Données invalides'], 400);
+            return;
+        }
+
+        $this->saveLayout->execute($medId, $ptId, $config);
+
+        $this->json(['success' => true]);
+    }
+
+    /**
+     * GET /api/suggest-layout
+     */
     public function suggest(): void
     {
-        $this->checkAuth(); // Ou checkAuthApi() selon ton AbstractController
+        $this->checkAuth();
         $ptId = (int)($_GET['ptId'] ?? 0);
 
-        // Le UseCase s'occupe de tout :
-        // SQL Data -> Service KNN -> SQL Layout -> Résultat
         $layout = $this->suggestLayout->execute($ptId, $this->getCurrentUserId());
 
         if ($layout) {
-            // Helper JSON de ton AbstractController
-            $this->jsonSuccess(['layout' => $layout]);
+            $this->json(['success' => true, 'suggestion' => ['layout' => $layout]]);
         } else {
-            $this->jsonError('Aucune suggestion disponible.', 404);
+            $this->json(['success' => false, 'message' => 'Aucune suggestion disponible']);
         }
     }
 }

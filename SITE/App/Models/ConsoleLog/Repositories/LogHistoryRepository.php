@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Models\ConsoleLog\Repositories;
+namespace App\Models\ConsoleLog\Repositories;
 
 use Core\Database;
-use Models\ConsoleLog\Interfaces\ILogHistoryRepository;
+use App\Models\ConsoleLog\Interfaces\ILogHistoryRepository;
 use PDO;
 
 class LogHistoryRepository implements ILogHistoryRepository

@@ -30,7 +30,7 @@ final class ResetPasswordController extends AbstractController
             $errors[] = "Ce lien de réinitialisation est invalide ou incomplet.";
         }
 
-        $this->render('auth/reset-password', [
+        $this->render('authentication/reset-password', [
             'errors' => $errors,
             'success' => '',
             'token' => $token,
@@ -46,7 +46,7 @@ final class ResetPasswordController extends AbstractController
         $this->startSession();
 
         if (!$this->validateCsrf()) {
-            $this->render('auth/reset-password', ['errors' => ['Session expirée.']]);
+            $this->render('authentication/reset-password', ['errors' => ['Session expirée.']]);
             return;
         }
 
@@ -56,7 +56,7 @@ final class ResetPasswordController extends AbstractController
         $conf  = $this->getPost('password_confirm');
 
         if ($pass !== $conf) {
-            $this->render('auth/reset-password', [
+            $this->render('authentication/reset-password', [
                 'errors' => ['Les mots de passe ne correspondent pas.'],
                 'token' => $token,
                 'email' => $email
@@ -69,7 +69,7 @@ final class ResetPasswordController extends AbstractController
         if ($result['success']) {
             $this->redirect('/login?reset=1');
         } else {
-            $this->render('auth/reset-password', [
+            $this->render('authentication/reset-password', [
                 'errors' => [$result['error']],
                 'token' => $token,
                 'email' => $email

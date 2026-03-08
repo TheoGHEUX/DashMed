@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Models\Doctor\Interfaces;
+namespace App\Models\Doctor\Interfaces;
 
 interface IDoctorWriteRepository
 {

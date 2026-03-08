@@ -16,19 +16,18 @@
  * @package Views
  */
 
-// Configuration des variables de template (valeurs par défaut)
 $pageTitle       = $pageTitle ?? "Plan du site";
 $pageDescription = $pageDescription ?? "Plan du site de DashMed";
 $pageStyles      = $pageStyles ?? ["/assets/style/map.css"];
 $pageScripts     = $pageScripts ?? ["/assets/script/header_responsive.js"];
 
-include __DIR__ . '/partials/head.php';
+include __DIR__ . '/../partials/head.php';
 ?>
 <!doctype html>
 <html lang="fr">
 <body>
 
-<?php include __DIR__ . '/partials/headerPublic.php'; ?>
+<?php include __DIR__ . '/../partials/headerPublic.php'; ?>
 
 <main class="content">
     <div class="container">
@@ -66,6 +65,6 @@ include __DIR__ . '/partials/head.php';
     </div>
 </main>
 
-<?php include __DIR__ . '/partials/footer.php'; ?>
+<?php include __DIR__ . '/../partials/footer.php'; ?>
 </body>
 </html>

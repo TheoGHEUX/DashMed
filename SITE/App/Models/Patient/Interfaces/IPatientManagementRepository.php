@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Models\Patient\Interfaces;
+namespace App\Models\Patient\Interfaces;
 
-use Models\Patient\Entities\Patient;
+use App\Models\Patient\Entities\Patient;
 
 interface IPatientManagementRepository
 {

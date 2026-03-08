@@ -26,32 +26,36 @@ final class IntelligenceApiController extends AbstractController
         );
     }
 
+    /**
+     * POST /api/log-graph-action
+     */
     public function logAction(): void
     {
         $this->checkAuth();
-        // Validation CSRF recommandée pour les logs aussi
-        // if (!$this->validateApiCsrf()) return;
-
-        $input = $this->getJsonInput();
+        $input = json_decode(file_get_contents('php://input'), true);
 
         $success = $this->logger->execute(
             $this->getCurrentUserId(),
             $input['action'] ?? '',
             (int)($input['ptId'] ?? 0),
-            (int)($input['idMesure'] ?? 0)
+            isset($input['idMesure']) ? (int)$input['idMesure'] : null
         );
 
-        $this->jsonSuccess(['success' => $success]);
+        $this->json(['success' => $success]);
     }
 
+    /**
+     * POST /api/predict-action
+     */
     public function predict(): void
     {
         $this->checkAuth();
 
         $action = $this->predictor->execute($this->getCurrentUserId());
 
-        $this->jsonSuccess([
-            'prediction' => $action, // Peut être null
+        $this->json([
+            'success' => true,
+            'prediction' => $action,
             'hasPrediction' => (bool)$action
         ]);
     }

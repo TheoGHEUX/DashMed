@@ -18,14 +18,14 @@
 
 $pageTitle       = $pageTitle ?? "Accueil";
 $pageDescription = $pageDescription
-    ?? "Page d'accueil de DashMed : votre tableau de bord santé simple et moderne pour la médecine";
+        ?? "Page d'accueil de DashMed : votre tableau de bord santé simple et moderne pour la médecine";
 $pageStyles      = $pageStyles ?? ["/assets/style/index.css"];
 $pageScripts     = $pageScripts ?? ["/assets/script/header_responsive.js"];
 
-include __DIR__ . '/partials/head.php';
+include __DIR__ . '/../partials/head.php';
 ?>
 <body>
-<?php include __DIR__ . '/partials/headerPublic.php'; ?>
+<?php include __DIR__ . '/../partials/headerPublic.php'; ?>
 <main>
     <section class="hero">
         <h1><?= htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8') ?></h1>
@@ -74,6 +74,6 @@ include __DIR__ . '/partials/head.php';
     </section>
 </main>
 
-<?php include __DIR__ . '/partials/footer.php'; ?>
+<?php include __DIR__ . '/../partials/footer.php'; ?>
 </body>
 </html>

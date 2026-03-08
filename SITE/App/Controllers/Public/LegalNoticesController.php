@@ -2,20 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Controllers\Public;
+namespace App\Controllers\Public;
 
-/**
- * Mentions légales
- *
- * Affiche les mentions légales, informations RGPD et conditions d'utilisation.
- * Page accessible publiquement (sans authentification).
- *
- * @package Controllers
- */
-final class LegalNoticesController
+use Core\Controller\AbstractController;
+
+class LegalNoticesController extends AbstractController
 {
     public function show(): void
     {
-        \Core\View::render('legal-notices');
+        // Utilise la nouvelle méthode render() de l'AbstractController
+        $this->render('Public/legal-notices');
     }
 }

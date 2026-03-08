@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Models\Doctor\Entities;
+namespace App\Models\Doctor\Entities;
 
 class Doctor
 {

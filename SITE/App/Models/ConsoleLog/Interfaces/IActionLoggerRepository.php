@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Models\ConsoleLog\Interfaces;
+namespace App\Models\ConsoleLog\Interfaces;
 
 interface IActionLoggerRepository
 {

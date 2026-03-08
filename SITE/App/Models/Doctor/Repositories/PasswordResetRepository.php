@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Models\Doctor\Repositories;
+namespace App\Models\Doctor\Repositories;
 
 use Core\Database;
-use Models\Doctor\Interfaces\IPasswordResetRepository;
+use App\Models\Doctor\Interfaces\IPasswordResetRepository;
 use PDO;
 
 class PasswordResetRepository implements IPasswordResetRepository

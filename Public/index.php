@@ -1,24 +1,14 @@
 <?php
-declare(strict_types=1);
 
+
+declare(strict_types=1);
+putenv('APP_DEBUG=1'); // Force l'affichage des erreurs
 /**
- * Point d'entrée de l'application DashMed
- *
- * Ce fichier démarre l'application et configure la sécurité de base :
- * 1. Configure la session utilisateur de manière sécurisée
- * 2. Active les protections de sécurité du navigateur
- * 3. Charge l'autoloader pour les classes PHP
- * 4. Lance le routeur qui dirige vers la bonne page
- *
- * Sécurité appliquée :
- * - Session protégée contre le vol de cookies
- * - Headers sécurisés pour bloquer les attaques courantes
- * - Force HTTPS en production
- * - Masque les informations sensibles du serveur
- *
- * @package DashMed
+ * Point d'entrée unique de l'application DashMed.
+ * Version : Clean Architecture
  */
-// Configuration sécurisée de la session
+
+// 1. Configuration de la Session (Sécurité)
 $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
 session_set_cookie_params([
     'lifetime' => 0,
@@ -34,87 +24,68 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// En-têtes HTTP de sécurité (définis avant toute sortie)
-// Ajuster HSTS uniquement si HTTPS est détecté en production
+// 2. En-têtes HTTP de sécurité (CSP, HSTS...)
 $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+
 header('X-Frame-Options: DENY');
 header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: no-referrer-when-downgrade');
 header('Permissions-Policy: geolocation=(), microphone=()');
+
 if ($isHttps) {
     header('Strict-Transport-Security: max-age=31536000; includeSubDomains; preload');
 }
-// CSP renforcé (upgrade-insecure-requests activé uniquement en HTTPS)
+
+// Construction de la Content-Security-Policy (CSP)
 $csp = "default-src 'self'; "
     . "base-uri 'self'; "
     . "form-action 'self'; "
     . "object-src 'none'; "
-    . "script-src 'self' 'unsafe-inline'; "
+    . "script-src 'self' 'unsafe-inline'; " // 'unsafe-inline' nécessaire pour certains scripts JS inline
     . "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
     . "font-src 'self' https://fonts.gstatic.com data:; "
     . "img-src 'self' data:; "
     . "connect-src 'self';";
 
-// Ajouter upgrade-insecure-requests et frame-ancestors uniquement en HTTPS (production)
 if ($isHttps) {
     $csp .= " upgrade-insecure-requests; frame-ancestors 'none';";
 }
 
 header("Content-Security-Policy: " . $csp);
-header('X-Powered-By:');
-// Chargement de l'autoloader
-$siteDir = __DIR__ . '/../SITE';
-$autoLoader = $siteDir . '/Core/AutoLoader.php';
+header('X-Powered-By: DashMed'); // Ou vide pour masquer PHP
 
-if (is_file($autoLoader)) {
-    require $autoLoader;
+// 3. Chargement de l'Autoloader
+// Ajuste le chemin "../SITE" si ton index.php n'est pas dans un dossier "public"
+$autoLoaderPath = __DIR__ . '/../SITE/Core/AutoLoader.php';
+
+if (file_exists($autoLoaderPath)) {
+    require_once $autoLoaderPath;
 } else {
-    // Autoloader de secours
-    spl_autoload_register(function (string $class) use ($siteDir): void {
-        $file = $siteDir . '/' . str_replace('\\', '/', $class) . '.php';
-        if (is_file($file)) {
-            require $file;
-        }
-    });
+    // Fallback si l'autoloader Core est introuvable (Debug)
+    die("Erreur critique : Impossible de charger l'application (AutoLoader introuvable).");
 }
 
-$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$method = $_SERVER['REQUEST_METHOD'];
-
-if ($uri === '/generate-data' && $method === 'POST') {
-
-    header('Content-Type: application/json');
-
-    // Sécurité : authentification requise
-    if (!isset($_SESSION['user'])) {
-        http_response_code(403);
-        echo json_encode(['error' => 'Accès refusé']);
-        exit;
-    }
-
-    // Sécurité : validation CSRF via header
-    $csrfToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
-    if ($csrfToken === '' || !\Core\Csrf::validateWithoutConsuming($csrfToken)) {
-        http_response_code(403);
-        echo json_encode(['error' => 'Jeton CSRF invalide ou manquant']);
-        exit;
-    }
-
-    require_once __DIR__ . '/../SITE/Scripts/generate_data_online.php';
-
-    // Lire le JSON envoyé
-    $input = json_decode(file_get_contents('php://input'), true);
-    $patientId = isset($input['patient']) ? (int)$input['patient'] : 25;
-
-    // Appel avec le bon nombre de paramètres (1 seul)
-    generatePatientData($patientId);
-
-    echo json_encode(['success' => true]);
-    exit;
-}
-
-// Dispatch des routes
 use Core\Router;
 
-$router = new Router($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']);
-$router->dispatch();
+// 4. Lancement du Routeur
+try {
+    // Le routeur charge automatiquement la config depuis App/Config/Routes.php
+    $router = new Router();
+
+    // Il analyse $_SERVER['REQUEST_URI'] et lance le bon contrôleur
+    $router->dispatch();
+
+} catch (Throwable $e) {
+    // Filet de sécurité global pour les erreurs non gérées
+    http_response_code(500);
+
+    // En mode debug (local), on affiche l'erreur
+    if (getenv('APP_DEBUG') === '1') {
+        echo "<h1>Erreur Critique</h1>";
+        echo "<pre>" . $e->getMessage() . "\n" . $e->getTraceAsString() . "</pre>";
+    } else {
+        // En production, message générique
+        echo "<h1>Une erreur interne est survenue.</h1>";
+        error_log($e->getMessage()); // Log serveur
+    }
+}

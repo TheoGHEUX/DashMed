@@ -21,10 +21,10 @@ $pageDescription = $pageDescription ?? "Toutes les mentions légales de DashMed"
 $pageStyles      = $pageStyles ?? ["/assets/style/legal_notices.css"];
 $pageScripts     = $pageScripts ?? [];
 
-include __DIR__ . '/partials/head.php';
+include __DIR__ . '/../partials/head.php';
 ?>
 <body>
-<?php include __DIR__ . '/partials/headerPublic.php'; ?>
+<?php include __DIR__ . '/../partials/headerPublic.php'; ?>
 
 <main class="content">
     <div class="container">
@@ -96,6 +96,6 @@ include __DIR__ . '/partials/head.php';
     </div>
 </main>
 
-<?php include __DIR__ . '/partials/footer.php'; ?>
+<?php include __DIR__ . '/../partials/footer.php'; ?>
 </body>
 </html>

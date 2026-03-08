@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Models\Doctor\UseCases\Profile;
+namespace App\Models\Doctor\UseCases\Profile;
 
-// Vos namespaces actuels
-use Models\Doctor\Interfaces\IDoctorReadRepository;
-use Models\Doctor\Interfaces\IDoctorWriteRepository;
+use App\Models\Doctor\Interfaces\IDoctorReadRepository;
+use App\Models\Doctor\Interfaces\IDoctorWriteRepository;
 
 class ChangePassword
 {
@@ -21,12 +20,10 @@ class ChangePassword
 
     public function execute(int $userId, string $oldPassword, string $newPassword, string $confirmPassword): array
     {
-        // 1. Validation confirmation
         if ($newPassword !== $confirmPassword) {
             return ['success' => false, 'error' => 'Les mots de passe ne correspondent pas.'];
         }
 
-        // 2. Validation complexité (Règle métier)
         if (strlen($newPassword) < 12
             || !preg_match('/[A-Z]/', $newPassword)
             || !preg_match('/[a-z]/', $newPassword)
@@ -38,20 +35,12 @@ class ChangePassword
             ];
         }
 
-        // 3. Récupération user
         $user = $this->readRepo->findById($userId);
-        if (!$user) {
-            return ['success' => false, 'error' => 'Utilisateur introuvable.'];
-        }
-
-        // 4. Vérification ancien MDP
-        if (!password_verify($oldPassword, $user->getPasswordHash())) {
+        if (!$user || !password_verify($oldPassword, $user->getPasswordHash())) {
             return ['success' => false, 'error' => "L'ancien mot de passe est incorrect."];
         }
 
-        // 5. Hash & Update
         $hash = password_hash($newPassword, PASSWORD_DEFAULT);
-
         if ($this->writeRepo->updatePassword($userId, $hash)) {
             return ['success' => true, 'message' => 'Mot de passe modifié avec succès.'];
         }
