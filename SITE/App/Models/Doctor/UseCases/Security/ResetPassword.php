@@ -35,9 +35,11 @@ class ResetPassword
             return ['success' => false, 'error' => implode("\n", $errors)];
         }
 
-        $tokenData = $this->securityRead->findResetToken($email);
+        $tokenHash = hash('sha256', $token);
 
-        if (!$tokenData || !hash_equals($tokenData['token_hash'], hash('sha256', $token))) {
+        // Utilise une requête qui vérifie bien email ET token hash
+        $tokenData = $this->securityRead->findResetTokenByEmailAndToken($email, $tokenHash);
+        if (!$tokenData) {
             return ['success' => false, 'error' => 'Lien invalide ou expiré.'];
         }
 
@@ -49,7 +51,6 @@ class ResetPassword
         $newHash = password_hash($newPassword, PASSWORD_DEFAULT);
         $this->repo->updatePassword($doctor->getId(), $newHash);
         $this->securityWrite->deleteResetToken($email);
-
 
         return ['success' => true];
     }

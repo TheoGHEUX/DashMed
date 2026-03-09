@@ -8,4 +8,5 @@ interface ISecurityWriteRepository
 {
 
     public function storeResetToken(string $email, string $tokenHash, string $expiresAt): void;
+    public function deleteResetToken(string $email): void;
 }

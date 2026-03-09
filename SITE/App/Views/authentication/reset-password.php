@@ -1,24 +1,9 @@
 <?php
 
 /**
- * Réinitialisation du mot de passe
+ * Vue : Réinitialisation du mot de passe
  *
- * Permet de définir un nouveau mot de passe après réception du lien.
- *
- * Affiche le formulaire sécurisé par CSRF et les messages d'état.
- *
- * Variables attendues :
- *  - $csrf_token      (string)  Jeton CSRF
- *  - $email           (string)  Email de l'utilisateur (hidden)
- *  - $token           (string)  Jeton de réinitialisation (hidden)
- *  - $errors          (array)   Tableau d'erreurs de validation
- *  - $success         (string)  Message de succès
- *  - $pageTitle       (string)  Titre de la page
- *  - $pageDescription (string)  Meta description
- *  - $pageStyles      (array)   Styles spécifiques
- *  - $pageScripts     (array)   Scripts spécifiques
- *
- * @package Views
+ * Cette vue attend les variables $csrf_token, $email, $token, $errors, $success.
  */
 
 $csrf_token = (class_exists('\Core\Csrf') && method_exists('\Core\Csrf', 'token'))
@@ -61,12 +46,11 @@ include __DIR__ . '/../partials/head.php';
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '', ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="email" value="<?= htmlspecialchars($email ?? '', ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="token" value="<?= htmlspecialchars($token ?? '', ENT_QUOTES, 'UTF-8') ?>">
-
             <div class="field">
-                <input type="password" name="password" placeholder="Nouveau mot de passe" required autocomplete="new-password">
+                <input type="password" name="password" placeholder="Nouveau mot de passe" required>
             </div>
             <div class="field">
-                <input type="password" name="password_confirm" placeholder="Confirmer le mot de passe" required autocomplete="new-password">
+                <input type="password" name="password_confirm" placeholder="Confirmer le mot de passe" required>
             </div>
             <button class="btn" type="submit">Changer mon mot de passe</button>
         </form>

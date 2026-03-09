@@ -31,4 +31,10 @@ class SecurityWriteRepository implements ISecurityWriteRepository
         ");
         $stmt->execute([$email, $tokenHash, $expiresAt]);
     }
+
+    public function deleteResetToken(string $email): void
+    {
+        $stmt = $this->db->prepare('DELETE FROM password_resets WHERE email = ?');
+        $stmt->execute([$email]);
+    }
 }

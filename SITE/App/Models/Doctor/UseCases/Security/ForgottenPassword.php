@@ -30,11 +30,6 @@ class ForgottenPassword
 
     public function execute(string $email): void
     {
-        $emailError = $this->validator->validateEmail($email);
-        if ($emailError) {
-            return;
-        }
-
         $doctor = $this->repo->findByEmail($email);
         if (!$doctor) return;
 
@@ -46,13 +41,17 @@ class ForgottenPassword
 
         $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
         $domain = $_SERVER['HTTP_HOST'] ?? 'localhost';
-        $resetUrl = "{$protocol}://{$domain}/reset-password?token={$token}&email={$email}";
+        // Construction CORRECTE !
+        $resetUrl = "{$protocol}://{$domain}/reset-password?token={$token}&email=" . urlencode($email);
 
         $this->mailer->send(
             $email,
             'Réinitialisation de votre mot de passe - DashMed',
             'reset-password',
-            ['name' => $doctor->getPrenom() . ' ' . $doctor->getNom(), 'url' => $resetUrl]
+            [
+                'name' => $doctor->getPrenom() . ' ' . $doctor->getNom(),
+                'url' => $resetUrl
+            ]
         );
     }
 }
