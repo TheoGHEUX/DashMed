@@ -4,36 +4,27 @@ declare(strict_types=1);
 
 namespace App\Models\Doctor\UseCases\Authentication;
 
-use App\Models\Doctor\Interfaces\IDoctorReadRepository;
+use App\Models\Doctor\Interfaces\IDoctorRepository;
 
 class LoginDoctor
 {
-    private IDoctorReadRepository $readRepo;
+    private IDoctorRepository $repo;
 
-    public function __construct(IDoctorReadRepository $readRepo)
+    public function __construct(IDoctorRepository $repo)
     {
-        $this->readRepo = $readRepo;
+        $this->repo = $repo;
     }
 
-    public function execute(string $email, string $password): ?array
+    public function execute(string $email, string $password)
     {
-        $doctor = $this->readRepo->findByEmail($email);
+        $doctor = $this->repo->findByEmail($email);
 
         if (!$doctor) {
             return null;
         }
 
-
-        $hash = $doctor['mdp'] ?? '';
-        if (!password_verify($password, $hash)) {
+        if (!password_verify($password, $doctor->getPasswordHash())) {
             return null;
-        }
-
-        $isVerified = !empty($doctor['email_verified'])  == 1;
-
-        if (!$isVerified) {
-
-            throw new \Exception('Adresse email non vérifiée. Vérifiez vos spams.');
         }
 
         return $doctor;

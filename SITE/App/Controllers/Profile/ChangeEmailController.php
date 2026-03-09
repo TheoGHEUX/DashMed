@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace App\Controllers\Profile;
 
 use Core\Controller\AbstractController;
-use Core\Services\MailerService;
-use App\Models\Doctor\Repositories\DoctorReadRepository;
-use App\Models\Doctor\Repositories\DoctorWriteRepository;
-use App\Models\Doctor\Repositories\DoctorVerificationRepository;
+use Core\Security\RateLimiter;
 use App\Models\Doctor\UseCases\Profile\ChangeEmail;
+use App\Models\Doctor\Repositories\DoctorRepository;
+use App\Models\Doctor\Repositories\DoctorVerificationRepository;
+use App\Models\Doctor\Validators\DoctorValidator;
+use Core\Services\MailerService;
 
 final class ChangeEmailController extends AbstractController
 {
@@ -17,51 +18,64 @@ final class ChangeEmailController extends AbstractController
 
     public function __construct()
     {
-        $this->useCase = new ChangeEmail(
-            new DoctorReadRepository(),
-            new DoctorWriteRepository(),
-            new DoctorVerificationRepository(),
-            new MailerService()
-        );
+        $doctorRepo = new DoctorRepository();
+        $verifyRepo = new DoctorVerificationRepository();
+        $validator = new DoctorValidator();
+        $mailer = new MailerService();
+        $this->useCase = new ChangeEmail($doctorRepo, $verifyRepo, $validator, $mailer);
     }
 
-    public function show(): void
+    public function showForm(): void
     {
-        $this->checkAuth();
-        $this->render('auth/change-email', ['errors' => [], 'success' => '']);
+        $this->render('Profile/change-email', [
+            'errors' => [],
+            'success' => ''
+        ]);
     }
 
     public function submit(): void
     {
-        $this->checkAuth();
+        $this->startSession();
 
+        if (RateLimiter::isBlocked('change_email_attempts', 5, 900)) {
+            $this->render('Profile/change-email', [
+                'errors' => ['Trop de tentatives. Veuillez réessayer dans 15 minutes.'],
+                'success' => ''
+            ]);
+            return;
+        }
         if (!$this->validateCsrf()) {
-            $this->render('auth/change-email', ['errors' => ['Session expirée.']]);
+            RateLimiter::recordAttempt('change_email_attempts');
+            $this->render('Profile/change-email', [
+                'errors' => ['Session expirée.'],
+                'success' => ''
+            ]);
             return;
         }
 
+        if (empty($_SESSION['user'])) {
+            $this->redirect('/login');
+            return;
+        }
+
+        $userId = $_SESSION['user']['id'];
         $currentPassword = $this->getPost('current_password');
         $newEmail = $this->getPost('new_email');
-        $confirmEmail = $this->getPost('new_email_confirm');
 
-        // AJOUT : Validation de base
-        if (empty($newEmail) || !filter_var($newEmail, FILTER_VALIDATE_EMAIL)) {
-            $this->render('auth/change-email', ['errors' => ['Format d\'email invalide.']]);
-            return;
-        }
-
-        if ($newEmail !== $confirmEmail) {
-            $this->render('auth/change-email', ['errors' => ['Les emails ne correspondent pas.']]);
-            return;
-        }
-
-        // Exécution
-        $userId = (int) $_SESSION['user']['id'];
         $result = $this->useCase->execute($userId, $currentPassword, $newEmail);
 
-        $this->render('auth/change-email', [
-            'errors' => $result['success'] ? [] : [$result['error']],
-            'success' => $result['success'] ? $result['message'] : ''
-        ]);
+        if ($result['success']) {
+            RateLimiter::clear('change_email_attempts');
+            $this->render('Profile/change-email', [
+                'errors' => [],
+                'success' => $result['message']
+            ]);
+        } else {
+            RateLimiter::recordAttempt('change_email_attempts');
+            $this->render('Profile/change-email', [
+                'errors' => [$result['error'] ?? 'Erreur inconnue'],
+                'success' => ''
+            ]);
+        }
     }
 }

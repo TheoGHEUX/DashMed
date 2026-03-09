@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace App\Controllers\Profile;
 
 use Core\Controller\AbstractController;
-use App\Models\Doctor\Repositories\DoctorReadRepository;
-use App\Models\Doctor\Repositories\DoctorWriteRepository;
+use Core\Security\RateLimiter;
 use App\Models\Doctor\UseCases\Profile\ChangePassword;
+use App\Models\Doctor\Repositories\DoctorRepository;
+use App\Models\Doctor\Validators\DoctorValidator;
 
 final class ChangePasswordController extends AbstractController
 {
@@ -15,17 +16,14 @@ final class ChangePasswordController extends AbstractController
 
     public function __construct()
     {
-        // Injection des dépendances concrètes
-        $readRepo = new DoctorReadRepository();
-        $writeRepo = new DoctorWriteRepository();
-
-        $this->useCase = new ChangePassword($readRepo, $writeRepo);
+        $doctorRepo = new DoctorRepository();
+        $validator = new DoctorValidator();
+        $this->useCase = new ChangePassword($doctorRepo, $validator);
     }
 
-    public function show(): void
+    public function showForm(): void
     {
-        $this->checkAuth(); // Méthode de AbstractController
-        $this->render('auth/change-password', [
+        $this->render('Profile/change-password', [
             'errors' => [],
             'success' => ''
         ]);
@@ -33,24 +31,48 @@ final class ChangePasswordController extends AbstractController
 
     public function submit(): void
     {
-        $this->checkAuth();
+        $this->startSession();
 
+        if (RateLimiter::isBlocked('change_password_attempts', 5, 900)) {
+            $this->render('Profile/change-password', [
+                'errors' => ['Trop de tentatives. Veuillez réessayer dans 15 minutes.'],
+                'success' => ''
+            ]);
+            return;
+        }
         if (!$this->validateCsrf()) {
-            $this->render('auth/change-password', ['errors' => ['Session expirée.']]);
+            RateLimiter::recordAttempt('change_password_attempts');
+            $this->render('Profile/change-password', [
+                'errors' => ['Session expirée.'],
+                'success' => ''
+            ]);
             return;
         }
 
-        // Récupération sécurisée via AbstractController
-        $oldPass = $this->getPost('old_password');
-        $newPass = $this->getPost('password');
-        $confPass = $this->getPost('password_confirm');
-        $userId = (int) $_SESSION['user']['id'];
+        if (empty($_SESSION['user'])) {
+            $this->redirect('/login');
+            return;
+        }
 
-        $result = $this->useCase->execute($userId, $oldPass, $newPass, $confPass);
+        $userId = $_SESSION['user']['id'];
+        $oldPassword = $this->getPost('old_password');
+        $newPassword = $this->getPost('password');
+        $confirmPassword = $this->getPost('password_confirm');
 
-        $this->render('auth/change-password', [
-            'errors' => $result['success'] ? [] : [$result['error']],
-            'success' => $result['success'] ? $result['message'] : ''
-        ]);
+        $result = $this->useCase->execute($userId, $oldPassword, $newPassword, $confirmPassword);
+
+        if ($result['success']) {
+            RateLimiter::clear('change_password_attempts');
+            $this->render('Profile/change-password', [
+                'errors' => [],
+                'success' => $result['message']
+            ]);
+        } else {
+            RateLimiter::recordAttempt('change_password_attempts');
+            $this->render('Profile/change-password', [
+                'errors' => [$result['error'] ?? 'Erreur inconnue'],
+                'success' => ''
+            ]);
+        }
     }
 }

@@ -1,17 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Models\Doctor\Interfaces;
-
 
 interface IDoctorVerificationRepository
 {
     /**
-     * Trouve un médecin via son token de vérification.
-     * @return array|object|null
+     * Trouve un utilisateur via le token de vérification.
      */
-    public function findByVerificationToken(string $token);
+    public function findByVerificationToken(string $token): ?array;
 
     /**
      * Enregistre un token pour un email donné.
@@ -19,7 +15,7 @@ interface IDoctorVerificationRepository
     public function setVerificationToken(string $email, string $token, string $expires): bool;
 
     /**
-     * Valide le token (passe le flag email_verified à 1).
+     * Valide le mail à partir du token.
      */
     public function verifyEmailToken(string $token): bool;
 }

@@ -4,66 +4,47 @@ declare(strict_types=1);
 
 namespace Core\Services;
 
-class MailerService
+final class MailerService
 {
-    public function send(string $to, string $subject, string $body): bool
+    private const FROM_EMAIL = 'dashmed-site@alwaysdata.net';
+
+    public function send(string $to, string $subject, string $templateName, array $vars = []): bool
     {
-        // 1. Essai d'envoi réel (SMTP)
-        $headers = "MIME-Version: 1.0" . "\r\n";
-        $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
-        $headers .= 'From: no-reply@dashmed.com' . "\r\n";
+        $htmlBody = $this->renderTemplate($templateName, $vars);
 
-        // Le @ cache les erreurs PHP, mais renvoie false si ça échoue
-        $sent = @mail($to, $subject, $body, $headers);
+        $headers = [
+            'From: DashMed <' . self::FROM_EMAIL . '>',
+            'Reply-To: ' . self::FROM_EMAIL,
+            'MIME-Version: 1.0',
+            'Content-Type: text/html; charset=UTF-8'
+        ];
+        $headersStr = implode("\r\n", $headers);
 
-        // 2. Si l'envoi échoue OU si on est en local (souvent le cas sur XAMPP)
-        // On sauvegarde dans un fichier
+        $sent = @mail($to, $subject, $htmlBody, $headersStr);
+
         if (!$sent) {
-            return $this->saveToDisk($to, $subject, $body);
+            $this->saveToDisk($to, $subject, $htmlBody);
+            return false;
         }
-
         return true;
     }
 
-    private function saveToDisk(string $to, string $subject, string $body): bool
+    private function renderTemplate(string $templateName, array $vars = []): string
     {
-        // On remonte de 2 niveaux : Core/Services -> Core -> SITE
-        // Le chemin absolu est plus sûr
-        $rootDir = dirname(__DIR__, 2);
-        $storageDir = $rootDir . '/storage/mails';
+        $file = dirname(__DIR__, 2) . '/App/Views/emails/' . $templateName . '.php';
+        if (!file_exists($file)) return '';
+        extract($vars);
+        ob_start();
+        include $file;
+        return ob_get_clean();
+    }
 
-        // Création du dossier s'il n'existe pas
-        if (!is_dir($storageDir)) {
-            if (!mkdir($storageDir, 0777, true)) {
-                error_log("[MailerService] Impossible de créer le dossier : $storageDir");
-                return false;
-            }
-        }
-
-        // Nettoyage du sujet pour le nom de fichier
-        $safeSubject = preg_replace('/[^a-zA-Z0-9_-]/', '_', substr($subject, 0, 50));
-        $filename = sprintf(
-            '%s/%s_%s.html',
-            $storageDir,
-            date('Y-m-d_H-i-s'),
-            $safeSubject
-        );
-
-        // Contenu du fichier
-        $content = "<!-- \n";
-        $content .= "TO: $to \n";
-        $content .= "SUBJECT: $subject \n";
-        $content .= "DATE: " . date('Y-m-d H:i:s') . "\n";
-        $content .= "-->\n\n";
-        $content .= $body;
-
-        $result = file_put_contents($filename, $content);
-
-        if ($result === false) {
-            error_log("[MailerService] Erreur d'écriture dans le fichier : $filename");
-            return false;
-        }
-
-        return true;
+    private function saveToDisk(string $to, string $subject, string $body): void
+    {
+        $dir = dirname(__DIR__, 3) . '/storage/mails';
+        if (!is_dir($dir)) { mkdir($dir, 0755, true); }
+        $filename = $dir . '/mail_' . date('Ymd_His') . '_' . uniqid() . '.eml';
+        $content = "To: $to\r\nSubject: $subject\r\n\r\n" . $body;
+        file_put_contents($filename, $content);
     }
 }

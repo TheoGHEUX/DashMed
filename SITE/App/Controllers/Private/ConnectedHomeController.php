@@ -17,7 +17,7 @@ final class ConnectedHomeController extends AbstractController
         // Redirige vers /login si pas connecté
         $this->checkAuth();
 
-        $this->render('connected/home', [
+        $this->render('private/connected-home', [
             'user' => $_SESSION['user']
         ]);
     }

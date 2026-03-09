@@ -24,32 +24,32 @@ $pageScripts     = $pageScripts ?? [
 
 // 2. Inclusion du Head Global
 // Note : On remonte de Views/Dashboard/ vers Views/partials/
-include __DIR__ . '/../../partials/head.php';
+include __DIR__ . '/../partials/head.php';
 ?>
 
 <body>
 
 <!-- Header Privé -->
-<?php include __DIR__ . '/../../partials/headerPrivate.php'; ?>
+<?php include __DIR__ . '/../partials/headerPrivate.php'; ?>
 
 <!-- Conteneur de notifications JS -->
 <div id="notification-container" class="notification-container"></div>
 
 <!-- 3. Configuration JS (Variables PHP -> JS) -->
-<?php include __DIR__ . '/Partials/js-config.php'; ?>
+<?php include __DIR__ . '/partials/js-config.php'; ?>
 
 <!-- 4. Sélecteur de Patient (Liste déroulante) -->
 <?php if (!isset($noPatient) || $noPatient === false) : ?>
-    <?php include __DIR__ . '/Partials/patient-selector.php'; ?>
+    <?php include __DIR__ . '/partials/patient-selector.php'; ?>
 <?php endif; ?>
 
 <!-- 5. Fiche Info du Patient Actif -->
 <?php if (!isset($noPatient) || $noPatient === false) : ?>
-    <?php include __DIR__ . '/Partials/patient-info.php'; ?>
+    <?php include __DIR__ . '/partials/patient-info.php'; ?>
 <?php endif; ?>
 
 <!-- 6. Overlay Liste des Patients (Caché par défaut) -->
-<?php include __DIR__ . '/Partials/patient-list-overlay.php'; ?>
+<?php include __DIR__ . '/partials/patient-list-overlay.php'; ?>
 
 <main class="dashboard-main container">
 
@@ -67,12 +67,12 @@ include __DIR__ . '/../../partials/head.php';
     <?php if (isset($noPatient) && $noPatient === true) : ?>
 
         <!-- Cas A : Aucun patient n'est sélectionné -->
-        <?php include __DIR__ . '/Partials/empty-state.php'; ?>
+        <?php include __DIR__ . '/partials/empty-state.php'; ?>
 
     <?php else : ?>
 
         <!-- Cas B : Affichage des graphiques -->
-        <?php include __DIR__ . '/Partials/charts-grid.php'; ?>
+        <?php include __DIR__ . '/partials/charts-grid.php'; ?>
 
     <?php endif; ?>
 
@@ -83,14 +83,14 @@ include __DIR__ . '/../../partials/head.php';
 
 <!-- 8. Légende des Seuils (Si patient actif) -->
 <?php if (!isset($noPatient) || $noPatient === false) : ?>
-    <?php include __DIR__ . '/Partials/legend.php'; ?>
+    <?php include __DIR__ . '/partials/legend.php'; ?>
 <?php endif; ?>
 
 <!-- Footer Global -->
-<?php include __DIR__ . '/../../partials/footer.php'; ?>
+<?php include __DIR__ . '/../partials/footer.php'; ?>
 
 <!-- 9. Outils de Débug (Bouton Générer Données) -->
-<?php include __DIR__ . '/Partials/debug-tools.php'; ?>
+<?php include __DIR__ . '/partials/debug-tools.php'; ?>
 
 </body>
 </html>

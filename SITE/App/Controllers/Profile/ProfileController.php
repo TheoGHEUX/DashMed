@@ -34,7 +34,7 @@ final class ProfileController extends AbstractController
     {
         $this->checkAuth();
 
-        $this->render('connected/profile', [
+        $this->render('profile/profile', [
             'user' => $_SESSION['user']
         ]);
     }

@@ -3,27 +3,21 @@
 /**
  * Inscription
  *
- * Permet de créer un compte DashMed.
- *
- * Affiche le formulaire sécurisé par CSRF et les messages d'état.
+ * @package Views
  *
  * Variables attendues :
  *  - $csrf_token (string)  Jeton CSRF
  *  - $old        (array)   Valeurs précédentes (pour re-remplir)
  *  - $errors     (array)   Liste d'erreurs de validation
  *  - $success    (string)  Message de succès
- *
- * @package Views
+ *  - $specialites (array)  Liste des spécialités transmise par le contrôleur
  */
 
-$csrf_token = '';
-if (class_exists('\Core\Csrf') && method_exists('\Core\Csrf', 'token')) {
-    $csrf_token = \Core\Csrf::token();
-}
-
+$csrf_token = $csrf_token ?? '';
 $old = $old ?? [];
 $errors = $errors ?? [];
 $success = $success ?? '';
+$specialites = $specialites ?? [];
 
 $pageTitle = $pageTitle ?? "Inscription";
 $pageDescription = $pageDescription ?? "Créez votre compte DashMed !";
@@ -59,25 +53,25 @@ include __DIR__ . '/../partials/head.php';
         <form class="form" action="/register" method="post" novalidate>
             <input type="hidden"
                    name="csrf_token"
-                   value="<?= htmlspecialchars($csrf_token ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
+                   value="<?= htmlspecialchars($csrf_token, ENT_QUOTES, 'UTF-8') ?>"/>
 
             <div class="field">
                 <input
                         type="text"
-                        name="name"
+                        name="prenom"
                         placeholder="Prénom"
                         required
-                        value="<?= htmlspecialchars($old['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                        value="<?= htmlspecialchars($old['prenom'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                 />
             </div>
 
             <div class="field">
                 <input
                         type="text"
-                        name="last_name"
+                        name="nom"
                         placeholder="Nom"
                         required
-                        value="<?= htmlspecialchars($old['last_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                        value="<?= htmlspecialchars($old['nom'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                 />
             </div>
 
@@ -92,18 +86,7 @@ include __DIR__ . '/../partials/head.php';
             <div class="field">
                 <select id="specialite" name="specialite" required>
                     <option value="" disabled <?= empty($old['specialite']) ? 'selected' : '' ?>>Spécialité</option>
-                    <?php
-                    $specialites = [
-                            "Addictologie","Algologie","Allergologie","Anesthésie-Réanimation","Cancérologie",
-                            "Cardio-vasculaire HTA","Chirurgie","Dermatologie","Diabétologie-Endocrinologie",
-                            "Génétique","Gériatrie","Gynécologie-Obstétrique","Hématologie",
-                            "Hépato-gastro-entérologie","Imagerie médicale","Immunologie","Infectiologie",
-                            "Médecine du sport","Médecine du travail","Médecine générale",
-                            "Médecine physique et de réadaptation","Néphrologie","Neurologie","Nutrition",
-                            "Ophtalmologie","ORL","Pédiatrie","Pneumologie","Psychiatrie","Radiologie",
-                            "Rhumatologie","Sexologie","Toxicologie","Urologie"
-                    ];
-                    foreach ($specialites as $sp) : ?>
+                    <?php foreach ($specialites as $sp) : ?>
                         <option value="<?= htmlspecialchars($sp, ENT_QUOTES, 'UTF-8') ?>"
                                 <?= ($old['specialite'] ?? '') === $sp ? 'selected' : '' ?>>
                             <?= htmlspecialchars($sp, ENT_QUOTES, 'UTF-8') ?>

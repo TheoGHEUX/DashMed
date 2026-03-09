@@ -5,7 +5,12 @@ declare(strict_types=1);
 namespace App\Controllers\Authentication;
 
 use Core\Controller\AbstractController;
+use Core\Security\RateLimiter;
 use App\Models\Doctor\UseCases\Security\ResetPassword;
+use App\Models\Doctor\Repositories\DoctorRepository;
+use App\Models\Doctor\Repositories\SecurityReadRepository;
+use App\Models\Doctor\Repositories\SecurityWriteRepository;
+use App\Models\Doctor\Validators\DoctorValidator;
 
 final class ResetPasswordController extends AbstractController
 {
@@ -13,66 +18,94 @@ final class ResetPasswordController extends AbstractController
 
     public function __construct()
     {
-        $this->useCase = new ResetPassword();
+        $doctorRepo = new DoctorRepository();
+        $securityRead = new SecurityReadRepository();
+        $securityWrite = new SecurityWriteRepository();
+        $validator = new DoctorValidator();
+        $this->useCase = new ResetPassword($doctorRepo, $securityRead, $securityWrite, $validator);
     }
 
-    /**
-     * Affiche le formulaire de nouveau mot de passe (après clic lien email)
-     */
     public function show(): void
     {
-        $token = $_GET['token'] ?? '';
-        $email = $_GET['email'] ?? '';
-        $errors = [];
-
-        // Vérification basique que l'URL est complète
-        if (!$token || !$email) {
-            $errors[] = "Ce lien de réinitialisation est invalide ou incomplet.";
-        }
-
-        $this->render('authentication/reset-password', [
-            'errors' => $errors,
+        $this->render('Authentication/reset-password', [
+            'errors' => [],
             'success' => '',
-            'token' => $token,
-            'email' => $email
+            'email' => $_GET['email'] ?? '',
+            'token' => $_GET['token'] ?? ''
         ]);
     }
 
-    /**
-     * Traite le changement de mot de passe
-     */
     public function submit(): void
     {
         $this->startSession();
 
-        if (!$this->validateCsrf()) {
-            $this->render('authentication/reset-password', ['errors' => ['Session expirée.']]);
-            return;
-        }
-
-        $token = $this->getPost('token');
-        $email = $this->getPost('email');
-        $pass  = $this->getPost('password');
-        $conf  = $this->getPost('password_confirm');
-
-        if ($pass !== $conf) {
-            $this->render('authentication/reset-password', [
-                'errors' => ['Les mots de passe ne correspondent pas.'],
-                'token' => $token,
-                'email' => $email
+        // Limite à 5 tentatives par 15 minutes
+        if (RateLimiter::isBlocked('reset_password_attempts', 5, 900)) {
+            $this->render('Authentication/reset-password', [
+                'errors' => ['Trop de tentatives récentes. Veuillez patienter 15 minutes avant de réessayer.'],
+                'success' => '',
+                'email' => $this->getPost('email'),
+                'token' => $this->getPost('token')
             ]);
             return;
         }
 
-        $result = $this->useCase->execute($email, $token, $pass);
+        if (!$this->validateCsrf()) {
+            RateLimiter::recordAttempt('reset_password_attempts');
+            $this->render('Authentication/reset-password', [
+                'errors' => ['Votre session a expiré. Merci de recharger la page et de réessayer.'],
+                'success' => '',
+                'email' => $this->getPost('email'),
+                'token' => $this->getPost('token')
+            ]);
+            return;
+        }
+
+        $email = $this->getPost('email');
+        $token = $this->getPost('token');
+        $password = $this->getPost('password');
+        $confirm  = $this->getPost('password_confirm');
+
+        $errors = [];
+
+        // Vérif champs vides avant use-case
+        if (empty($password) || empty($confirm)) {
+            $errors[] = "Veuillez renseigner et confirmer votre nouveau mot de passe.";
+        } elseif ($password !== $confirm) {
+            $errors[] = "La confirmation du mot de passe ne correspond pas.";
+        }
+
+        if (!empty($errors)) {
+            RateLimiter::recordAttempt('reset_password_attempts');
+            $this->render('Authentication/reset-password', [
+                'errors' => $errors,
+                'success' => '',
+                'email' => $email,
+                'token' => $token
+            ]);
+            return;
+        }
+
+        // Appelle le use-case métier
+        $result = $this->useCase->execute($email, $token, $password);
 
         if ($result['success']) {
+            RateLimiter::clear('reset_password_attempts');
             $this->redirect('/login?reset=1');
         } else {
-            $this->render('authentication/reset-password', [
-                'errors' => [$result['error']],
-                'token' => $token,
-                'email' => $email
+            RateLimiter::recordAttempt('reset_password_attempts');
+            $errs = [];
+            if (isset($result['error'])) {
+                $errs = explode("\n", $result['error']);
+            } else {
+                $errs[] = 'Une erreur inconnue est survenue. Veuillez réessayer.';
+            }
+
+            $this->render('Authentication/reset-password', [
+                'errors' => $errs,
+                'success' => '',
+                'email' => $email,
+                'token' => $token
             ]);
         }
     }

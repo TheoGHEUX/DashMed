@@ -53,8 +53,8 @@ final class Router
             '/register' => [RegisterController::class, 'show'],
             '/inscription' => [RegisterController::class, 'show'],
 
-            '/forgotten-password' => [ForgottenPasswordController::class, 'showForm'],
-            '/reset-password' => [ResetPasswordController::class, 'showForm'],
+            '/forgotten-password' => [ForgottenPasswordController::class, 'show'],
+            '/reset-password' => [ResetPasswordController::class, 'show'],
             '/verify-email' => [VerifyEmailController::class, 'verify'],
 
             // --- Espace Privé ---

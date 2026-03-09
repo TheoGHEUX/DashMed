@@ -6,10 +6,11 @@ namespace App\Controllers\Authentication;
 
 use Core\Controller\AbstractController;
 use Core\Security\RateLimiter;
-use Core\Services\MailerService;
-use App\Models\Doctor\Repositories\DoctorReadRepository;
-use App\Models\Doctor\Repositories\SecurityWriteRepository;
 use App\Models\Doctor\UseCases\Security\ForgottenPassword;
+use App\Models\Doctor\Repositories\DoctorRepository;
+use App\Models\Doctor\Repositories\SecurityWriteRepository;
+use App\Models\Doctor\Validators\DoctorValidator;
+use Core\Services\MailerService;
 
 final class ForgottenPasswordController extends AbstractController
 {
@@ -17,24 +18,19 @@ final class ForgottenPasswordController extends AbstractController
 
     public function __construct()
     {
-        $this->useCase = new ForgottenPassword(
-            new DoctorReadRepository(),
-            new SecurityWriteRepository(),
-            new MailerService()
-        );
+        $doctorRepo = new DoctorRepository();
+        $securityWriteRepo = new SecurityWriteRepository();
+        $validator = new DoctorValidator();
+        $mailer = new MailerService();
+        $this->useCase = new ForgottenPassword($doctorRepo, $securityWriteRepo, $validator, $mailer);
     }
 
-    public function showForm(): void
+    public function show(): void
     {
-        $success = $_SESSION['success'] ?? '';
-        $errors = $_SESSION['errors'] ?? [];
-
-        unset($_SESSION['success'], $_SESSION['errors']);
-
         $this->render('Authentication/forgotten-password', [
-            'errors' => $errors,
-            'success' => $success,
-            'old' => ['email' => '']
+            'errors' => [],
+            'success' => '',
+            'old' => []
         ]);
     }
 
@@ -42,46 +38,54 @@ final class ForgottenPasswordController extends AbstractController
     {
         $this->startSession();
 
-        // 1. Rate Limiting
+        // Limite à 5 tentatives par heure
         if (RateLimiter::isBlocked('forgot_password_attempts', 5, 3600)) {
-            $_SESSION['success'] = "Si un compte existe, un lien a été envoyé. (Limite atteinte)";
-            $this->redirect('/forgotten-password');
+            $this->render('Authentication/forgotten-password', [
+                'errors' => ["Trop de tentatives récentes. Veuillez patienter une heure avant de réessayer."],
+                'success' => '',
+                'old' => []
+            ]);
             return;
         }
 
-        // 2. CSRF
         if (!$this->validateCsrf()) {
-            $_SESSION['errors'] = ['Session expirée.'];
-            $this->redirect('/forgotten-password');
-            return;
-        }
-
-        $email = trim($this->getPost('email') ?? '');
-
-        // 3. ✅ VALIDATION STRICTE (C'est ici que ça manquait)
-        if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            // Si l'email est vide ou invalide, on affiche une ERREUR, pas un succès.
-            $_SESSION['errors'] = ['Veuillez entrer une adresse email valide.'];
-            $this->redirect('/forgotten-password');
-            return;
-        }
-
-        // 4. Exécution (Seulement si l'email est valide)
-        try {
-            // On enregistre la tentative AVANT d'exécuter (pour limiter le spam même sur des emails valides)
             RateLimiter::recordAttempt('forgot_password_attempts');
-
-            $this->useCase->execute($email);
-
-            // Message neutre de succès
-            $_SESSION['success'] = "Si un compte existe à cette adresse mail, un lien de réinitialisation a été envoyé.\nN'oubliez pas de vérifier vos spams.";
-
-        } catch (\Exception $e) {
-            // En cas d'erreur technique (ex: serveur mail en panne), on log mais on ne le dit pas à l'user
-            error_log("[FORGOT PWD ERROR] " . $e->getMessage());
-            $_SESSION['success'] = "Si un compte existe à cette adresse mail, un lien de réinitialisation a été envoyé.\nN'oubliez pas de vérifier vos spams.";
+            $this->render('Authentication/forgotten-password', [
+                'errors' => ['Session expirée.'],
+                'success' => '',
+                'old' => []
+            ]);
+            return;
         }
 
-        $this->redirect('/forgotten-password');
+        $email = trim($this->getPost('email'));
+
+        // Validation email vide ou au mauvais format
+        if (empty($email)) {
+            RateLimiter::recordAttempt('forgot_password_attempts');
+            $this->render('Authentication/forgotten-password', [
+                'errors' => ["Veuillez renseigner une adresse email."],
+                'success' => '',
+                'old' => []
+            ]);
+            return;
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            RateLimiter::recordAttempt('forgot_password_attempts');
+            $this->render('Authentication/forgotten-password', [
+                'errors' => ["Veuillez saisir une adresse email valide."],
+                'success' => '',
+                'old' => ['email' => $email]
+            ]);
+            return;
+        }
+
+        $this->useCase->execute($email);
+        RateLimiter::recordAttempt('forgot_password_attempts');
+
+        $this->render('Authentication/forgotten-password', [
+            'errors' => [],
+            'success' => "Si un compte existe à cette adresse, un email de réinitialisation a été envoyé.",
+            'old' => []
+        ]);
     }
 }

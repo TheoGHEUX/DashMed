@@ -6,8 +6,8 @@ namespace App\Controllers\Authentication;
 
 use Core\Controller\AbstractController;
 use Core\Security\RateLimiter;
-use App\Models\Doctor\Repositories\DoctorReadRepository;
 use App\Models\Doctor\UseCases\Authentication\LoginDoctor;
+use App\Models\Doctor\Repositories\DoctorRepository;
 
 final class LoginController extends AbstractController
 {
@@ -15,7 +15,8 @@ final class LoginController extends AbstractController
 
     public function __construct()
     {
-        $this->useCase = new LoginDoctor(new DoctorReadRepository());
+        $doctorRepo = new DoctorRepository();
+        $this->useCase = new LoginDoctor($doctorRepo);
     }
 
     public function show(): void
@@ -38,27 +39,24 @@ final class LoginController extends AbstractController
             ]);
             return;
         }
-
-        // 2. CSRF
         if (!$this->validateCsrf()) {
             RateLimiter::recordAttempt('login_attempts');
-            $this->render('Authentication/login', ['errors' => ['Session expirée.']]);
+            $this->render('Authentication/login', [
+                'errors' => ['Session expirée.'],
+                'old' => ['email' => $this->getPost('email')]
+            ]);
             return;
         }
 
         try {
             $email = $this->getPost('email');
             $password = $this->getPost('password');
-
-            // 3. Appel UseCase
             $doctor = $this->useCase->execute($email, $password);
 
             if ($doctor) {
                 RateLimiter::clear('login_attempts');
                 session_regenerate_id(true);
-
-                $_SESSION['user'] = $doctor;
-
+                $_SESSION['user'] = $doctor->toSessionArray();
                 $this->redirect('/dashboard');
             } else {
                 RateLimiter::recordAttempt('login_attempts');
@@ -70,7 +68,7 @@ final class LoginController extends AbstractController
         } catch (\Exception $e) {
             RateLimiter::recordAttempt('login_attempts');
             $this->render('Authentication/login', [
-                'errors' => [$e->getMessage()], // Affiche "Adresse email non vérifiée..."
+                'errors' => [$e->getMessage()],
                 'old' => ['email' => $this->getPost('email')]
             ]);
         }

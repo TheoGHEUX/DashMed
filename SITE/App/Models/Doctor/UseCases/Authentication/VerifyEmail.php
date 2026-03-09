@@ -8,34 +8,36 @@ use App\Models\Doctor\Interfaces\IDoctorVerificationRepository;
 
 class VerifyEmail
 {
-    private IDoctorVerificationRepository $repository;
+    private IDoctorVerificationRepository $verifyRepo;
 
-    public function __construct(IDoctorVerificationRepository $repository)
+    public function __construct(IDoctorVerificationRepository $verifyRepo)
     {
-        $this->repository = $repository;
+        $this->verifyRepo = $verifyRepo;
     }
 
     public function execute(string $token): array
     {
-        $user = $this->repository->findByVerificationToken($token);
-
-        if (!$user) {
-            return ['success' => false, 'error' => 'Ce lien de validation est invalide.'];
+        if (!$token) {
+            return ['error' => 'Lien de confirmation invalide.'];
         }
 
-        if ($user->isEmailVerified()) {
-            return ['success' => true, 'message' => 'Votre email est déjà vérifié. Vous pouvez vous connecter.'];
+        // Recherche le compte associé au token
+        $data = $this->verifyRepo->findByVerificationToken($token);
+        if (!$data) {
+            return ['error' => 'Lien de confirmation invalide ou déjà utilisé.'];
         }
 
-        $expiresStr = $user->getVerificationExpires();
-        if (!$expiresStr || new \DateTime() > new \DateTime($expiresStr)) {
-            return ['success' => false, 'error' => 'Ce lien a expiré. Veuillez demander un nouvel email.'];
+        // Vérifie la date d'expiration
+        if (empty($data['email_verification_expires']) || $data['email_verification_expires'] < date('Y-m-d H:i:s')) {
+            return ['error' => 'Ce lien de validation est expiré.'];
         }
 
-        if ($this->repository->verifyEmailToken($token)) {
-            return ['success' => true, 'message' => 'Email vérifié avec succès ! Bienvenue.'];
+        // Valide le compte
+        $success = $this->verifyRepo->verifyEmailToken($token);
+        if (!$success) {
+            return ['error' => "Impossible de valider l'adresse email. Veuillez réessayer."];
         }
 
-        return ['success' => false, 'error' => 'Une erreur technique est survenue.'];
+        return ['message' => 'Votre adresse email a bien été vérifiée, vous pouvez maintenant vous connecter.'];
     }
 }
