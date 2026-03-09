@@ -18,20 +18,19 @@
             if (!empty($chartData[$jsKey]['donnees_normalisees'])) {
                 $norm = $chartData[$jsKey]['donnees_normalisees'];
                 $brutes = $chartData[$jsKey]['donnees_brutes'];
-                // Récupère la dernière valeur brute (vraie valeur pour l'affichage humain)
+                // DERNIÈRE valeur brute affichable
                 $lastReal = !empty($brutes) ? end($brutes)['valeur'] : 'null';
                 $seuils = $chartData[$jsKey]['seuils'] ?? [];
                 echo "window.patientChartData['$jsKey'] = {";
                 echo "values: " . json_encode($norm, JSON_UNESCAPED_UNICODE) . ",";
                 echo "lastValue: $lastReal,";
                 echo "unit: " . json_encode($chartData[$jsKey]['info']['unite'] ?? '', JSON_UNESCAPED_UNICODE) . ",";
-                // seuils
-                echo "seuil_preoccupant: "     . json_encode($seuils['seuil_preoccupant']      ?? null) . ",";
-                echo "seuil_urgent: "         . json_encode($seuils['seuil_urgent']            ?? null) . ",";
-                echo "seuil_critique: "       . json_encode($seuils['seuil_critique']          ?? null) . ",";
-                echo "seuil_preoccupant_min:" . json_encode($seuils['seuil_preoccupant_min']   ?? null) . ",";
-                echo "seuil_urgent_min: "     . json_encode($seuils['seuil_urgent_min']        ?? null) . ",";
-                echo "seuil_critique_min: "   . json_encode($seuils['seuil_critique_min']      ?? null);
+                echo "seuil_preoccupant:"     . json_encode($seuils['seuil_preoccupant']      ?? null) . ",";
+                echo "seuil_urgent:"         . json_encode($seuils['seuil_urgent']            ?? null) . ",";
+                echo "seuil_critique:"       . json_encode($seuils['seuil_critique']          ?? null) . ",";
+                echo "seuil_preoccupant_min:". json_encode($seuils['seuil_preoccupant_min']   ?? null) . ",";
+                echo "seuil_urgent_min:"     . json_encode($seuils['seuil_urgent_min']        ?? null) . ",";
+                echo "seuil_critique_min:"   . json_encode($seuils['seuil_critique_min']      ?? null);
                 echo "};\n";
             }
         }

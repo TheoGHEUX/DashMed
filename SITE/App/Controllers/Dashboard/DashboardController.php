@@ -58,25 +58,22 @@ final class DashboardController extends AbstractController
             }
         }
 
-        // NEW: Mapping le plus robuste possible (toutes variantes, accents, mots-clés)
+        // MAPPING STRICT : clé JS => nom EXACTEMENT comme en BDD (cf ta table mesures)
         $metricsMap = [
-            'temperature'       => ['Temperature', 'Température corporelle', 'Température', 'temperature'],
-            'blood-pressure'    => ['Tension', 'Tension artérielle', 'Tension arterielle', 'tension'],
-            'heart-rate'        => ['Frequence_Cardiaque', 'Fréquence cardiaque', 'Frequence cardiaque', 'heart-rate', 'frequence_cardiaque'],
-            'respiration'       => ['Frequence_Respiratoire', 'Fréquence respiratoire', 'Frequence respiratoire', 'respiration', 'frequence_respiratoire'],
-            'glucose-trend'     => ['Glycemie', 'Glycémie', 'glycemie', 'glycémie', 'glucose'],
-            'weight'            => ['Poids', 'poids', 'Weight'],
-            'oxygen-saturation' => ['Oxygene', 'Saturation en oxygène', 'Oxygène', 'oxygene', 'saturation en oxygene'],
+            'temperature'       => 'Température corporelle',
+            'blood-pressure'    => 'Tension artérielle',
+            'heart-rate'        => 'Fréquence cardiaque',
+            'respiration'       => 'Fréquence respiratoire',
+            'glucose-trend'     => 'Glycémie',
+            'weight'            => 'Poids',
+            'oxygen-saturation' => 'Saturation en oxygène',
         ];
 
         $chartData = [];
-        foreach ($metricsMap as $jsKey => $dbNames) {
-            foreach ($dbNames as $dbName) {
-                $data = $this->getChartsUseCase->execute($currentPatientId, $dbName);
-                if (!empty($data)) {
-                    $chartData[$jsKey] = $data;
-                    break; // Ne garde que le premier qui match
-                }
+        foreach ($metricsMap as $jsKey => $dbName) {
+            $data = $this->getChartsUseCase->execute($currentPatientId, $dbName);
+            if (!empty($data)) {
+                $chartData[$jsKey] = $data;
             }
         }
 
