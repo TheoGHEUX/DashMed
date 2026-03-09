@@ -7,8 +7,7 @@ namespace App\Controllers\Authentication;
 use Core\Controller\AbstractController;
 use App\Models\Doctor\UseCases\Security\ResetPassword;
 use App\Models\Doctor\Repositories\DoctorRepository;
-use App\Models\Doctor\Repositories\SecurityReadRepository;
-use App\Models\Doctor\Repositories\SecurityWriteRepository;
+use App\Models\Doctor\Repositories\SecurityRepository;
 use App\Models\Doctor\Validators\DoctorValidator;
 
 final class ResetPasswordController extends AbstractController
@@ -18,10 +17,9 @@ final class ResetPasswordController extends AbstractController
     public function __construct()
     {
         $doctorRepo = new DoctorRepository();
-        $securityRead = new SecurityReadRepository();
-        $securityWrite = new SecurityWriteRepository();
+        $securityRepo = new SecurityRepository();
         $validator = new DoctorValidator();
-        $this->useCase = new ResetPassword($doctorRepo, $securityRead, $securityWrite, $validator);
+        $this->useCase = new ResetPassword($doctorRepo, $securityRepo, $validator);
     }
 
     public function show(): void

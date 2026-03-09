@@ -5,26 +5,22 @@ declare(strict_types=1);
 namespace App\Models\Doctor\UseCases\Security;
 
 use App\Models\Doctor\Interfaces\IDoctorRepository;
-use App\Models\Doctor\Interfaces\ISecurityReadRepository;
-use App\Models\Doctor\Interfaces\ISecurityWriteRepository;
+use App\Models\Doctor\Interfaces\ISecurityRepository;
 use App\Models\Doctor\Validators\DoctorValidator;
 
 class ResetPassword
 {
     private IDoctorRepository $repo;
-    private ISecurityReadRepository $securityRead;
-    private ISecurityWriteRepository $securityWrite;
+    private ISecurityRepository $securityRepo;
     private DoctorValidator $validator;
 
     public function __construct(
         IDoctorRepository $repo,
-        ISecurityReadRepository $securityRead,
-        ISecurityWriteRepository $securityWrite,
+        ISecurityRepository $securityRepo,
         DoctorValidator $validator
     ) {
         $this->repo = $repo;
-        $this->securityRead = $securityRead;
-        $this->securityWrite = $securityWrite;
+        $this->securityRepo = $securityRepo;
         $this->validator = $validator;
     }
 
@@ -37,8 +33,7 @@ class ResetPassword
 
         $tokenHash = hash('sha256', $token);
 
-        // Utilise une requête qui vérifie bien email ET token hash
-        $tokenData = $this->securityRead->findResetTokenByEmailAndToken($email, $tokenHash);
+        $tokenData = $this->securityRepo->findResetTokenByEmailAndToken($email, $tokenHash);
         if (!$tokenData) {
             return ['success' => false, 'error' => 'Lien invalide ou expiré.'];
         }
@@ -50,7 +45,7 @@ class ResetPassword
 
         $newHash = password_hash($newPassword, PASSWORD_DEFAULT);
         $this->repo->updatePassword($doctor->getId(), $newHash);
-        $this->securityWrite->deleteResetToken($email);
+        $this->securityRepo->deleteResetToken($email);
 
         return ['success' => true];
     }

@@ -5,25 +5,25 @@ declare(strict_types=1);
 namespace App\Models\Doctor\UseCases\Security;
 
 use App\Models\Doctor\Interfaces\IDoctorRepository;
-use App\Models\Doctor\Interfaces\ISecurityWriteRepository;
+use App\Models\Doctor\Interfaces\ISecurityRepository;
 use App\Models\Doctor\Validators\DoctorValidator;
 use Core\Services\MailerService;
 
 class ForgottenPassword
 {
     private IDoctorRepository $repo;
-    private ISecurityWriteRepository $writeRepo;
+    private ISecurityRepository $securityRepo;
     private DoctorValidator $validator;
     private MailerService $mailer;
 
     public function __construct(
         IDoctorRepository $repo,
-        ISecurityWriteRepository $writeRepo,
+        ISecurityRepository $securityRepo,
         DoctorValidator $validator,
         MailerService $mailer
     ) {
         $this->repo = $repo;
-        $this->writeRepo = $writeRepo;
+        $this->securityRepo = $securityRepo;
         $this->validator = $validator;
         $this->mailer = $mailer;
     }
@@ -37,11 +37,10 @@ class ForgottenPassword
         $tokenHash = hash('sha256', $token);
         $expiresAt = date('Y-m-d H:i:s', time() + 3600);
 
-        $this->writeRepo->storeResetToken($email, $tokenHash, $expiresAt);
+        $this->securityRepo->storeResetToken($email, $tokenHash, $expiresAt);
 
         $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
         $domain = $_SERVER['HTTP_HOST'] ?? 'localhost';
-        // Construction CORRECTE !
         $resetUrl = "{$protocol}://{$domain}/reset-password?token={$token}&email=" . urlencode($email);
 
         $this->mailer->send(

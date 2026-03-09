@@ -7,7 +7,7 @@ namespace App\Controllers\Authentication;
 use Core\Controller\AbstractController;
 use App\Models\Doctor\UseCases\Security\ForgottenPassword;
 use App\Models\Doctor\Repositories\DoctorRepository;
-use App\Models\Doctor\Repositories\SecurityWriteRepository;
+use App\Models\Doctor\Repositories\SecurityRepository;
 use App\Models\Doctor\Validators\DoctorValidator;
 use Core\Services\MailerService;
 
@@ -18,10 +18,10 @@ final class ForgottenPasswordController extends AbstractController
     public function __construct()
     {
         $doctorRepo = new DoctorRepository();
-        $securityWriteRepo = new SecurityWriteRepository();
+        $securityRepo = new SecurityRepository();
         $validator = new DoctorValidator();
         $mailer = new MailerService();
-        $this->useCase = new ForgottenPassword($doctorRepo, $securityWriteRepo, $validator, $mailer);
+        $this->useCase = new ForgottenPassword($doctorRepo, $securityRepo, $validator, $mailer);
     }
 
     public function show(): void
