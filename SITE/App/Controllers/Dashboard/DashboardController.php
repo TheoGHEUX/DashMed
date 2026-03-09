@@ -58,25 +58,25 @@ final class DashboardController extends AbstractController
             }
         }
 
-        // 2. Récupérer les données graphiques (CORRECTION ICI)
-        $chartData = [];
-
-        // Mapping : Clé JS => Nom en Base de Données
-        // C'est CRUCIAL pour que le JS trouve les données au chargement
+        // NEW: Mapping le plus robuste possible (toutes variantes, accents, mots-clés)
         $metricsMap = [
-            'temperature'       => 'Temperature',
-            'blood-pressure'    => 'Tension',
-            'heart-rate'        => 'Frequence_Cardiaque',
-            'respiration'       => 'Frequence_Respiratoire', // Vérifie ce nom en BDD !
-            'glucose-trend'     => 'Glycemie',
-            'weight'            => 'Poids',
-            'oxygen-saturation' => 'Oxygene'
+            'temperature'       => ['Temperature', 'Température corporelle', 'Température', 'temperature'],
+            'blood-pressure'    => ['Tension', 'Tension artérielle', 'Tension arterielle', 'tension'],
+            'heart-rate'        => ['Frequence_Cardiaque', 'Fréquence cardiaque', 'Frequence cardiaque', 'heart-rate', 'frequence_cardiaque'],
+            'respiration'       => ['Frequence_Respiratoire', 'Fréquence respiratoire', 'Frequence respiratoire', 'respiration', 'frequence_respiratoire'],
+            'glucose-trend'     => ['Glycemie', 'Glycémie', 'glycemie', 'glycémie', 'glucose'],
+            'weight'            => ['Poids', 'poids', 'Weight'],
+            'oxygen-saturation' => ['Oxygene', 'Saturation en oxygène', 'Oxygène', 'oxygene', 'saturation en oxygene'],
         ];
 
-        foreach ($metricsMap as $jsKey => $dbName) {
-            $data = $this->getChartsUseCase->execute($currentPatientId, $dbName);
-            if (!empty($data)) {
-                $chartData[$jsKey] = $data; // On utilise la clé JS ici
+        $chartData = [];
+        foreach ($metricsMap as $jsKey => $dbNames) {
+            foreach ($dbNames as $dbName) {
+                $data = $this->getChartsUseCase->execute($currentPatientId, $dbName);
+                if (!empty($data)) {
+                    $chartData[$jsKey] = $data;
+                    break; // Ne garde que le premier qui match
+                }
             }
         }
 
