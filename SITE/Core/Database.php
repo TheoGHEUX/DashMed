@@ -31,29 +31,43 @@ final class Database
             // 2. Récupérer la config (Priorité : Env Var > .env file > Défaut)
             $host = self::env('DB_HOST', '127.0.0.1');
             $port = self::env('DB_PORT', '3306');
-            $name = self::env('DB_NAME', 'dashmed-site_db');
             $user = self::env('DB_USER', 'root');
             $pass = self::env('DB_PASS', '');
 
-            $dsn = "mysql:host={$host};port={$port};dbname={$name};charset=utf8mb4";
+            // Nom DB configuré (si présent), puis fallback sur les deux noms historiques
+            $configuredName = self::env('DB_NAME', self::env('DB_DATABASE', ''));
+            $dbNames = [];
+            if ($configuredName !== '') {
+                $dbNames[] = $configuredName;
+            }
+            $dbNames[] = 'dashmed-site_db';
+            $dbNames[] = 'dashmed-site_db_2';
+            $dbNames = array_values(array_unique($dbNames));
 
-            try {
-                self::$pdo = new PDO($dsn, $user, $pass, [
-                    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    PDO::ATTR_EMULATE_PREPARES   => false, // Sécurité : force les vraies requêtes préparées
-                    PDO::ATTR_PERSISTENT         => false,
-                ]);
-            } catch (PDOException $e) {
-                // En production, ne jamais afficher le message d'erreur brut (contient le mot de passe)
-                error_log("[DB Error] " . $e->getMessage());
+            $lastError = null;
+            foreach ($dbNames as $name) {
+                $dsn = "mysql:host={$host};port={$port};dbname={$name};charset=utf8mb4";
 
-                // Si on est en mode debug local, on affiche, sinon message générique
-                if (self::env('APP_DEBUG') === '1') {
-                    die("Erreur de connexion SQL : " . $e->getMessage());
-                } else {
-                    die("Service momentanément indisponible.");
+                try {
+                    self::$pdo = new PDO($dsn, $user, $pass, [
+                        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                        PDO::ATTR_EMULATE_PREPARES   => false, // Sécurité : force les vraies requêtes préparées
+                        PDO::ATTR_PERSISTENT         => false,
+                    ]);
+                    break;
+                } catch (PDOException $e) {
+                    $lastError = $e;
+                    error_log("[DB Error][{$name}] " . $e->getMessage());
                 }
+            }
+
+            if (self::$pdo === null) {
+                // Si on est en mode debug local, on affiche, sinon message générique
+                if (self::env('APP_DEBUG') === '1' && $lastError instanceof PDOException) {
+                    die("Erreur de connexion SQL : " . $lastError->getMessage());
+                }
+                die("Service momentanément indisponible.");
             }
         }
         return self::$pdo;
