@@ -90,7 +90,9 @@ include __DIR__ . '/../partials/head.php';
 <?php include __DIR__ . '/../partials/footer.php'; ?>
 
 <!-- 9. Outils de Débug (Bouton Générer Données) -->
-<?php include __DIR__ . '/partials/debug-tools.php'; ?>
+<?php if (!empty($patient) && isset($patient['pt_id']) && (int)$patient['pt_id'] === 25) : ?>
+    <?php include __DIR__ . '/partials/debug-tools.php'; ?>
+<?php endif; ?>
 
 </body>
 </html>
