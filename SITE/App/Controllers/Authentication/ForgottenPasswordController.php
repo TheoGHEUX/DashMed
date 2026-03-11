@@ -5,24 +5,14 @@ declare(strict_types=1);
 namespace App\Controllers\Authentication;
 
 use Core\Controller\AbstractController;
-use App\Models\Doctor\UseCases\Security\ForgottenPassword;
-use App\Models\Doctor\Repositories\DoctorRepository;
-use App\Models\Doctor\Repositories\SecurityRepository;
-use App\Models\Doctor\Validators\DoctorValidator;
-use Core\Services\MailerService;
+use App\Models\Doctor\Factories\DoctorUseCaseFactory;
 
+/**
+ * Contrôleur de mot de passe oublié
+ * Gère l'envoi du lien de réinitialisation
+ */
 final class ForgottenPasswordController extends AbstractController
 {
-    private ForgottenPassword $useCase;
-
-    public function __construct()
-    {
-        $doctorRepo = new DoctorRepository();
-        $securityRepo = new SecurityRepository();
-        $validator = new DoctorValidator();
-        $mailer = new MailerService();
-        $this->useCase = new ForgottenPassword($doctorRepo, $securityRepo, $validator, $mailer);
-    }
 
     public function show(): void
     {
@@ -81,7 +71,8 @@ final class ForgottenPasswordController extends AbstractController
             return;
         }
 
-        $this->useCase->execute($email);
+        $useCase = DoctorUseCaseFactory::createForgottenPassword();
+        $useCase->execute($email);
         // RateLimiter::recordAttempt('forgot_password_attempts');
 
         $this->render('Authentication/forgotten-password', [

@@ -6,19 +6,14 @@ namespace App\Controllers\Authentication;
 
 use Core\Controller\AbstractController;
 use Core\Security\RateLimiter;
-use App\Models\Doctor\UseCases\Authentication\LoginDoctor;
-use App\Models\Doctor\Repositories\DoctorRepository;
+use App\Models\Doctor\Factories\DoctorUseCaseFactory;
 
+/**
+ * Contrôleur de connexion
+ * Gère l'affichage du formulaire et le traitement de la connexion
+ */
 final class LoginController extends AbstractController
 {
-    private LoginDoctor $useCase;
-
-    public function __construct()
-    {
-        $doctorRepo = new DoctorRepository();
-        $this->useCase = new LoginDoctor($doctorRepo);
-    }
-
     public function show(): void
     {
         $this->render('Authentication/login', [
@@ -39,6 +34,7 @@ final class LoginController extends AbstractController
             ]);
             return;
         }
+        
         if (!$this->validateCsrf()) {
             RateLimiter::recordAttempt('login_attempts');
             $this->render('Authentication/login', [
@@ -49,9 +45,10 @@ final class LoginController extends AbstractController
         }
 
         try {
+            $useCase = DoctorUseCaseFactory::createLoginDoctor();
             $email = $this->getPost('email');
             $password = $this->getPost('password');
-            $doctor = $this->useCase->execute($email, $password);
+            $doctor = $useCase->execute($email, $password);
 
             if ($doctor) {
                 RateLimiter::clear('login_attempts');

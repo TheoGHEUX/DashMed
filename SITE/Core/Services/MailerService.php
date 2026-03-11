@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace Core\Services;
 
-final class MailerService
+use App\Interfaces\IMailer;
+
+/**
+ * Service d'envoi d'emails implémentant IMailer
+ */
+final class MailerService implements IMailer
 {
     private const FROM_EMAIL = 'dashmed-site@alwaysdata.net';
 

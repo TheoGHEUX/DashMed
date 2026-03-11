@@ -5,27 +5,15 @@ declare(strict_types=1);
 namespace App\Controllers\Authentication;
 
 use Core\Controller\AbstractController;
-// use Core\Security\RateLimiter; // Désactivé pour les tests
-use App\Models\Doctor\UseCases\Authentication\RegisterDoctor;
-use App\Models\Doctor\Repositories\DoctorRepository;
-use App\Models\Doctor\Repositories\DoctorVerificationRepository;
-use App\Models\Doctor\Validators\DoctorValidator;
-use Core\Services\MailerService;
+use App\Models\Doctor\Factories\DoctorUseCaseFactory;
 use App\Models\Doctor\Enums\Specialite;
 
+/**
+ * Contrôleur d'inscription
+ * Gère l'affichage du formulaire et le traitement de l'inscription
+ */
 final class RegisterController extends AbstractController
 {
-    private RegisterDoctor $useCase;
-
-    public function __construct()
-    {
-        $doctorRepo = new DoctorRepository();
-        $verificationRepo = new DoctorVerificationRepository();
-        $validator = new DoctorValidator();
-        $mailer = new MailerService();
-        $this->useCase = new RegisterDoctor($doctorRepo, $verificationRepo, $validator, $mailer);
-    }
-
     public function show(): void
     {
         $this->startSession();
@@ -66,7 +54,8 @@ final class RegisterController extends AbstractController
             'sexe'       => $this->getPost('sexe')
         ];
 
-        $result = $this->useCase->execute($data);
+        $useCase = DoctorUseCaseFactory::createRegisterDoctor();
+        $result = $useCase->execute($data);
 
         if ($result['success']) {
             $this->render('Authentication/register', [

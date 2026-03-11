@@ -18,11 +18,12 @@ final class IntelligenceApiController extends AbstractController
 
     public function __construct()
     {
+        // Injection des dépendances via les interfaces
         $this->logger = new LogDashboardAction(new ActionLoggerRepository());
 
         $this->predictor = new PredictNextAction(
             new LogHistoryRepository(),
-            new TreePredictor()
+            new TreePredictor() // Implémente ITreePredictor
         );
     }
 

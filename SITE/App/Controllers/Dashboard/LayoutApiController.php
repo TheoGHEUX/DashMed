@@ -6,7 +6,7 @@ namespace App\Controllers\Dashboard;
 
 use Core\Controller\AbstractController;
 use App\Models\Patient\Repositories\DashboardLayoutRepository;
-use App\Models\Patient\Services\PatientSimilarityService;
+use App\Models\Patient\UseCases\Dashboard\PatientSimilarityService;
 use App\Models\Patient\UseCases\Dashboard\GetDashboardLayout;
 use App\Models\Patient\UseCases\Dashboard\SaveDashboardLayout;
 use App\Models\Patient\UseCases\Dashboard\SuggestLayout;
@@ -19,12 +19,17 @@ final class LayoutApiController extends AbstractController
 
     public function __construct()
     {
+        // Le repository implémente les deux interfaces (Layout et Similarity)
         $repo = new DashboardLayoutRepository();
         $similarityService = new PatientSimilarityService();
 
+        // GetDashboardLayout et SaveDashboardLayout n'utilisent que IDashboardLayoutRepository
         $this->getLayout = new GetDashboardLayout($repo);
         $this->saveLayout = new SaveDashboardLayout($repo);
-        $this->suggestLayout = new SuggestLayout($repo, $similarityService);
+        
+        // SuggestLayout utilise les deux interfaces (séparées pour respecter l'ISP)
+        // mais elles sont implémentées par le même repository
+        $this->suggestLayout = new SuggestLayout($repo, $repo, $similarityService);
     }
 
     /**

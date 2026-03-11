@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace App\Models\ConsoleLog\Services;
 
-class TreePredictor
+use App\Models\ConsoleLog\Interfaces\ITreePredictor;
+
+/**
+ * Service de prédiction d'actions via arbre de décision (Python)
+ */
+class TreePredictor implements ITreePredictor
 {
     private string $scriptPath;
 

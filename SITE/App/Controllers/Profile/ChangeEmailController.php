@@ -6,25 +6,13 @@ namespace App\Controllers\Profile;
 
 use Core\Controller\AbstractController;
 use Core\Security\RateLimiter;
-use App\Models\Doctor\UseCases\Profile\ChangeEmail;
-use App\Models\Doctor\Repositories\DoctorRepository;
-use App\Models\Doctor\Repositories\DoctorVerificationRepository;
-use App\Models\Doctor\Validators\DoctorValidator;
-use Core\Services\MailerService;
+use App\Models\Doctor\Factories\DoctorUseCaseFactory;
 
+/**
+ * Contrôleur de changement d'email
+ */
 final class ChangeEmailController extends AbstractController
 {
-    private ChangeEmail $useCase;
-
-    public function __construct()
-    {
-        $doctorRepo = new DoctorRepository();
-        $verifyRepo = new DoctorVerificationRepository();
-        $validator = new DoctorValidator();
-        $mailer = new MailerService();
-        $this->useCase = new ChangeEmail($doctorRepo, $verifyRepo, $validator, $mailer);
-    }
-
     public function showForm(): void
     {
         $this->render('Profile/change-email', [
@@ -62,7 +50,8 @@ final class ChangeEmailController extends AbstractController
         $currentPassword = $this->getPost('current_password');
         $newEmail = $this->getPost('new_email');
 
-        $result = $this->useCase->execute($userId, $currentPassword, $newEmail);
+        $useCase = DoctorUseCaseFactory::createChangeEmail();
+        $result = $useCase->execute($userId, $currentPassword, $newEmail);
 
         if ($result['success']) {
             RateLimiter::clear('change_email_attempts');

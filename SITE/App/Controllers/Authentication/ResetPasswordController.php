@@ -5,22 +5,14 @@ declare(strict_types=1);
 namespace App\Controllers\Authentication;
 
 use Core\Controller\AbstractController;
-use App\Models\Doctor\UseCases\Security\ResetPassword;
-use App\Models\Doctor\Repositories\DoctorRepository;
-use App\Models\Doctor\Repositories\SecurityRepository;
-use App\Models\Doctor\Validators\DoctorValidator;
+use App\Models\Doctor\Factories\DoctorUseCaseFactory;
 
+/**
+ * Contrôleur de réinitialisation de mot de passe
+ * Gère la réinitialisation après vérification du token
+ */
 final class ResetPasswordController extends AbstractController
 {
-    private ResetPassword $useCase;
-
-    public function __construct()
-    {
-        $doctorRepo = new DoctorRepository();
-        $securityRepo = new SecurityRepository();
-        $validator = new DoctorValidator();
-        $this->useCase = new ResetPassword($doctorRepo, $securityRepo, $validator);
-    }
 
     public function show(): void
     {
@@ -62,7 +54,8 @@ final class ResetPasswordController extends AbstractController
             return;
         }
 
-        $result = $this->useCase->execute($email, $token, $password);
+        $useCase = DoctorUseCaseFactory::createResetPassword();
+        $result = $useCase->execute($email, $token, $password);
 
         if ($result['success']) {
             $this->render('Authentication/reset-password', [

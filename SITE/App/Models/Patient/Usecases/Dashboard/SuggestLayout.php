@@ -5,29 +5,36 @@ declare(strict_types=1);
 namespace App\Models\Patient\UseCases\Dashboard;
 
 use App\Models\Patient\Interfaces\IDashboardLayoutRepository;
-use App\Models\Patient\Services\PatientSimilarityService;
+use App\Models\Patient\Interfaces\IPatientSimilarityRepository;
+use App\Models\Patient\Interfaces\IPatientSimilarityService;
 
+/**
+ * Use Case : Suggère un layout de dashboard basé sur des patients similaires
+ */
 class SuggestLayout
 {
-    private IDashboardLayoutRepository $repository;
-    private PatientSimilarityService $similarityService;
+    private IDashboardLayoutRepository $layoutRepository;
+    private IPatientSimilarityRepository $similarityRepository;
+    private IPatientSimilarityService $similarityService;
 
     public function __construct(
-        IDashboardLayoutRepository $repository,
-        PatientSimilarityService $similarityService
+        IDashboardLayoutRepository $layoutRepository,
+        IPatientSimilarityRepository $similarityRepository,
+        IPatientSimilarityService $similarityService
     ) {
-        $this->repository = $repository;
+        $this->layoutRepository = $layoutRepository;
+        $this->similarityRepository = $similarityRepository;
         $this->similarityService = $similarityService;
     }
 
     public function execute(int $patientId, int $medId): ?array
     {
-        // 1. Récupérer les données du patient cible (via Repo)
-        $targetData = $this->repository->getPatientDataForSimilarity($patientId);
+        // 1. Récupérer les données du patient cible (via Repo de similarité)
+        $targetData = $this->similarityRepository->getPatientDataForSimilarity($patientId);
         if (!$targetData) return null;
 
-        // 2. Récupérer les candidats (via Repo)
-        $candidatesData = $this->repository->getCandidatesForSimilarity($medId, $patientId);
+        // 2. Récupérer les candidats (via Repo de similarité)
+        $candidatesData = $this->similarityRepository->getCandidatesForSimilarity($medId, $patientId);
         if (empty($candidatesData)) return null;
 
         // 3. Calculer les plus proches (via Service)
@@ -35,8 +42,8 @@ class SuggestLayout
 
         if (empty($nearest)) return null;
 
-        // 4. Récupérer le layout du meilleur candidat (via Repo)
+        // 4. Récupérer le layout du meilleur candidat (via Repo de layout)
         $bestMatchId = $nearest[0]['pt_id'];
-        return $this->repository->getDashboardLayout($bestMatchId, $medId);
+        return $this->layoutRepository->getDashboardLayout($bestMatchId, $medId);
     }
 }

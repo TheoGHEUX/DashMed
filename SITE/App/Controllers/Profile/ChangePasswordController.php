@@ -6,21 +6,13 @@ namespace App\Controllers\Profile;
 
 use Core\Controller\AbstractController;
 use Core\Security\RateLimiter;
-use App\Models\Doctor\UseCases\Profile\ChangePassword;
-use App\Models\Doctor\Repositories\DoctorRepository;
-use App\Models\Doctor\Validators\DoctorValidator;
+use App\Models\Doctor\Factories\DoctorUseCaseFactory;
 
+/**
+ * Contrôleur de changement de mot de passe
+ */
 final class ChangePasswordController extends AbstractController
 {
-    private ChangePassword $useCase;
-
-    public function __construct()
-    {
-        $doctorRepo = new DoctorRepository();
-        $validator = new DoctorValidator();
-        $this->useCase = new ChangePassword($doctorRepo, $validator);
-    }
-
     public function showForm(): void
     {
         $this->render('Profile/change-password', [
@@ -59,7 +51,8 @@ final class ChangePasswordController extends AbstractController
         $newPassword = $this->getPost('password');
         $confirmPassword = $this->getPost('password_confirm');
 
-        $result = $this->useCase->execute($userId, $oldPassword, $newPassword, $confirmPassword);
+        $useCase = DoctorUseCaseFactory::createChangePassword();
+        $result = $useCase->execute($userId, $oldPassword, $newPassword, $confirmPassword);
 
         if ($result['success']) {
             RateLimiter::clear('change_password_attempts');

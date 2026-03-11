@@ -6,9 +6,15 @@ namespace App\Models\Patient\Repositories;
 
 use Core\Database;
 use App\Models\Patient\Interfaces\IDashboardLayoutRepository;
+use App\Models\Patient\Interfaces\IPatientSimilarityRepository;
 use PDO;
 
-class DashboardLayoutRepository implements IDashboardLayoutRepository
+/**
+ * Repository unifié qui implémente à la fois les layouts ET la similarité
+ * Les deux interfaces sont séparées pour respecter l'ISP, mais l'implémentation
+ * peut rester dans une seule classe car elle partage la même source de données
+ */
+class DashboardLayoutRepository implements IDashboardLayoutRepository, IPatientSimilarityRepository
 {
     private PDO $db;
 
