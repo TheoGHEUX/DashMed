@@ -85,6 +85,15 @@ try {
     } else {
         // En production, message générique
         echo "<h1>Une erreur interne est survenue.</h1>";
-        error_log('[FATAL] ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine()); // Log serveur
+        $logLine = '[' . date('Y-m-d H:i:s') . '] [FATAL] ' . $e->getMessage()
+            . ' in ' . $e->getFile() . ':' . $e->getLine() . PHP_EOL;
+        error_log($logLine); // Log serveur
+
+        // Log applicatif local (utile quand les logs serveur sont inaccessibles)
+        $logDir = __DIR__ . '/../SITE/storage/logs';
+        if (!is_dir($logDir)) {
+            @mkdir($logDir, 0755, true);
+        }
+        @file_put_contents($logDir . '/app.log', $logLine, FILE_APPEND);
     }
 }

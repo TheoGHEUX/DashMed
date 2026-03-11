@@ -104,12 +104,13 @@ final class Database
 
             foreach ($lines as $line) {
                 // Ignorer les commentaires (# ou ;)
-                if (str_starts_with(trim($line), '#') || str_starts_with(trim($line), ';')) {
+                $trimmed = trim($line);
+                if ($trimmed === '' || $trimmed[0] === '#' || $trimmed[0] === ';') {
                     continue;
                 }
 
                 // Parser CLÉ=VALEUR
-                if (str_contains($line, '=')) {
+                if (strpos($line, '=') !== false) {
                     [$key, $value] = explode('=', $line, 2);
                     $key = trim($key);
                     $value = trim($value);

@@ -31,7 +31,7 @@ final class Doctor
         $this->verificationExpires = self::toNullableString($data['email_verification_expires'] ?? null);
     }
 
-    private static function toString(mixed $value, string $default = ''): string
+    private static function toString($value, string $default = ''): string
     {
         if ($value === null) {
             return $default;
@@ -39,7 +39,7 @@ final class Doctor
         return (string) $value;
     }
 
-    private static function toNullableString(mixed $value): ?string
+    private static function toNullableString($value): ?string
     {
         if ($value === null) {
             return null;
