@@ -20,15 +20,31 @@ final class Doctor
     public function __construct(array $data)
     {
         $this->id = (int) ($data['user_id'] ?? $data['med_id'] ?? 0);
-        $this->prenom = $data['name'] ?? $data['prenom'] ?? '';
-        $this->nom = $data['last_name'] ?? $data['nom'] ?? '';
-        $this->email = $data['email'] ?? '';
-        $this->passwordHash = $data['password'] ?? $data['mdp'] ?? '';
-        $this->sexe = $data['sexe'] ?? null;
-        $this->specialite = $data['specialite'] ?? null;
+        $this->prenom = self::toString($data['name'] ?? $data['prenom'] ?? '', '');
+        $this->nom = self::toString($data['last_name'] ?? $data['nom'] ?? '', '');
+        $this->email = self::toString($data['email'] ?? '', '');
+        $this->passwordHash = self::toString($data['password'] ?? $data['mdp'] ?? '', '');
+        $this->sexe = self::toNullableString($data['sexe'] ?? null);
+        $this->specialite = self::toNullableString($data['specialite'] ?? null);
         $this->emailVerified = (bool) ($data['email_verified'] ?? false);
-        $this->verificationToken = $data['email_verification_token'] ?? null;
-        $this->verificationExpires = $data['email_verification_expires'] ?? null;
+        $this->verificationToken = self::toNullableString($data['email_verification_token'] ?? null);
+        $this->verificationExpires = self::toNullableString($data['email_verification_expires'] ?? null);
+    }
+
+    private static function toString(mixed $value, string $default = ''): string
+    {
+        if ($value === null) {
+            return $default;
+        }
+        return (string) $value;
+    }
+
+    private static function toNullableString(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+        return (string) $value;
     }
 
     public function getId(): int { return $this->id; }

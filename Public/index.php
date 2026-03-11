@@ -85,6 +85,6 @@ try {
     } else {
         // En production, message générique
         echo "<h1>Une erreur interne est survenue.</h1>";
-        error_log($e->getMessage()); // Log serveur
+        error_log('[FATAL] ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine()); // Log serveur
     }
 }

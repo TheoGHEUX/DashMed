@@ -62,10 +62,11 @@ final class LoginController extends AbstractController
                     'old' => ['email' => $email]
                 ]);
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             RateLimiter::recordAttempt('login_attempts');
+            error_log('[LOGIN] ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
             $this->render('authentication/login', [
-                'errors' => [$e->getMessage()],
+                'errors' => ['Une erreur est survenue lors de la connexion. Veuillez réessayer.'],
                 'old' => ['email' => $this->getPost('email')]
             ]);
         }
