@@ -6,6 +6,8 @@ namespace App\Controllers\Dashboard;
 
 use Core\Controller\AbstractController;
 use App\Models\Patient\Factories\PatientUseCaseFactory;
+use App\Models\Patient\Repositories\DashboardLayoutRepository;
+use App\Models\Patient\UseCases\Dashboard\PatientSimilarityService;
 use App\Models\Patient\UseCases\Dashboard\GetDashboardLayout;
 use App\Models\Patient\UseCases\Dashboard\SaveDashboardLayout;
 use App\Models\Patient\UseCases\Dashboard\SuggestLayout;
@@ -18,9 +20,19 @@ final class LayoutApiController extends AbstractController
 
     public function __construct()
     {
-        $this->getLayout = PatientUseCaseFactory::createGetDashboardLayout();
-        $this->saveLayout = PatientUseCaseFactory::createSaveDashboardLayout();
-        $this->suggestLayout = PatientUseCaseFactory::createSuggestLayout();
+        if (class_exists(PatientUseCaseFactory::class)) {
+            $this->getLayout = PatientUseCaseFactory::createGetDashboardLayout();
+            $this->saveLayout = PatientUseCaseFactory::createSaveDashboardLayout();
+            $this->suggestLayout = PatientUseCaseFactory::createSuggestLayout();
+            return;
+        }
+
+        // Fallback compatibilité déploiement ancien/incomplet
+        $repo = new DashboardLayoutRepository();
+        $similarityService = new PatientSimilarityService();
+        $this->getLayout = new GetDashboardLayout($repo);
+        $this->saveLayout = new SaveDashboardLayout($repo);
+        $this->suggestLayout = new SuggestLayout($repo, $repo, $similarityService);
     }
 
     /**

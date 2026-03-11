@@ -6,6 +6,7 @@ namespace App\Controllers\Dashboard;
 
 use Core\Controller\AbstractController;
 use App\Models\Patient\Factories\PatientUseCaseFactory;
+use App\Models\Patient\Repositories\PatientMonitoringRepository;
 use App\Models\Patient\UseCases\Monitoring\GetPatientChartData;
 
 final class ChartApiController extends AbstractController
@@ -14,7 +15,14 @@ final class ChartApiController extends AbstractController
 
     public function __construct()
     {
-        $this->useCase = PatientUseCaseFactory::createGetPatientChartData();
+        if (class_exists(PatientUseCaseFactory::class)) {
+            $this->useCase = PatientUseCaseFactory::createGetPatientChartData();
+            return;
+        }
+
+        // Fallback compatibilité déploiement ancien/incomplet
+        $repo = new PatientMonitoringRepository();
+        $this->useCase = new GetPatientChartData($repo);
     }
 
     /**
