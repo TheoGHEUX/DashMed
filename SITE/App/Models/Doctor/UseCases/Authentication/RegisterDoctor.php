@@ -7,9 +7,14 @@ namespace App\Models\Doctor\UseCases\Authentication;
 use App\Models\Doctor\Interfaces\IDoctorRepository;
 use App\Models\Doctor\Interfaces\IDoctorVerificationRepository;
 use App\Models\Doctor\Validators\DoctorValidator;
+use App\ValueObjects\Email;
+use App\ValueObjects\Password;
+use App\Exceptions\ValidationException;
 use Core\Services\MailerService;
+use Core\Services\TokenGenerator;
+use Core\Services\UrlBuilder;
 
-class RegisterDoctor
+final class RegisterDoctor
 {
     private IDoctorRepository $repo;
     private IDoctorVerificationRepository $verifyRepo;
@@ -30,22 +35,31 @@ class RegisterDoctor
 
     public function execute(array $data): array
     {
+        // Validation basique via le validator
         $validationErrors = $this->validator->validateRegistration($data);
         if (!empty($validationErrors)) {
             return ['success' => false, 'errors' => $validationErrors];
         }
 
-        if ($this->repo->findByEmail($data['email'])) {
+        // Utilisation des Value Objects pour validation renforcée
+        try {
+            $email = new Email($data['email']);
+            $password = new Password($data['password']);
+        } catch (ValidationException $e) {
+            return ['success' => false, 'errors' => $e->getErrors()];
+        }
+
+        // Vérifier si l'email existe déjà
+        if ($this->repo->findByEmail($email->getValue())) {
             return ['success' => false, 'errors' => ['Cet email est déjà utilisé.']];
         }
 
-        $hashedPassword = password_hash($data['password'], PASSWORD_DEFAULT);
-
+        // Créer le médecin avec le mot de passe hashé
         $success = $this->repo->create([
             'prenom' => $data['prenom'],
             'nom' => $data['nom'],
-            'email' => $data['email'],
-            'password_hash' => $hashedPassword,
+            'email' => $email->getValue(),
+            'password_hash' => $password->hash(),
             'specialite' => $data['specialite'],
             'sexe' => $data['sexe'] ?? null
         ]);
@@ -54,15 +68,20 @@ class RegisterDoctor
             return ['success' => false, 'errors' => ['Erreur technique lors de l\'enregistrement.']];
         }
 
-        $token = bin2hex(random_bytes(32));
-        $expires = date('Y-m-d H:i:s', strtotime('+24 hours'));
-        $this->verifyRepo->setVerificationToken($data['email'], $token, $expires);
+        // Générer le token de vérification avec le service
+        $tokenData = TokenGenerator::generateWithExpiry(32, '+24 hours');
+        $this->verifyRepo->setVerificationToken(
+            $email->getValue(),
+            $tokenData['token'],
+            $tokenData['expires']
+        );
 
-        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        $domain = $_SERVER['HTTP_HOST'] ?? 'localhost';
-        $url = "{$protocol}://{$domain}/verify-email?token=$token";
+        // Construire l'URL de vérification avec le service
+        $url = UrlBuilder::build('/verify-email', ['token' => $tokenData['token']]);
+        
+        // Envoyer l'email de vérification
         $this->mailer->send(
-            $data['email'],
+            $email->getValue(),
             'Bienvenue sur DashMed - Confirmez votre compte',
             'verify-email',
             ['name' => $data['prenom'] ?? '', 'url' => $url]

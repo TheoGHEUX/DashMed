@@ -6,7 +6,7 @@ namespace App\Models\Patient\UseCases\Monitoring;
 
 use App\Models\Patient\Interfaces\IPatientMonitoringRepository;
 
-class GetPatientChartData
+final class GetPatientChartData
 {
     private IPatientMonitoringRepository $repository;
 

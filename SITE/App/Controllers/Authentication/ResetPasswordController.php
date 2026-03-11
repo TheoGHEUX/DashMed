@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers\Authentication;
 
 use Core\Controller\AbstractController;
+use Core\Security\RateLimiter;
 use App\Models\Doctor\Factories\DoctorUseCaseFactory;
 
 /**
@@ -16,21 +17,45 @@ final class ResetPasswordController extends AbstractController
 
     public function show(): void
     {
+        $this->startSession();
         $this->render('authentication/reset-password', [
             'errors'  => [],
             'success' => '',
             'email'   => $_GET['email'] ?? '',
-            'token'   => $_GET['token'] ?? ''
+            'token'   => $_GET['token'] ?? '',
+            'csrf_token' => \Core\Csrf::token()
         ]);
     }
 
     public function submit(): void
     {
-        ini_set('display_errors', '1');
-        ini_set('display_startup_errors', '1');
-        error_reporting(E_ALL);
-
         $this->startSession();
+
+        $postedEmail = $this->getPost('email');
+        $postedToken = $this->getPost('token');
+
+        // Protection force brute
+        if (RateLimiter::isBlocked('reset_password_attempts', 5, 900)) {
+            $this->render('authentication/reset-password', [
+                'errors' => ['Trop de tentatives. Veuillez réessayer dans 15 minutes.'],
+                'success' => '',
+                'email' => $postedEmail,
+                'token' => $postedToken
+            ]);
+            return;
+        }
+
+        // Validation CSRF
+        if (!$this->validateCsrf()) {
+            RateLimiter::recordAttempt('reset_password_attempts');
+            $this->render('authentication/reset-password', [
+                'errors' => ['Session expirée. Veuillez recharger la page.'],
+                'success' => '',
+                'email' => $postedEmail,
+                'token' => $postedToken
+            ]);
+            return;
+        }
 
         $email = $this->getPost('email');
         $token = $this->getPost('token');
@@ -58,6 +83,7 @@ final class ResetPasswordController extends AbstractController
         $result = $useCase->execute($email, $token, $password);
 
         if ($result['success']) {
+            RateLimiter::clear('reset_password_attempts');
             $this->render('authentication/reset-password', [
                 'errors' => [],
                 'success' => "Votre mot de passe a bien été réinitialisé. Vous pouvez maintenant vous connecter.",
@@ -65,6 +91,7 @@ final class ResetPasswordController extends AbstractController
                 'token'   => ''
             ]);
         } else {
+            RateLimiter::recordAttempt('reset_password_attempts');
             $errs = [];
             if (isset($result['error'])) {
                 $errs = explode("\n", $result['error']);

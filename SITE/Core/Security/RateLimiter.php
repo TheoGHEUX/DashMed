@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Core\Security;
 
-class RateLimiter
+final class RateLimiter
 {
     /**
      * Vérifie si l'action est autorisée ou bloquée.

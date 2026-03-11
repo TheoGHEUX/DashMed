@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Patient\Entities;
 
-class Patient
+final class Patient
 {
     private int $id;
     private string $nom;

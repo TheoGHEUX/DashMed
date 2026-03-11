@@ -68,8 +68,12 @@ final class ChartApiController extends AbstractController
             $this->validateApiCsrf();
 
             $input = json_decode(file_get_contents('php://input'), true) ?? [];
+            $formPatientId = $this->getPost('patient');
+            if ($formPatientId === '') {
+                $formPatientId = $this->getPost('ptId', '0');
+            }
             // Support 'patient' (comme main) et 'ptId' (nouvelle architecture)
-            $patientId = (int)($input['patient'] ?? $input['ptId'] ?? $_POST['patient'] ?? $_POST['ptId'] ?? 0);
+            $patientId = (int)($input['patient'] ?? $input['ptId'] ?? $formPatientId ?? 0);
 
             if ($patientId <= 0) {
                 $this->json(['success' => false, 'error' => 'ID Patient invalide'], 400);

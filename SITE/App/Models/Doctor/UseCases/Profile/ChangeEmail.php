@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace App\Models\Doctor\UseCases\Profile;
 
+use App\Exceptions\ValidationException;
 use App\Models\Doctor\Interfaces\IDoctorRepository;
 use App\Models\Doctor\Interfaces\IDoctorVerificationRepository;
 use App\Models\Doctor\Validators\DoctorValidator;
+use App\ValueObjects\Email;
 use Core\Services\MailerService;
+use Core\Services\TokenGenerator;
+use Core\Services\UrlBuilder;
 
-class ChangeEmail
+final class ChangeEmail
 {
     private IDoctorRepository $repo;
     private IDoctorVerificationRepository $verifyRepo;
@@ -30,6 +34,12 @@ class ChangeEmail
 
     public function execute(int $userId, string $currentPassword, string $newEmail): array
     {
+        try {
+            $emailVO = new Email($newEmail);
+        } catch (ValidationException $e) {
+            return ['success' => false, 'error' => implode("\n", array_values($e->getErrors()))];
+        }
+
         $emailError = $this->validator->validateEmail($newEmail);
         if ($emailError) {
             return ['success' => false, 'error' => $emailError];
@@ -40,24 +50,21 @@ class ChangeEmail
             return ['success' => false, 'error' => 'Mot de passe incorrect ou utilisateur introuvable.'];
         }
 
-        if ($this->repo->emailExists($newEmail)) {
+        if ($this->repo->emailExists($emailVO->getValue())) {
             return ['success' => false, 'error' => 'Cet email est déjà utilisé.'];
         }
 
-        if (!$this->repo->updateEmail($userId, $newEmail)) {
+        if (!$this->repo->updateEmail($userId, $emailVO->getValue())) {
             return ['success' => false, 'error' => 'Erreur technique.'];
         }
 
-        $token = bin2hex(random_bytes(32));
-        $expires = date('Y-m-d H:i:s', strtotime('+24 hours'));
-        $this->verifyRepo->setVerificationToken($newEmail, $token, $expires);
+        $tokenData = TokenGenerator::generateWithExpiry(32, '+24 hours');
+        $this->verifyRepo->setVerificationToken($emailVO->getValue(), $tokenData['token'], $tokenData['expires']);
 
-        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        $domain = $_SERVER['HTTP_HOST'] ?? 'localhost';
-        $url = "{$protocol}://{$domain}/verify-email?token=$token";
+        $url = UrlBuilder::build('/verify-email', ['token' => $tokenData['token']]);
 
         $this->mailer->send(
-            $newEmail,
+            $emailVO->getValue(),
             'Confirmez votre nouvelle adresse email - DashMed',
             'verify-email',
             ['name' => $user->getPrenom(), 'url' => $url]

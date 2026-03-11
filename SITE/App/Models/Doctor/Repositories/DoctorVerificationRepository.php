@@ -6,7 +6,7 @@ use App\Models\Doctor\Interfaces\IDoctorVerificationRepository;
 use PDO;
 use Core\Database;
 
-class DoctorVerificationRepository implements IDoctorVerificationRepository
+final class DoctorVerificationRepository implements IDoctorVerificationRepository
 {
     private PDO $db;
 

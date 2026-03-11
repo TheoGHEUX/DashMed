@@ -14,7 +14,7 @@ use PDO;
  * Les deux interfaces sont séparées pour respecter l'ISP, mais l'implémentation
  * peut rester dans une seule classe car elle partage la même source de données
  */
-class DashboardLayoutRepository implements IDashboardLayoutRepository, IPatientSimilarityRepository
+final class DashboardLayoutRepository implements IDashboardLayoutRepository, IPatientSimilarityRepository
 {
     private PDO $db;
 

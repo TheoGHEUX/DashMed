@@ -6,7 +6,7 @@ namespace App\Controllers\Public;
 
 use Core\Controller\AbstractController;
 
-class HomeController extends AbstractController
+final class HomeController extends AbstractController
 {
     public function index(): void
     {

@@ -6,8 +6,10 @@ namespace App\Models\Doctor\UseCases\Profile;
 
 use App\Models\Doctor\Interfaces\IDoctorRepository;
 use App\Models\Doctor\Validators\DoctorValidator;
+use App\ValueObjects\Password;
+use App\Exceptions\ValidationException;
 
-class ChangePassword
+final class ChangePassword
 {
     private IDoctorRepository $repo;
     private DoctorValidator $validator;
@@ -20,6 +22,7 @@ class ChangePassword
 
     public function execute(int $userId, string $oldPassword, string $newPassword, string $confirmPassword): array
     {
+        // Validation basique
         $errors = $this->validator->validatePassword($newPassword, $confirmPassword);
         if (!empty($errors)) {
             return [
@@ -28,12 +31,21 @@ class ChangePassword
             ];
         }
 
+        // Vérifier l'ancien mot de passe
         $user = $this->repo->findById($userId);
         if (!$user || !password_verify($oldPassword, $user->getPasswordHash())) {
             return ['success' => false, 'error' => "L'ancien mot de passe est incorrect."];
         }
 
-        $hash = password_hash($newPassword, PASSWORD_DEFAULT);
+        // Utiliser le Value Object pour hasher le nouveau mot de passe
+        try {
+            $passwordVO = new Password($newPassword);
+            $hash = $passwordVO->hash();
+        } catch (ValidationException $e) {
+            return ['success' => false, 'error' => implode("\n", array_values($e->getErrors()))];
+        }
+
+        // Mettre à jour le mot de passe
         if ($this->repo->updatePassword($userId, $hash)) {
             return ['success' => true, 'message' => 'Mot de passe modifié avec succès.'];
         }

@@ -7,7 +7,7 @@ namespace App\Exceptions;
 /**
  * Exception levée lors d'une tentative d'authentification échouée
  */
-class AuthenticationException extends DomainException
+final class AuthenticationException extends DomainException
 {
     public function __construct(string $message = "Authentification échouée", int $code = 401)
     {

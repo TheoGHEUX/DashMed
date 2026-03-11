@@ -7,7 +7,7 @@ namespace App\Exceptions;
 /**
  * Exception levée lors d'erreur de validation des données
  */
-class ValidationException extends DomainException
+final class ValidationException extends DomainException
 {
     private array $errors;
 

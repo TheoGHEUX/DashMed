@@ -10,7 +10,7 @@ use App\Models\Patient\Interfaces\IPatientSimilarityService;
  * Service de calcul de similarité entre patients via KNN
  * Note: Déplacé dans Services serait plus approprié, mais on garde la compatibilité
  */
-class PatientSimilarityService implements IPatientSimilarityService
+final class PatientSimilarityService implements IPatientSimilarityService
 {
     /**
      * Algorithme KNN : Trouve les patients les plus proches mathématiquement.

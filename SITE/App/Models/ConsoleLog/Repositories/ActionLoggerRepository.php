@@ -8,7 +8,7 @@ use Core\Database;
 use App\Models\ConsoleLog\Interfaces\IActionLoggerRepository;
 use PDO;
 
-class ActionLoggerRepository implements IActionLoggerRepository
+final class ActionLoggerRepository implements IActionLoggerRepository
 {
     private PDO $db;
 

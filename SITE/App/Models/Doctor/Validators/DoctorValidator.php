@@ -6,7 +6,7 @@ namespace App\Models\Doctor\Validators;
 
 use App\Models\Doctor\Interfaces\IDoctorValidator;
 
-class DoctorValidator implements IDoctorValidator
+final class DoctorValidator implements IDoctorValidator
 {
     /**
      * Valide une adresse email.

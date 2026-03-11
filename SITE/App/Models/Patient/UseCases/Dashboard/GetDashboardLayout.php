@@ -6,7 +6,7 @@ namespace App\Models\Patient\UseCases\Dashboard;
 
 use App\Models\Patient\Interfaces\IDashboardLayoutRepository;
 
-class GetDashboardLayout
+final class GetDashboardLayout
 {
     private IDashboardLayoutRepository $repository;
 

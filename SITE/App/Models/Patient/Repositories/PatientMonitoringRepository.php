@@ -8,7 +8,7 @@ use Core\Database;
 use App\Models\Patient\Interfaces\IPatientMonitoringRepository;
 use PDO;
 
-class PatientMonitoringRepository implements IPatientMonitoringRepository
+final class PatientMonitoringRepository implements IPatientMonitoringRepository
 {
     private PDO $db;
 

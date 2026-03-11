@@ -2,7 +2,6 @@
 
 
 declare(strict_types=1);
-putenv('APP_DEBUG=1'); // Force l'affichage des erreurs
 /**
  * Point d'entrée unique de l'application DashMed.
  * Version : Clean Architecture

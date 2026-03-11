@@ -7,7 +7,7 @@ namespace App\Exceptions;
 /**
  * Exception levée lors d'une erreur de logique métier
  */
-class BusinessLogicException extends DomainException
+final class BusinessLogicException extends DomainException
 {
     public function __construct(string $message = "Erreur de logique métier", int $code = 422)
     {

@@ -6,7 +6,7 @@ namespace App\Models\ConsoleLog\UseCases\Logging;
 
 use App\Models\ConsoleLog\Interfaces\IActionLoggerRepository;
 
-class LogDashboardAction
+final class LogDashboardAction
 {
     private IActionLoggerRepository $repository;
 

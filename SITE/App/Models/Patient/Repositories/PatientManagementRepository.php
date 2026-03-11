@@ -9,7 +9,7 @@ use App\Models\Patient\Entities\Patient;
 use App\Models\Patient\Interfaces\IPatientManagementRepository;
 use PDO;
 
-class PatientManagementRepository implements IPatientManagementRepository
+final class PatientManagementRepository implements IPatientManagementRepository
 {
     private PDO $db;
 

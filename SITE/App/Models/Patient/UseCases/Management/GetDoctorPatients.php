@@ -7,7 +7,7 @@ namespace App\Models\Patient\UseCases\Management;
 use App\Models\Patient\Interfaces\IPatientManagementRepository;
 use App\Models\Patient\Entities\Patient;
 
-class GetDoctorPatients
+final class GetDoctorPatients
 {
     private IPatientManagementRepository $repository;
 

@@ -6,7 +6,7 @@ namespace App\Models\Doctor\UseCases\Authentication;
 
 use App\Models\Doctor\Interfaces\IDoctorVerificationRepository;
 
-class VerifyEmail
+final class VerifyEmail
 {
     private IDoctorVerificationRepository $verifyRepo;
 

@@ -8,7 +8,7 @@ use Core\Database;
 use App\Models\Doctor\Interfaces\ISecurityRepository;
 use PDO;
 
-class SecurityRepository implements ISecurityRepository
+final class SecurityRepository implements ISecurityRepository
 {
     private PDO $db;
 

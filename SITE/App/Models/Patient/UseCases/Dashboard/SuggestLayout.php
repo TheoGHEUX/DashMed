@@ -11,7 +11,7 @@ use App\Models\Patient\Interfaces\IPatientSimilarityService;
 /**
  * Use Case : Suggère un layout de dashboard basé sur des patients similaires
  */
-class SuggestLayout
+final class SuggestLayout
 {
     private IDashboardLayoutRepository $layoutRepository;
     private IPatientSimilarityRepository $similarityRepository;

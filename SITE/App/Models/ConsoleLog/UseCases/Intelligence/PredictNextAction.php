@@ -9,7 +9,7 @@ use App\Models\ConsoleLog\Interfaces\ITreePredictor;
 /**
  * Use Case : Prédit la prochaine action probable du médecin
  */
-class PredictNextAction
+final class PredictNextAction
 {
     private ITreePredictor $predictor;
 

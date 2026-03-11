@@ -8,7 +8,7 @@ use Core\Database;
 use App\Models\ConsoleLog\Interfaces\ILogHistoryRepository;
 use PDO;
 
-class LogHistoryRepository implements ILogHistoryRepository
+final class LogHistoryRepository implements ILogHistoryRepository
 {
     private PDO $db;
 

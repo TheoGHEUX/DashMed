@@ -6,7 +6,7 @@ namespace App\Controllers\Public;
 
 use Core\Controller\AbstractController;
 
-class LegalNoticesController extends AbstractController
+final class LegalNoticesController extends AbstractController
 {
     public function show(): void
     {

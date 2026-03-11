@@ -4,44 +4,62 @@ declare(strict_types=1);
 
 namespace App\Models\Doctor\UseCases\Authentication;
 
-use App\Models\Doctor\Interfaces\IDoctorReadRepository;
+use App\Exceptions\ValidationException;
+use App\Models\Doctor\Interfaces\IDoctorRepository;
+use App\Models\Doctor\Interfaces\IResendVerificationEmail;
 use App\Models\Doctor\Interfaces\IDoctorVerificationRepository;
-use App\Services\AuthMailer; // Service Métier
+use App\ValueObjects\Email;
+use Core\Services\MailerService;
+use Core\Services\TokenGenerator;
+use Core\Services\UrlBuilder;
 
-class ResendVerificationEmail
+final class ResendVerificationEmail implements IResendVerificationEmail
 {
-    private IDoctorReadRepository $readRepo;
+    private IDoctorRepository $repo;
     private IDoctorVerificationRepository $verifyRepo;
-    private AuthMailer $mailer;
+    private MailerService $mailer;
 
     public function __construct(
-        IDoctorReadRepository $readRepo,
+        IDoctorRepository $repo,
         IDoctorVerificationRepository $verifyRepo,
-        AuthMailer $mailer
+        MailerService $mailer
     ) {
-        $this->readRepo = $readRepo;
+        $this->repo = $repo;
         $this->verifyRepo = $verifyRepo;
         $this->mailer = $mailer;
     }
 
     public function execute(string $email): array
     {
-        $user = $this->readRepo->findByEmail($email);
+        try {
+            $emailVO = new Email($email);
+        } catch (ValidationException $e) {
+            return ['success' => true, 'message' => 'Si ce compte existe, un email a ete envoye.'];
+        }
+
+        $user = $this->repo->findByEmail($emailVO->getValue());
 
         if (!$user) {
-            return ['success' => true, 'message' => 'Si ce compte existe, un email a été envoyé.'];
+            return ['success' => true, 'message' => 'Si ce compte existe, un email a ete envoye.'];
         }
 
         if ($user->isEmailVerified()) {
             return ['success' => false, 'error' => 'Ce compte est déjà vérifié. Connectez-vous.'];
         }
 
-        $token = bin2hex(random_bytes(32));
-        $expires = date('Y-m-d H:i:s', strtotime('+24 hours'));
-        $this->verifyRepo->setVerificationToken($email, $token, $expires);
+        $tokenData = TokenGenerator::generateWithExpiry(32, '+24 hours');
+        $this->verifyRepo->setVerificationToken($emailVO->getValue(), $tokenData['token'], $tokenData['expires']);
+        $url = UrlBuilder::build('/verify-email', ['token' => $tokenData['token']]);
 
-        // Appel simplifié via le Service
-        $sent = $this->mailer->sendVerification($email, $user->getPrenom(), $token);
+        $sent = $this->mailer->send(
+            $emailVO->getValue(),
+            'Confirmez votre adresse email - DashMed',
+            'verify-email',
+            [
+                'name' => $user->getPrenom(),
+                'url' => $url,
+            ]
+        );
 
         if (!$sent) {
             return ['success' => false, 'error' => 'Erreur technique lors de l\'envoi de l\'email.'];

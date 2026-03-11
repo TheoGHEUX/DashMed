@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\ConsoleLog\Entities;
 
-class ConsoleLog
+final class ConsoleLog
 {
     private int $logId;
     private int $medId;

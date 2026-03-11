@@ -10,7 +10,7 @@ use App\Models\ConsoleLog\Interfaces\ITreePredictor;
  * Prédicteur d'actions basé sur un arbre de décision exporté en JSON.
  * Remplace l'appel Python pour des prédictions instantanées en PHP pur.
  */
-class TreePredictor implements ITreePredictor
+final class TreePredictor implements ITreePredictor
 {
     private array $model;
 

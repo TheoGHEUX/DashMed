@@ -7,7 +7,7 @@ use App\Models\Doctor\Entities\Doctor;
 use App\Models\Doctor\Interfaces\IDoctorRepository;
 use PDO;
 
-class DoctorRepository implements IDoctorRepository
+final class DoctorRepository implements IDoctorRepository
 {
     private PDO $db;
 

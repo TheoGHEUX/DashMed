@@ -7,7 +7,7 @@ namespace App\Exceptions;
 /**
  * Exception levée quand une ressource n'est pas trouvée
  */
-class NotFoundException extends DomainException
+final class NotFoundException extends DomainException
 {
     public function __construct(string $message = "Ressource introuvable", int $code = 404)
     {

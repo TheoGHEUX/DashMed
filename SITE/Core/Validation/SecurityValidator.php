@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Core\Validation;
 
-class SecurityValidator
+final class SecurityValidator
 {
     /**
      * Valide le format d'une adresse email.

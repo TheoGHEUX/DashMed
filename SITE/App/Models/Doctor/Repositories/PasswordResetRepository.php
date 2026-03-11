@@ -8,7 +8,7 @@ use Core\Database;
 use App\Models\Doctor\Interfaces\IPasswordResetRepository;
 use PDO;
 
-class PasswordResetRepository implements IPasswordResetRepository
+final class PasswordResetRepository implements IPasswordResetRepository
 {
     private PDO $db;
 

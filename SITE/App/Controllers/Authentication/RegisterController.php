@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers\Authentication;
 
 use Core\Controller\AbstractController;
+use Core\Security\RateLimiter;
 use App\Models\Doctor\Factories\DoctorUseCaseFactory;
 use App\Models\Doctor\Enums\Specialite;
 
@@ -32,9 +33,20 @@ final class RegisterController extends AbstractController
     {
         $this->startSession();
 
-        $posted = $_POST['csrf_token'] ?? '';
-        $session = $_SESSION['csrf_token'] ?? '';
-        if (empty($posted) || empty($session) || !hash_equals($session, $posted)) {
+        // Protection contre le spam d'inscriptions
+        if (RateLimiter::isBlocked('register_attempts', 5, 3600)) {
+            $this->render('authentication/register', [
+                'errors' => ['Trop de tentatives. Veuillez réessayer dans 1 heure.'],
+                'old' => [],
+                'specialites' => Specialite::all(),
+                'csrf_token' => \Core\Csrf::token()
+            ]);
+            return;
+        }
+
+        // Validation CSRF via la méthode standard
+        if (!$this->validateCsrf()) {
+            RateLimiter::recordAttempt('register_attempts');
             $this->render('authentication/register', [
                 'errors' => ["Session expirée. Veuillez recharger la page et réessayer."],
                 'old' => [],
@@ -58,6 +70,7 @@ final class RegisterController extends AbstractController
         $result = $useCase->execute($data);
 
         if ($result['success']) {
+            RateLimiter::clear('register_attempts');
             $this->render('authentication/register', [
                 'success' => "Compte créé ! Un lien de vérification a été envoyé à " . htmlspecialchars($data['email']),
                 'errors' => [],
@@ -66,6 +79,7 @@ final class RegisterController extends AbstractController
                 'csrf_token' => \Core\Csrf::token()
             ]);
         } else {
+            RateLimiter::recordAttempt('register_attempts');
             $this->render('authentication/register', [
                 'errors' => $result['errors'],
                 'old' => $data,
