@@ -37,22 +37,33 @@ class SuggestLayout
         $candidatesData = $this->similarityRepository->getCandidatesForSimilarity($medId, $patientId);
         if (empty($candidatesData)) return null;
 
-        // 3. Calculer les plus proches (via Service)
-        $nearest = $this->similarityService->findNearestNeighbors($targetData, $candidatesData, 1);
+        // 3. Calculer les K plus proches (on en prend 5 pour avoir une liste)
+        $nearest = $this->similarityService->findNearestNeighbors($targetData, $candidatesData, 5);
 
         if (empty($nearest)) return null;
 
         // 4. Trouver le layout du patient le plus similaire
         // Le layout_config est déjà dans candidatesData, pas besoin de refaire une requête
         $bestMatchId = $nearest[0]['pt_id'];
+        $bestDistance = $nearest[0]['distance'];
         
+        $layout = null;
         foreach ($candidatesData as $candidate) {
             if ($candidate['pt_id'] === $bestMatchId) {
                 // Décoder le JSON du layout_config
-                return json_decode($candidate['layout_config'], true);
+                $layout = json_decode($candidate['layout_config'], true);
+                break;
             }
         }
 
-        return null;
+        if (!$layout) return null;
+
+        // Retourner toutes les informations comme dans main
+        return [
+            'similar_patient_id' => $bestMatchId,
+            'distance' => round($bestDistance, 2),
+            'all_similar_patients' => array_map(fn($p) => $p['pt_id'], $nearest),
+            'layout' => $layout
+        ];
     }
 }

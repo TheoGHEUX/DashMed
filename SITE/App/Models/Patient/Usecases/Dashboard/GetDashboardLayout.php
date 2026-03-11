@@ -15,14 +15,9 @@ class GetDashboardLayout
         $this->repository = $repository;
     }
 
-    public function execute(int $patientId, int $medId): array
+    public function execute(int $patientId, int $medId): ?array
     {
-        $layout = $this->repository->getDashboardLayout($patientId, $medId);
-
-        // Si pas de layout perso, on retourne une configuration par défaut
-        return $layout ?? [
-            'widgets' => [],
-            'theme' => 'default'
-        ];
+        // Retourne le layout personnalisé ou null si aucun
+        return $this->repository->getDashboardLayout($patientId, $medId);
     }
 }

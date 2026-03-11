@@ -581,6 +581,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 			if (data.success && data.layout) {
 				const config = data.layout;
 
+				// Vérifier que le layout a la structure attendue
+				if (!config.visible || !Array.isArray(config.visible)) {
+					console.warn('Layout invalide (pas de propriété visible), utilisation du layout par défaut');
+					return {
+						visible: allCharts,
+						sizes: {}
+					};
+				}
+
 				// Supprimer les graphiques qui n'existent plus dans CHART_DEFINITIONS
 				// (graphiques obsolètes suite à une mise à jour du code)
 				config.visible = config.visible.filter(chartId => allCharts.includes(chartId));
@@ -602,13 +611,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 						const aiData = await aiResponse.json();
 						
 						if (aiData.success && aiData.suggestion && aiData.suggestion.layout) {
-							console.log(`IA: Agencement suggéré basé sur ${aiData.suggestion.all_similar_patients.length} patient(s) similaire(s)`);
-							console.log(`IA: Patient de référence #${aiData.suggestion.similar_patient_id} (distance: ${aiData.suggestion.distance})`);
+							const suggestedLayout = aiData.suggestion.layout;
 							
-							return {
-								visible: aiData.suggestion.layout.visible || allCharts,
-								sizes: aiData.suggestion.layout.sizes || {}
-							};
+							// Vérifier que le layout suggéré a la bonne structure
+							if (!suggestedLayout.visible || !Array.isArray(suggestedLayout.visible)) {
+								console.warn('Layout suggéré invalide, utilisation du layout par défaut');
+							} else {
+								console.log(`IA: Agencement suggéré basé sur ${aiData.suggestion.all_similar_patients.length} patient(s) similaire(s)`);
+								console.log(`IA: Patient de référence #${aiData.suggestion.similar_patient_id} (distance: ${aiData.suggestion.distance})`);
+								
+								return {
+									visible: suggestedLayout.visible || allCharts,
+									sizes: suggestedLayout.sizes || {}
+								};
+							}
 						} else {
 							console.log('IA: Aucune suggestion disponible, utilisation du layout par défaut');
 						}

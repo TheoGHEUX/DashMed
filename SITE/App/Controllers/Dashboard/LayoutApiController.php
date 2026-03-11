@@ -49,12 +49,11 @@ final class LayoutApiController extends AbstractController
         // Signature correcte : execute(int $patientId, int $medId)
         $layout = $this->getLayout->execute($ptId, $medId);
 
-        // Le UseCase retourne toujours un array (avec layout par défaut si null en BDD)
-        $isDefault = empty($layout) || (isset($layout['widgets']) && empty($layout['widgets']));
+        // Si null, le JavaScript utilisera le layout par défaut ou fera une suggestion IA
         $this->json([
             'success' => true,
             'layout' => $layout,
-            'isDefault' => $isDefault
+            'isDefault' => $layout === null
         ]);
     }
 
@@ -108,14 +107,13 @@ final class LayoutApiController extends AbstractController
             return;
         }
 
-        $layout = $this->suggestLayout->execute($ptId, $medId);
+        // Le UseCase retourne déjà toutes les infos nécessaires
+        $result = $this->suggestLayout->execute($ptId, $medId);
 
-        if ($layout && !empty($layout)) {
+        if ($result && !empty($result)) {
             $this->json([
                 'success' => true,
-                'suggestion' => [
-                    'layout' => $layout
-                ]
+                'suggestion' => $result
             ]);
         } else {
             $this->json([
