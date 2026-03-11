@@ -29,7 +29,7 @@ class ActionLoggerRepository implements IActionLoggerRepository
             $stmt = $this->db->prepare("
                 INSERT INTO historique_console 
                     (log_id, med_id, type_action, type_action_id, pt_id, id_mesure, date_action, heure_action) 
-                VALUES (:log_id, :med_id, :type_action, :type_action_id, :pt_id, :id_mesure, NOW(), NOW())
+                VALUES (:log_id, :med_id, :type_action, :type_action_id, :pt_id, :id_mesure, CURDATE(), CURTIME())
             ");
 
             return $stmt->execute([

@@ -18,20 +18,37 @@ if (generateBtn) {
                 return;
             }
 
-            await fetch('/generate-data', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-Token': window.csrfToken || ''
-                },
-                body: JSON.stringify({ ptId: ptId })
-            });
+            try {
+                const response = await fetch('/generate-data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': window.csrfToken || ''
+                    },
+                    body: JSON.stringify({ patient: ptId })
+                });
 
-            compteur++;
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    console.error('[GENERATE] Erreur serveur:', response.status, data);
+                    clearInterval(interval);
+                    btn.disabled = false;
+                    btn.textContent = "Générer 20 mesures";
+                    alert('Erreur: ' + (data.error || 'Erreur serveur'));
+                    return;
+                }
 
-            console.log("Valeur générée :", compteur);
+                compteur++;
+                console.log("Valeur générée :", compteur, data.message);
 
-            if (compteur >= 20) {
+                if (compteur >= 20) {
+                    clearInterval(interval);
+                    btn.disabled = false;
+                    btn.textContent = "Générer 20 mesures";
+                }
+            } catch (err) {
+                console.error('[GENERATE] Exception:', err);
                 clearInterval(interval);
                 btn.disabled = false;
                 btn.textContent = "Générer 20 mesures";

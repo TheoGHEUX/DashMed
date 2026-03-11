@@ -13,10 +13,15 @@ trait CsrfTrait
         return Csrf::validate($_POST['csrf_token'] ?? '');
     }
 
-    protected function validateApiCsrf(): bool
+    protected function validateApiCsrf(): void
     {
         // Headers pour API JSON
         $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
-        return $token && Csrf::validateWithoutConsuming($token);
+        if (!$token || !Csrf::validateWithoutConsuming($token)) {
+            http_response_code(403);
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'error' => 'Jeton CSRF invalide ou manquant']);
+            exit;
+        }
     }
 }

@@ -63,24 +63,31 @@ final class ChartApiController extends AbstractController
      */
     public function generateData(): void
     {
-        $this->checkAuth();
-        $this->validateApiCsrf();
+        try {
+            $this->checkAuth();
+            $this->validateApiCsrf();
 
-        $input = $this->getJsonInput();
-        $patientId = (int)($input['ptId'] ?? $_POST['ptId'] ?? 0);
+            $input = json_decode(file_get_contents('php://input'), true) ?? [];
+            // Support 'patient' (comme main) et 'ptId' (nouvelle architecture)
+            $patientId = (int)($input['patient'] ?? $input['ptId'] ?? $_POST['patient'] ?? $_POST['ptId'] ?? 0);
 
-        if ($patientId <= 0) {
-            $this->json(['success' => false, 'error' => 'ID Patient invalide'], 400);
-            return;
+            if ($patientId <= 0) {
+                $this->json(['success' => false, 'error' => 'ID Patient invalide'], 400);
+                return;
+            }
+
+            // Utiliser directement le script generate_data_online.php (comme dans main)
+            require_once dirname(__DIR__, 3) . '/Scripts/generate_data_online.php';
+            generatePatientData($patientId);
+
+            $this->json([
+                'success' => true,
+                'message' => "Nouvelles mesures générées.",
+                'timestamp' => date('H:i:s')
+            ]);
+        } catch (\Throwable $e) {
+            error_log('[GENERATE_DATA] Erreur: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+            $this->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
-
-        // On délègue la logique complexe au Repository
-        $count = $this->repo->generateSimulationData($patientId);
-
-        $this->json([
-            'success' => true,
-            'message' => "$count nouvelles mesures générées.",
-            'timestamp' => date('H:i:s')
-        ]);
     }
 }
