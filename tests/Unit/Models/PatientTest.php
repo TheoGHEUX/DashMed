@@ -5,149 +5,189 @@ namespace Tests\Unit\Models;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\DataProvider;
+use App\Models\Patient\Entities\Patient;
 
 /**
- * Tests unitaires pour la classe Patient
+ * Tests unitaires pour l'entité Patient (DDD)
  *
- * Ces tests utilisent des méthodes mockées pour éviter les dépendances à la base de données.
+ * Ces tests couvrent l'entité Patient (constructeur + getters).
  */
 class PatientTest extends TestCase
 {
     /**
-     * Test de la méthode normalizeValue avec des valeurs normales
+     * Vérifie que l'entité Patient se construit correctement depuis un tableau de données
+     * et que tous ses getters retournent les bonnes valeurs.
      */
     #[Test]
-    public function normalizeValueReturnsCorrectValueForNormalRange(): void
+    public function patientEntityConstructsCorrectlyFromArray(): void
     {
-        // Valeur au milieu de l'intervalle
-        $result = \Models\Patient::normalizeValue(50.0, 0.0, 100.0);
-        $this->assertEquals(0.5, $result);
+        $data = [
+            'pt_id'          => 10,
+            'nom'            => 'Durand',
+            'prenom'         => 'Marc',
+            'email'          => 'marc.durand@example.com',
+            'sexe'           => 'M',
+            'groupe_sanguin' => 'A+',
+            'date_naissance' => '1985-06-15',
+            'telephone'      => '0612345678',
+            'adresse'        => '12 rue de la Paix',
+            'code_postal'    => '75001',
+            'ville'          => 'Paris',
+        ];
 
-        // Valeur au minimum
-        $result = \Models\Patient::normalizeValue(0.0, 0.0, 100.0);
-        $this->assertEquals(0.0, $result);
+        $patient = new Patient($data);
 
-        // Valeur au maximum
-        $result = \Models\Patient::normalizeValue(100.0, 0.0, 100.0);
-        $this->assertEquals(1.0, $result);
+        $this->assertEquals(10, $patient->getId());
+        $this->assertEquals('Durand', $patient->getNom());
+        $this->assertEquals('Marc', $patient->getPrenom());
+        $this->assertEquals('marc.durand@example.com', $patient->getEmail());
+        $this->assertEquals('M', $patient->getSexe());
+        $this->assertEquals('A+', $patient->getGroupeSanguin());
+        $this->assertEquals('1985-06-15', $patient->getDateNaissance());
+        $this->assertEquals('0612345678', $patient->getTelephone());
+        $this->assertEquals('12 rue de la Paix', $patient->getAdresse());
+        $this->assertEquals('75001', $patient->getCodePostal());
+        $this->assertEquals('Paris', $patient->getVille());
     }
 
     /**
-     * Test de la méthode normalizeValue avec min == max
+     * Vérifie que les champs optionnels absents sont null (pas une erreur PHP).
      */
     #[Test]
-    public function normalizeValueReturnsHalfWhenMinEqualsMax(): void
+    public function patientEntityHandlesMissingOptionalFields(): void
     {
-        $result = \Models\Patient::normalizeValue(50.0, 50.0, 50.0);
-        $this->assertEquals(0.5, $result);
+        $patient = new Patient([
+            'pt_id'  => 1,
+            'nom'    => 'Test',
+            'prenom' => 'Patient',
+        ]);
+
+        $this->assertNull($patient->getEmail());
+        $this->assertNull($patient->getSexe());
+        $this->assertNull($patient->getGroupeSanguin());
+        $this->assertNull($patient->getDateNaissance());
+        $this->assertNull($patient->getTelephone());
+        $this->assertNull($patient->getAdresse());
+        $this->assertNull($patient->getCodePostal());
+        $this->assertNull($patient->getVille());
     }
 
     /**
-     * Test de la méthode normalizeValue avec des valeurs hors limites
+     * Vérifie que toArray() retourne un tableau cohérent avec les données transmises.
+     *
+     * Les clés attendues doivent correspondre aux colonnes SQL.
      */
     #[Test]
-    public function normalizeValueClampsBelowZero(): void
+    public function patientToArrayReturnsExpectedKeys(): void
     {
-        // Valeur en dessous du minimum
-        $result = \Models\Patient::normalizeValue(-10.0, 0.0, 100.0);
-        $this->assertEquals(0.0, $result);
+        $patient = new Patient([
+            'pt_id'  => 7,
+            'nom'    => 'Legrand',
+            'prenom' => 'Claire',
+        ]);
+
+        $array = $patient->toArray();
+
+        $this->assertArrayHasKey('pt_id', $array);
+        $this->assertArrayHasKey('nom', $array);
+        $this->assertArrayHasKey('prenom', $array);
+        $this->assertArrayHasKey('email', $array);
+        $this->assertArrayHasKey('sexe', $array);
+        $this->assertArrayHasKey('groupe_sanguin', $array);
+        $this->assertArrayHasKey('date_naissance', $array);
+        $this->assertArrayHasKey('telephone', $array);
+        $this->assertArrayHasKey('adresse', $array);
+        $this->assertArrayHasKey('code_postal', $array);
+        $this->assertArrayHasKey('ville', $array);
+
+        $this->assertEquals(7, $array['pt_id']);
+        $this->assertEquals('Legrand', $array['nom']);
+        $this->assertEquals('Claire', $array['prenom']);
     }
 
     /**
-     * Test de la méthode normalizeValue avec des valeurs hors limites
+     * Vérifie que toArray() et le constructeur sont cohérents (aller-retour).
      */
     #[Test]
-    public function normalizeValueClampsAboveOne(): void
+    public function patientToArrayRoundTrip(): void
     {
-        // Valeur au dessus du maximum
-        $result = \Models\Patient::normalizeValue(150.0, 0.0, 100.0);
-        $this->assertEquals(1.0, $result);
+        $data = [
+            'pt_id'          => 3,
+            'nom'            => 'Bernard',
+            'prenom'         => 'Luc',
+            'email'          => 'luc@test.com',
+            'sexe'           => 'M',
+            'groupe_sanguin' => 'O-',
+            'date_naissance' => '1990-01-01',
+            'telephone'      => null,
+            'adresse'        => null,
+            'code_postal'    => null,
+            'ville'          => null,
+        ];
+
+        $patient1 = new Patient($data);
+        $patient2 = new Patient($patient1->toArray());
+
+        $this->assertEquals($patient1->getId(), $patient2->getId());
+        $this->assertEquals($patient1->getNom(), $patient2->getNom());
+        $this->assertEquals($patient1->getEmail(), $patient2->getEmail());
+        $this->assertEquals($patient1->getGroupeSanguin(), $patient2->getGroupeSanguin());
     }
 
     /**
-     * Test de la méthode normalizeValue avec des valeurs décimales
+     * Vérifie que getId() retourne bien un int (cast depuis la BDD qui retourne des strings).
+     *
+     * L'entité doit forcer le type int pour pt_id.
      */
     #[Test]
-    #[DataProvider('normalizeValueDataProvider')]
-    public function normalizeValueWithVariousInputs(float $value, float $min, float $max, float $expected): void
+    public function patientIdIsAlwaysInteger(): void
     {
-        $result = \Models\Patient::normalizeValue($value, $min, $max);
-        $this->assertEqualsWithDelta($expected, $result, 0.0001);
+        $patient = new Patient(['pt_id' => '25', 'nom' => 'Test', 'prenom' => 'Cast']);
+
+        $this->assertIsInt($patient->getId());
+        $this->assertEquals(25, $patient->getId());
     }
 
     /**
-     * Provider de données pour le test normalizeValue
+     * Vérifie que le namespace de l'entité Patient est correct.
      */
-    public static function normalizeValueDataProvider(): array
+    #[Test]
+    public function patientClassHasCorrectNamespace(): void
+    {
+        $reflection = new \ReflectionClass(Patient::class);
+        $this->assertEquals('App\\Models\\Patient\\Entities', $reflection->getNamespaceName());
+    }
+
+    /**
+     * Vérifie que la classe Patient expose bien les méthodes getters attendues.
+     *
+     * Si une méthode est renommée ou supprimée, ce test échoue immédiatement.
+     */
+    #[Test]
+    #[DataProvider('getterMethodsProvider')]
+    public function patientEntityExposesExpectedGetter(string $methodName): void
+    {
+        $this->assertTrue(
+            method_exists(Patient::class, $methodName),
+            "La méthode {$methodName}() n'existe pas sur l'entité Patient"
+        );
+    }
+
+    public static function getterMethodsProvider(): array
     {
         return [
-            'middle_value' => [50.0, 0.0, 100.0, 0.5],
-            'quarter_value' => [25.0, 0.0, 100.0, 0.25],
-            'three_quarter_value' => [75.0, 0.0, 100.0, 0.75],
-            'negative_range' => [0.0, -100.0, 100.0, 0.5],
-            'decimal_values' => [36.5, 35.0, 42.0, 0.2143],
-            'body_temperature_normal' => [37.0, 35.0, 42.0, 0.2857],
-            'blood_pressure_systolic' => [120.0, 90.0, 180.0, 0.3333],
+            ['getId'],
+            ['getNom'],
+            ['getPrenom'],
+            ['getEmail'],
+            ['getSexe'],
+            ['getGroupeSanguin'],
+            ['getDateNaissance'],
+            ['getTelephone'],
+            ['getAdresse'],
+            ['getCodePostal'],
+            ['getVille'],
+            ['toArray'],
         ];
-    }
-
-    /**
-     * Test de la méthode prepareChartValues
-     */
-    #[Test]
-    public function prepareChartValuesReturnsNormalizedArray(): void
-    {
-        $valeurs = [
-            ['valeur' => '100'],
-            ['valeur' => '50'],
-            ['valeur' => '0'],
-            ['valeur' => '75'],
-        ];
-
-        $result = \Models\Patient::prepareChartValues($valeurs, 0.0, 100.0);
-
-        $this->assertIsArray($result);
-        $this->assertCount(4, $result);
-        $this->assertEquals(1.0, $result[0]);
-        $this->assertEquals(0.5, $result[1]);
-        $this->assertEquals(0.0, $result[2]);
-        $this->assertEquals(0.75, $result[3]);
-    }
-
-    /**
-     * Test de la méthode prepareChartValues avec un tableau vide
-     */
-    #[Test]
-    public function prepareChartValuesReturnsEmptyArrayForEmptyInput(): void
-    {
-        $result = \Models\Patient::prepareChartValues([], 0.0, 100.0);
-
-        $this->assertIsArray($result);
-        $this->assertEmpty($result);
-    }
-
-    /**
-     * Test de la méthode prepareChartValues avec des valeurs de température corporelle
-     */
-    #[Test]
-    public function prepareChartValuesWithBodyTemperature(): void
-    {
-        $valeurs = [
-            ['valeur' => '36.5'],
-            ['valeur' => '37.0'],
-            ['valeur' => '38.5'],
-            ['valeur' => '39.0'],
-        ];
-
-        $result = \Models\Patient::prepareChartValues($valeurs, 35.0, 42.0);
-
-        $this->assertIsArray($result);
-        $this->assertCount(4, $result);
-
-        // Vérifier que toutes les valeurs sont comprises entre 0 et 1
-        foreach ($result as $value) {
-            $this->assertGreaterThanOrEqual(0.0, $value);
-            $this->assertLessThanOrEqual(1.0, $value);
-        }
     }
 }

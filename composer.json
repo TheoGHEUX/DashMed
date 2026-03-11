@@ -12,6 +12,7 @@
     },
     "autoload": {
         "psr-4": {
+            "App\\": "SITE/App/",
             "Core\\": "SITE/Core/",
             "Models\\": "SITE/App/Models/",
             "Controllers\\": "SITE/App/Controllers/"
