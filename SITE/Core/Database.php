@@ -86,9 +86,17 @@ final class Database
             return;
         }
 
-        // Chemin vers la racine du projet (Remonte de Core/ vers SITE/ vers Racine/)
-        $root = dirname(__DIR__, 2);
-        $envFile = $root . DIRECTORY_SEPARATOR . '.env';
+        // Chemin vers le .env : 
+        // Local: DashMed/.env
+        // Production: /home/dashmed-site/config/.env (remonte de SITE/Core -> SITE -> DashMed -> www -> racine -> config)
+        $root = dirname(__DIR__, 4); // Remonte à la racine du serveur
+        $envFile = $root . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . '.env';
+        
+        // Si pas trouvé, essayer dans la racine du projet (environnement local)
+        if (!is_file($envFile)) {
+            $root = dirname(__DIR__, 2); // DashMed/
+            $envFile = $root . DIRECTORY_SEPARATOR . '.env';
+        }
 
         if (is_file($envFile) && is_readable($envFile)) {
             $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
