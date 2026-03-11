@@ -135,11 +135,15 @@ class UserTest extends TestCase
         $reflection = new \ReflectionMethod(DoctorRepository::class, 'emailExists');
 
         $this->assertTrue($reflection->isPublic());
-        $this->assertEquals('bool', $reflection->getReturnType()?->getName());
+        $returnType = $reflection->getReturnType();
+        $this->assertInstanceOf(\ReflectionNamedType::class, $returnType);
+        $this->assertEquals('bool', $returnType->getName());
 
         $params = $reflection->getParameters();
         $this->assertCount(1, $params);
-        $this->assertEquals('string', $params[0]->getType()?->getName());
+        $paramType = $params[0]->getType();
+        $this->assertInstanceOf(\ReflectionNamedType::class, $paramType);
+        $this->assertEquals('string', $paramType->getName());
     }
 
     /**
@@ -154,7 +158,7 @@ class UserTest extends TestCase
         $this->assertCount(1, $reflection->getParameters());
 
         $returnType = $reflection->getReturnType();
-        $this->assertNotNull($returnType);
+        $this->assertInstanceOf(\ReflectionNamedType::class, $returnType);
         $this->assertTrue($returnType->allowsNull());
     }
 
@@ -170,7 +174,9 @@ class UserTest extends TestCase
 
         $params = $reflection->getParameters();
         $this->assertCount(1, $params);
-        $this->assertEquals('int', $params[0]->getType()?->getName());
+        $paramType = $params[0]->getType();
+        $this->assertInstanceOf(\ReflectionNamedType::class, $paramType);
+        $this->assertEquals('int', $paramType->getName());
 
         $this->assertTrue($reflection->getReturnType()?->allowsNull());
     }
@@ -184,7 +190,9 @@ class UserTest extends TestCase
         $reflection = new \ReflectionMethod(DoctorRepository::class, 'updatePassword');
 
         $this->assertTrue($reflection->isPublic());
-        $this->assertEquals('bool', $reflection->getReturnType()?->getName());
+        $returnType = $reflection->getReturnType();
+        $this->assertInstanceOf(\ReflectionNamedType::class, $returnType);
+        $this->assertEquals('bool', $returnType->getName());
         $this->assertCount(2, $reflection->getParameters());
     }
 
@@ -197,7 +205,9 @@ class UserTest extends TestCase
         $reflection = new \ReflectionMethod(DoctorRepository::class, 'updateEmail');
 
         $this->assertTrue($reflection->isPublic());
-        $this->assertEquals('bool', $reflection->getReturnType()?->getName());
+        $returnType = $reflection->getReturnType();
+        $this->assertInstanceOf(\ReflectionNamedType::class, $returnType);
+        $this->assertEquals('bool', $returnType->getName());
         $this->assertCount(2, $reflection->getParameters());
     }
 

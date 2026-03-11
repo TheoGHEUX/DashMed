@@ -41,8 +41,7 @@ class DatabaseTest extends TestCase
     {
         $reflection = new \ReflectionMethod(Database::class, 'getConnection');
         $returnType = $reflection->getReturnType();
-
-        $this->assertNotNull($returnType);
+        $this->assertInstanceOf(\ReflectionNamedType::class, $returnType);
         $this->assertEquals('PDO', $returnType->getName());
     }
 

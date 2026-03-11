@@ -109,7 +109,7 @@ final class Router
         }
 
         $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
-        $methodString = is_string($method) ? $method : 'GET';
+        $methodString = $method;
 
         if (isset(self::ROUTES[$methodString][$pathString])) {
             [$controllerClass, $action] = self::ROUTES[$methodString][$pathString];

@@ -16,6 +16,7 @@ use Core\Services\UrlBuilder;
 final class ForgottenPassword
 {
     private IDoctorRepository $repo;
+    private ISecurityRepository $securityRepo;
     private IMailer $mailer;
 
     public function __construct(

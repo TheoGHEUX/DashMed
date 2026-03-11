@@ -26,7 +26,7 @@ final class GetPatientChartData
 
         // 2. Vérifier qu'au moins une valeur existe
         $valeurs = $data['valeurs'];
-        if (!is_array($valeurs) || empty($valeurs)) {
+        if (!is_array($valeurs)) {
             return null;
         }
 

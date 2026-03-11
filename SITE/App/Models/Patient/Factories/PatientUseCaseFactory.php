@@ -75,7 +75,6 @@ final class PatientUseCaseFactory
 
     public static function createSuggestLayout(): SuggestLayout
     {
-        $repo = self::getLayoutRepo();
-        return new SuggestLayout($repo, $repo, self::getSimilarityService());
+        return new SuggestLayout(self::getLayoutRepo(), self::getSimilarityService());
     }
 }

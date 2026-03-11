@@ -79,7 +79,7 @@ final class ChartApiController extends AbstractController
                 $formPatientId = $this->getPost('ptId', '0');
             }
             // Support 'patient' (comme main) et 'ptId' (nouvelle architecture)
-            $patientId = (int)($input['patient'] ?? $input['ptId'] ?? $formPatientId ?? 0);
+            $patientId = (int)($input['patient'] ?? $input['ptId'] ?? $formPatientId);
 
             if ($patientId <= 0) {
                 $this->json(['success' => false, 'error' => 'ID Patient invalide'], 400);
