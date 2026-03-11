@@ -18,11 +18,19 @@ document.addEventListener('DOMContentLoaded', function () {
     arrow.className = 'toggle-arrow';
     arrow.textContent = '❯';
     
-    const count = document.createElement('span');
-    count.className = 'notif-count';
+    // Compteur rouge pour les alertes
+    const countAlert = document.createElement('span');
+    countAlert.className = 'notif-count alert';
+    countAlert.id = 'notif-count-alert';
+    
+    // Compteur bleu pour les prédictions
+    const countPrediction = document.createElement('span');
+    countPrediction.className = 'notif-count prediction';
+    countPrediction.id = 'notif-count-prediction';
     
     toggleBtn.appendChild(arrow);
-    toggleBtn.appendChild(count);
+    toggleBtn.appendChild(countAlert);
+    toggleBtn.appendChild(countPrediction);
 
     // Insérer le wrapper autour du container existant
     container.parentNode.insertBefore(wrapper, container);
@@ -40,8 +48,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function updateToggleBadge() {
         const count = activeNotifications.size;
-        const badge = toggleBtn.querySelector('.notif-count');
-        badge.textContent = count > 0 ? count : '';
+        const badge = document.getElementById('notif-count-alert');
+        if (badge) badge.textContent = count > 0 ? count : '';
     }
 
     // Si pas de données patient, on s'arrête ici
@@ -99,6 +107,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 scrollable.querySelectorAll('.notification-toast').forEach(n => closeNotification(n));
                 activeNotifications.clear();
                 updateToggleBadge();
+                
+                // Réinitialiser aussi le compteur bleu des prédictions
+                const predictionBadge = document.getElementById('notif-count-prediction');
+                if (predictionBadge) predictionBadge.textContent = '';
+                
                 btn.remove();
             });
             container.insertBefore(btn, scrollable);

@@ -127,11 +127,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Affiche le pop-up de suggestion dans le conteneur de notifications
     function showPredictionPopup(action, mesure, confidence) {
-        const container = document.getElementById('notification-container');
-        if (!container) {
+        const scrollable = document.getElementById('notifications-scrollable');
+        if (!scrollable) {
             predictionActive = false;
             return;
         }
+        
+        // Mettre à jour le compteur bleu de prédictions
+        updatePredictionCount(1);
 
         const targetChartId = MESURE_TO_CHART[mesure] || null;
         const confidencePercent = Math.round(confidence * 100);
@@ -205,7 +208,17 @@ document.addEventListener('DOMContentLoaded', function () {
             closePrediction(popup);
         });
 
-        container.appendChild(popup);
+        scrollable.appendChild(popup);
+    }
+    
+    // Met à jour le compteur de prédictions
+    function updatePredictionCount(delta) {
+        const badge = document.getElementById('notif-count-prediction');
+        if (!badge) return;
+        
+        const current = parseInt(badge.textContent) || 0;
+        const newCount = Math.max(0, current + delta);
+        badge.textContent = newCount > 0 ? newCount : '';
     }
 
     // Ferme un pop-up avec l'animation CSS .closing
@@ -213,6 +226,7 @@ document.addEventListener('DOMContentLoaded', function () {
         element.classList.add('closing');
         setTimeout(() => {
             if (element.parentNode) element.parentNode.removeChild(element);
+            updatePredictionCount(-1);
             predictionActive = false;
         }, 300);
     }
