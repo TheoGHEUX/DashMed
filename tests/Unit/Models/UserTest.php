@@ -4,183 +4,223 @@ namespace Tests\Unit\Models;
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\Attributes\DataProvider;
+use App\Models\Doctor\Entities\Doctor;
+use App\Models\Doctor\Repositories\DoctorRepository;
 
 /**
- * Tests unitaires pour la classe User
+ * Tests unitaires pour la classe Doctor
  *
- * Note: Les tests qui nécessitent une connexion à la base de données
- * sont placés dans les tests d'intégration.
+ * L'ancienne classe Models\User a été remplacée par l'entité Doctor
+ * et son repository DoctorRepository dans la nouvelle architecture DDD.
+ *
+ * Ces tests vérifient l'entité et les signatures de méthodes du repository
+ * sans connexion réelle à la base de données.
  */
 class UserTest extends TestCase
 {
     /**
-     * Test que la méthode emailExists retourne un booléen
-     * Ce test vérifie le type de retour attendu
+     * Vérifie que l'entité Doctor se construit correctement depuis un tableau de données
+     * et que tous ses getters retournent les bonnes valeurs.
      */
     #[Test]
-    public function emailExistsReturnsBool(): void
+    public function doctorEntityConstructsCorrectlyFromArray(): void
     {
-        // Cette méthode nécessite une connexion DB
-        // On vérifie juste que la méthode existe et a la bonne signature
-        $this->assertTrue(method_exists(\Models\User::class, 'emailExists'));
+        $data = [
+            'med_id'                      => 42,
+            'prenom'                      => 'Sophie',
+            'nom'                         => 'Martin',
+            'email'                       => 'sophie.martin@hopital.fr',
+            'mdp'                         => 'hashed_password',
+            'sexe'                        => 'F',
+            'specialite'                  => 'Cardiologie',
+            'email_verified'              => 1,
+            'email_verification_token'    => null,
+            'email_verification_expires'  => null,
+        ];
 
-        $reflection = new \ReflectionMethod(\Models\User::class, 'emailExists');
-        $this->assertTrue($reflection->isStatic());
-        $this->assertEquals('bool', $reflection->getReturnType()?->getName());
+        $doctor = new Doctor($data);
+
+        $this->assertEquals(42, $doctor->getId());
+        $this->assertEquals('Sophie', $doctor->getPrenom());
+        $this->assertEquals('Martin', $doctor->getNom());
+        $this->assertEquals('sophie.martin@hopital.fr', $doctor->getEmail());
+        $this->assertEquals('hashed_password', $doctor->getPasswordHash());
+        $this->assertEquals('F', $doctor->getSexe());
+        $this->assertEquals('Cardiologie', $doctor->getSpecialite());
+        $this->assertTrue($doctor->isEmailVerified());
+        $this->assertNull($doctor->getVerificationToken());
+        $this->assertNull($doctor->getVerificationExpires());
     }
 
     /**
-     * Test que la méthode create existe avec les bons paramètres
+     * Vérifie que des champs optionnels absents du tableau valent null (et non une erreur).
+     *
+     * Pourquoi : la BDD peut retourner des lignes sans tous les champs.
+     * L'entité doit rester robuste aux clés manquantes.
      */
     #[Test]
-    public function createMethodHasCorrectSignature(): void
+    public function doctorEntityHandlesMissingOptionalFields(): void
     {
-        $reflection = new \ReflectionMethod(\Models\User::class, 'create');
+        $data = [
+            'med_id'  => 1,
+            'prenom'  => 'Jean',
+            'nom'     => 'Dupont',
+            'email'   => 'jean@example.com',
+            'mdp'     => 'hash',
+        ];
 
-        $this->assertTrue($reflection->isStatic());
-        $this->assertEquals('bool', $reflection->getReturnType()?->getName());
-        $this->assertCount(6, $reflection->getParameters());
+        $doctor = new Doctor($data);
 
-        $paramNames = array_map(fn($p) => $p->getName(), $reflection->getParameters());
-        $this->assertEquals(['name', 'lastName', 'email', 'hash', 'sexe', 'specialite'], $paramNames);
+        $this->assertNull($doctor->getSexe());
+        $this->assertNull($doctor->getSpecialite());
+        $this->assertFalse($doctor->isEmailVerified());
+        $this->assertNull($doctor->getVerificationToken());
     }
 
     /**
-     * Test que la méthode findByEmail existe avec la bonne signature
+     * Vérifie que toSessionArray() retourne les bonnes clés pour stocker le médecin en session.
+     *
+     * Ce test documente le contrat entre l'entité et la session.
+     */
+    #[Test]
+    public function doctorToSessionArrayContainsExpectedKeys(): void
+    {
+        $doctor = new Doctor([
+            'med_id'         => 5,
+            'prenom'         => 'Alice',
+            'nom'            => 'Dupont',
+            'email'          => 'alice@test.com',
+            'mdp'            => 'hash',
+            'email_verified' => 1,
+        ]);
+
+        $session = $doctor->toSessionArray();
+
+        $this->assertArrayHasKey('id', $session);
+        $this->assertArrayHasKey('email', $session);
+        $this->assertArrayHasKey('name', $session);
+        $this->assertArrayHasKey('last_name', $session);
+        $this->assertArrayHasKey('email_verified', $session);
+        $this->assertEquals(5, $session['id']);
+        $this->assertEquals('alice@test.com', $session['email']);
+    }
+
+    /**
+     * Vérifie que le token de vérification d'email est bien accessible via le getter.
+     */
+    #[Test]
+    public function doctorEntityExposesVerificationToken(): void
+    {
+        $doctor = new Doctor([
+            'med_id'                     => 1,
+            'prenom'                     => 'Bob',
+            'nom'                        => 'Test',
+            'email'                      => 'bob@test.com',
+            'mdp'                        => 'hash',
+            'email_verification_token'   => 'abc123token',
+            'email_verification_expires' => '2099-12-31 23:59:59',
+        ]);
+
+        $this->assertEquals('abc123token', $doctor->getVerificationToken());
+        $this->assertEquals('2099-12-31 23:59:59', $doctor->getVerificationExpires());
+    }
+
+    /**
+     * Vérifie que DoctorRepository::emailExists() est bien une méthode publique
+     * retournant un bool — correspondant à l'ancienne User::emailExists().
+     */
+    #[Test]
+    public function emailExistsMethodHasCorrectSignature(): void
+    {
+        $reflection = new \ReflectionMethod(DoctorRepository::class, 'emailExists');
+
+        $this->assertTrue($reflection->isPublic());
+        $this->assertEquals('bool', $reflection->getReturnType()?->getName());
+
+        $params = $reflection->getParameters();
+        $this->assertCount(1, $params);
+        $this->assertEquals('string', $params[0]->getType()?->getName());
+    }
+
+    /**
+     * Vérifie la signature de findByEmail() : méthode publique retournant ?Doctor.
      */
     #[Test]
     public function findByEmailMethodHasCorrectSignature(): void
     {
-        $reflection = new \ReflectionMethod(\Models\User::class, 'findByEmail');
+        $reflection = new \ReflectionMethod(DoctorRepository::class, 'findByEmail');
 
-        $this->assertTrue($reflection->isStatic());
-        $this->assertTrue($reflection->getReturnType()?->allowsNull());
+        $this->assertTrue($reflection->isPublic());
         $this->assertCount(1, $reflection->getParameters());
+
+        $returnType = $reflection->getReturnType();
+        $this->assertNotNull($returnType);
+        $this->assertTrue($returnType->allowsNull());
     }
 
     /**
-     * Test que la méthode findById existe avec la bonne signature
+     * Vérifie la signature de findById() : méthode publique, paramètre int, retourne ?Doctor.
      */
     #[Test]
     public function findByIdMethodHasCorrectSignature(): void
     {
-        $reflection = new \ReflectionMethod(\Models\User::class, 'findById');
+        $reflection = new \ReflectionMethod(DoctorRepository::class, 'findById');
 
-        $this->assertTrue($reflection->isStatic());
-        $this->assertTrue($reflection->getReturnType()?->allowsNull());
+        $this->assertTrue($reflection->isPublic());
 
         $params = $reflection->getParameters();
         $this->assertCount(1, $params);
         $this->assertEquals('int', $params[0]->getType()?->getName());
+
+        $this->assertTrue($reflection->getReturnType()?->allowsNull());
     }
 
     /**
-     * Test que la méthode updatePassword existe avec la bonne signature
+     * Vérifie la signature de updatePassword() : méthode publique, 2 paramètres, retourne bool.
      */
     #[Test]
     public function updatePasswordMethodHasCorrectSignature(): void
     {
-        $reflection = new \ReflectionMethod(\Models\User::class, 'updatePassword');
+        $reflection = new \ReflectionMethod(DoctorRepository::class, 'updatePassword');
 
-        $this->assertTrue($reflection->isStatic());
+        $this->assertTrue($reflection->isPublic());
         $this->assertEquals('bool', $reflection->getReturnType()?->getName());
         $this->assertCount(2, $reflection->getParameters());
     }
 
     /**
-     * Test que la méthode updateEmail existe avec la bonne signature
+     * Vérifie la signature de updateEmail() : méthode publique, 2 paramètres, retourne bool.
      */
     #[Test]
     public function updateEmailMethodHasCorrectSignature(): void
     {
-        $reflection = new \ReflectionMethod(\Models\User::class, 'updateEmail');
+        $reflection = new \ReflectionMethod(DoctorRepository::class, 'updateEmail');
 
-        $this->assertTrue($reflection->isStatic());
+        $this->assertTrue($reflection->isPublic());
         $this->assertEquals('bool', $reflection->getReturnType()?->getName());
         $this->assertCount(2, $reflection->getParameters());
     }
 
     /**
-     * Test que la méthode generateEmailVerificationToken existe
+     * Vérifie que le namespace de l'entité Doctor est correct.
      */
     #[Test]
-    public function generateEmailVerificationTokenMethodExists(): void
+    public function doctorClassHasCorrectNamespace(): void
     {
-        $reflection = new \ReflectionMethod(\Models\User::class, 'generateEmailVerificationToken');
-
-        $this->assertTrue($reflection->isStatic());
-        $this->assertTrue($reflection->getReturnType()?->allowsNull());
+        $reflection = new \ReflectionClass(Doctor::class);
+        $this->assertEquals('App\\Models\\Doctor\\Entities', $reflection->getNamespaceName());
     }
 
     /**
-     * Test que la méthode verifyEmailToken existe
+     * Vérifie la validation du format d'email (logique PHP native, sans dépendance).
      */
     #[Test]
-    public function verifyEmailTokenMethodHasCorrectSignature(): void
+    public function emailFormatValidation(): void
     {
-        $reflection = new \ReflectionMethod(\Models\User::class, 'verifyEmailToken');
-
-        $this->assertTrue($reflection->isStatic());
-        $this->assertEquals('bool', $reflection->getReturnType()?->getName());
-    }
-
-    /**
-     * Test que la méthode findByVerificationToken existe
-     */
-    #[Test]
-    public function findByVerificationTokenMethodExists(): void
-    {
-        $reflection = new \ReflectionMethod(\Models\User::class, 'findByVerificationToken');
-
-        $this->assertTrue($reflection->isStatic());
-        $this->assertTrue($reflection->getReturnType()?->allowsNull());
-    }
-
-    /**
-     * Test de validation d'email - formats valides
-     */
-    #[Test]
-    #[DataProvider('validEmailProvider')]
-    public function emailFormatValidation(string $email, bool $isValid): void
-    {
-        $result = filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
-        $this->assertEquals($isValid, $result);
-    }
-
-    /**
-     * Provider de données pour les tests d'email
-     */
-    public static function validEmailProvider(): array
-    {
-        return [
-            'valid_email' => ['test@example.com', true],
-            'valid_email_with_subdomain' => ['user@mail.example.com', true],
-            'valid_email_with_plus' => ['user+tag@example.com', true],
-            'invalid_no_at' => ['testexample.com', false],
-            'invalid_no_domain' => ['test@', false],
-            'invalid_spaces' => ['test @example.com', false],
-            'invalid_double_at' => ['test@@example.com', false],
-        ];
-    }
-
-    /**
-     * Test que la classe User est finale
-     */
-    #[Test]
-    public function userClassIsFinal(): void
-    {
-        $reflection = new \ReflectionClass(\Models\User::class);
-        $this->assertTrue($reflection->isFinal());
-    }
-
-    /**
-     * Test du namespace correct
-     */
-    #[Test]
-    public function userClassHasCorrectNamespace(): void
-    {
-        $reflection = new \ReflectionClass(\Models\User::class);
-        $this->assertEquals('Models', $reflection->getNamespaceName());
+        $this->assertNotFalse(filter_var('sophie@hopital.fr', FILTER_VALIDATE_EMAIL));
+        $this->assertNotFalse(filter_var('user+tag@example.com', FILTER_VALIDATE_EMAIL));
+        $this->assertFalse(filter_var('pas-un-email', FILTER_VALIDATE_EMAIL));
+        $this->assertFalse(filter_var('test@', FILTER_VALIDATE_EMAIL));
+        $this->assertFalse(filter_var('test @example.com', FILTER_VALIDATE_EMAIL));
     }
 }

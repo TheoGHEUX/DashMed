@@ -1,0 +1,2 @@
+  ia_prediction 81f457c [origin/ia_prediction] Prediction native PHP : remplace exec Python par TreePredictor JSON
+* main          21e3282 [origin/main: ahead 1, behind 19] correction d'une fuite d'information de debug dans l'endpoint de l'ia prédiction

@@ -1,0 +1,2 @@
+origin	git@github.com-amir:TheoGHEUX/DashMed.git (fetch)
+origin	git@github.com-amir:TheoGHEUX/DashMed.git (push)
