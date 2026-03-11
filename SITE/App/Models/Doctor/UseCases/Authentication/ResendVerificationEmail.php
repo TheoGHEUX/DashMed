@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Models\Doctor\UseCases\Authentication;
 
 use App\Exceptions\ValidationException;
+use App\Interfaces\IMailer;
 use App\Models\Doctor\Interfaces\IDoctorRepository;
 use App\Models\Doctor\Interfaces\IResendVerificationEmail;
 use App\Models\Doctor\Interfaces\IDoctorVerificationRepository;
 use App\ValueObjects\Email;
-use Core\Services\MailerService;
 use Core\Services\TokenGenerator;
 use Core\Services\UrlBuilder;
 
@@ -17,12 +17,12 @@ final class ResendVerificationEmail implements IResendVerificationEmail
 {
     private IDoctorRepository $repo;
     private IDoctorVerificationRepository $verifyRepo;
-    private MailerService $mailer;
+    private IMailer $mailer;
 
     public function __construct(
         IDoctorRepository $repo,
         IDoctorVerificationRepository $verifyRepo,
-        MailerService $mailer
+        IMailer $mailer
     ) {
         $this->repo = $repo;
         $this->verifyRepo = $verifyRepo;

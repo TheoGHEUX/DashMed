@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models\Doctor\Factories;
 
+use App\Interfaces\IMailer;
 use App\Models\Doctor\Repositories\DoctorRepository;
 use App\Models\Doctor\Repositories\DoctorVerificationRepository;
 use App\Models\Doctor\Repositories\SecurityRepository;
 use App\Models\Doctor\Validators\DoctorValidator;
 use App\Models\Doctor\UseCases\Authentication\LoginDoctor;
 use App\Models\Doctor\UseCases\Authentication\RegisterDoctor;
+use App\Models\Doctor\UseCases\Authentication\ResendVerificationEmail;
 use App\Models\Doctor\UseCases\Authentication\VerifyEmail;
 use App\Models\Doctor\UseCases\Security\ForgottenPassword;
 use App\Models\Doctor\UseCases\Security\ResetPassword;
@@ -27,7 +29,7 @@ final class DoctorUseCaseFactory
     private static ?DoctorVerificationRepository $verificationRepo = null;
     private static ?SecurityRepository $securityRepo = null;
     private static ?DoctorValidator $validator = null;
-    private static ?MailerService $mailer = null;
+    private static ?IMailer $mailer = null;
 
     // Repositories (Singleton pattern pour éviter multiples connexions)
     private static function getDoctorRepo(): DoctorRepository
@@ -63,7 +65,7 @@ final class DoctorUseCaseFactory
         return self::$validator;
     }
 
-    private static function getMailer(): MailerService
+    private static function getMailer(): IMailer
     {
         if (self::$mailer === null) {
             self::$mailer = new MailerService();
@@ -90,6 +92,15 @@ final class DoctorUseCaseFactory
     public static function createVerifyEmail(): VerifyEmail
     {
         return new VerifyEmail(self::getVerificationRepo());
+    }
+
+    public static function createResendVerificationEmail(): ResendVerificationEmail
+    {
+        return new ResendVerificationEmail(
+            self::getDoctorRepo(),
+            self::getVerificationRepo(),
+            self::getMailer()
+        );
     }
 
     public static function createForgottenPassword(): ForgottenPassword

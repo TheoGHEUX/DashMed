@@ -56,6 +56,7 @@ final class Router
             '/forgotten-password' => [ForgottenPasswordController::class, 'show'],
             '/reset-password' => [ResetPasswordController::class, 'show'],
             '/verify-email' => [VerifyEmailController::class, 'verify'],
+            '/resend-verification' => [VerifyEmailController::class, 'showResend'],
 
             // --- Espace Privé ---
             '/home' => [ConnectedHomeController::class, 'index'],

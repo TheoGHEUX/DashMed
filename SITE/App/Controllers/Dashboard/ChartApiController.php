@@ -5,18 +5,16 @@ declare(strict_types=1);
 namespace App\Controllers\Dashboard;
 
 use Core\Controller\AbstractController;
-use App\Models\Patient\Repositories\PatientMonitoringRepository;
+use App\Models\Patient\Factories\PatientUseCaseFactory;
 use App\Models\Patient\UseCases\Monitoring\GetPatientChartData;
 
 final class ChartApiController extends AbstractController
 {
     private GetPatientChartData $useCase;
-    private PatientMonitoringRepository $repo; // Utile si generateData a besoin du repo direct
 
     public function __construct()
     {
-        $this->repo = new PatientMonitoringRepository();
-        $this->useCase = new GetPatientChartData($this->repo);
+        $this->useCase = PatientUseCaseFactory::createGetPatientChartData();
     }
 
     /**

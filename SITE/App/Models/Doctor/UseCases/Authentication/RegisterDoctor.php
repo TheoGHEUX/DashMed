@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models\Doctor\UseCases\Authentication;
 
+use App\Interfaces\IMailer;
 use App\Models\Doctor\Interfaces\IDoctorRepository;
 use App\Models\Doctor\Interfaces\IDoctorVerificationRepository;
 use App\Models\Doctor\Validators\DoctorValidator;
 use App\ValueObjects\Email;
 use App\ValueObjects\Password;
 use App\Exceptions\ValidationException;
-use Core\Services\MailerService;
 use Core\Services\TokenGenerator;
 use Core\Services\UrlBuilder;
 
@@ -19,13 +19,13 @@ final class RegisterDoctor
     private IDoctorRepository $repo;
     private IDoctorVerificationRepository $verifyRepo;
     private DoctorValidator $validator;
-    private MailerService $mailer;
+    private IMailer $mailer;
 
     public function __construct(
         IDoctorRepository $repo,
         IDoctorVerificationRepository $verifyRepo,
         DoctorValidator $validator,
-        MailerService $mailer
+        IMailer $mailer
     ) {
         $this->repo = $repo;
         $this->verifyRepo = $verifyRepo;

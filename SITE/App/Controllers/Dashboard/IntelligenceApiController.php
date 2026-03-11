@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers\Dashboard;
 
 use Core\Controller\AbstractController;
-use App\Models\ConsoleLog\Repositories\ActionLoggerRepository;
-use App\Models\ConsoleLog\Services\TreePredictor;
+use App\Models\ConsoleLog\Factories\ConsoleLogUseCaseFactory;
 use App\Models\ConsoleLog\UseCases\Logging\LogDashboardAction;
 use App\Models\ConsoleLog\UseCases\Intelligence\PredictNextAction;
 
@@ -17,9 +16,8 @@ final class IntelligenceApiController extends AbstractController
 
     public function __construct()
     {
-        // Injection des dépendances via les interfaces
-        $this->logger = new LogDashboardAction(new ActionLoggerRepository());
-        $this->predictor = new PredictNextAction(new TreePredictor());
+        $this->logger = ConsoleLogUseCaseFactory::createLogDashboardAction();
+        $this->predictor = ConsoleLogUseCaseFactory::createPredictNextAction();
     }
 
     /**

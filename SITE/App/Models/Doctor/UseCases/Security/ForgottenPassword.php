@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Models\Doctor\UseCases\Security;
 
 use App\Exceptions\ValidationException;
+use App\Interfaces\IMailer;
 use App\Models\Doctor\Interfaces\IDoctorRepository;
 use App\Models\Doctor\Interfaces\ISecurityRepository;
 use App\Models\Doctor\Validators\DoctorValidator;
 use App\ValueObjects\Email;
-use Core\Services\MailerService;
 use Core\Services\TokenGenerator;
 use Core\Services\UrlBuilder;
 
@@ -18,13 +18,13 @@ final class ForgottenPassword
     private IDoctorRepository $repo;
     private ISecurityRepository $securityRepo;
     private DoctorValidator $validator;
-    private MailerService $mailer;
+    private IMailer $mailer;
 
     public function __construct(
         IDoctorRepository $repo,
         ISecurityRepository $securityRepo,
         DoctorValidator $validator,
-        MailerService $mailer
+        IMailer $mailer
     ) {
         $this->repo = $repo;
         $this->securityRepo = $securityRepo;

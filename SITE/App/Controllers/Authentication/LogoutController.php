@@ -11,8 +11,7 @@ final class LogoutController extends AbstractController
     public function logout(): void
     {
         $this->startSession();
-        $csrf = $this->getPost('csrf_token') ?? '';
-        if (!$this->validateCsrf($csrf)) {
+        if (!$this->validateCsrf()) {
             $this->redirect('/dashboard');
             return;
         }

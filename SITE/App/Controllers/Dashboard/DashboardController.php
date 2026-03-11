@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers\Dashboard;
 
 use Core\Controller\AbstractController;
-use App\Models\Patient\Repositories\PatientManagementRepository;
-use App\Models\Patient\Repositories\PatientMonitoringRepository;
+use App\Models\Patient\Factories\PatientUseCaseFactory;
 use App\Models\Patient\UseCases\Management\GetDoctorPatients;
 use App\Models\Patient\UseCases\Monitoring\GetPatientChartData;
 
@@ -17,10 +16,8 @@ final class DashboardController extends AbstractController
 
     public function __construct()
     {
-        $managementRepo = new PatientManagementRepository();
-        $monitoringRepo = new PatientMonitoringRepository();
-        $this->getPatientsUseCase = new GetDoctorPatients($managementRepo);
-        $this->getChartsUseCase = new GetPatientChartData($monitoringRepo);
+        $this->getPatientsUseCase = PatientUseCaseFactory::createGetDoctorPatients();
+        $this->getChartsUseCase = PatientUseCaseFactory::createGetPatientChartData();
     }
 
     public function index(): void
