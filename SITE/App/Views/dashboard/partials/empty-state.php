@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Partial : État Vide
  *
@@ -6,6 +7,7 @@
  *
  * @package Views/Dashboard/Partials
  */
+
 ?>
 <section class="dashboard-empty-state" role="status" aria-label="Aucun patient">
     <div class="empty-state-content">

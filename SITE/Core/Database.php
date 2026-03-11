@@ -24,7 +24,6 @@ final class Database
     public static function getConnection(): PDO
     {
         if (self::$pdo === null) {
-
             // 1. Charger les variables d'environnement
             self::loadEnv();
 
@@ -131,12 +130,12 @@ final class Database
             return;
         }
 
-        // Chemin vers le .env : 
+        // Chemin vers le .env :
         // Local: DashMed/.env
         // Production: /home/dashmed-site/config/.env (remonte de SITE/Core -> SITE -> DashMed -> www -> racine -> config)
         $root = dirname(__DIR__, 4); // Remonte à la racine du serveur
         $envFile = $root . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . '.env';
-        
+
         // Si pas trouvé, essayer dans la racine du projet (environnement local)
         if (!is_file($envFile)) {
             $root = dirname(__DIR__, 2); // DashMed/
@@ -145,7 +144,9 @@ final class Database
 
         if (is_file($envFile) && is_readable($envFile)) {
             $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-            if ($lines === false) return;
+            if ($lines === false) {
+                return;
+            }
 
             foreach ($lines as $line) {
                 // Ignorer les commentaires (# ou ;)

@@ -14,7 +14,6 @@ use App\Models\Doctor\Factories\DoctorUseCaseFactory;
  */
 final class ResetPasswordController extends AbstractController
 {
-
     public function show(): void
     {
         $this->startSession();

@@ -36,7 +36,7 @@ final class IntelligenceApiController extends AbstractController
     {
         $this->checkAuth();
         $this->validateApiCsrf();
-        
+
         $input = json_decode(file_get_contents('php://input'), true);
 
         $ptId = isset($input['ptId']) && $input['ptId'] > 0 ? (int)$input['ptId'] : null;
@@ -62,7 +62,7 @@ final class IntelligenceApiController extends AbstractController
         $this->validateApiCsrf();
 
         $input = json_decode(file_get_contents('php://input'), true);
-        
+
         $action = $input['action'] ?? null;
         $mesure = $input['mesure'] ?? null;
         $heure = $input['heure'] ?? (int) date('G');

@@ -17,7 +17,7 @@ final class SecurityRepository implements ISecurityRepository
         $this->db = Database::getConnection();
     }
 
-    // Récupérer le dernier token pour un email 
+    // Récupérer le dernier token pour un email
     public function findResetToken(string $email): ?array
     {
         $stmt = $this->db->prepare('SELECT * FROM password_resets WHERE email = ? AND expires_at > NOW() AND used_at IS NULL ORDER BY id DESC LIMIT 1');

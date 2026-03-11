@@ -53,7 +53,9 @@ final class ChartApiController extends AbstractController
         $results = [];
         foreach ($metrics as $jsKey => $dbLabel) {
             $data = $this->useCase->execute($patientId, $dbLabel);
-            if ($data) $results[$jsKey] = $data;
+            if ($data) {
+                $results[$jsKey] = $data;
+            }
         }
 
         $this->json(['success' => true, 'chartData' => $results]);

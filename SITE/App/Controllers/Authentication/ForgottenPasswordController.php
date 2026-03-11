@@ -14,7 +14,6 @@ use App\Models\Doctor\Factories\DoctorUseCaseFactory;
  */
 final class ForgottenPasswordController extends AbstractController
 {
-
     public function show(): void
     {
         $this->render('authentication/forgotten-password', [

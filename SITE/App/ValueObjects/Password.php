@@ -13,7 +13,7 @@ use App\Exceptions\ValidationException;
 final class Password
 {
     private const MIN_LENGTH = 8;
-    
+
     private string $value;
 
     public function __construct(string $password)

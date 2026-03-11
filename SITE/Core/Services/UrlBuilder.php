@@ -21,13 +21,13 @@ final class UrlBuilder
     {
         $protocol = self::getProtocol();
         $domain = self::getDomain();
-        
+
         $url = "{$protocol}://{$domain}{$path}";
-        
+
         if (!empty($params)) {
             $url .= '?' . http_build_query($params);
         }
-        
+
         return $url;
     }
 

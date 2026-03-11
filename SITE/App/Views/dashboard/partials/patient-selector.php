@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Partial : Bouton Sélecteur Patient
  *
@@ -6,6 +7,7 @@
  *
  * @package Views/Dashboard/Partials
  */
+
 ?>
 <div class="dashboard-actions">
     <button class="btn-patients" id="togglePatients"

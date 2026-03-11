@@ -28,22 +28,28 @@ final class SuggestLayout
     {
         // 1. Récupérer les données du patient cible (via Repo de similarité)
         $targetData = $this->similarityRepository->getPatientDataForSimilarity($patientId);
-        if (!$targetData) return null;
+        if (!$targetData) {
+            return null;
+        }
 
         // 2. Récupérer les candidats (via Repo de similarité)
         $candidatesData = $this->similarityRepository->getCandidatesForSimilarity($medId, $patientId);
-        if (empty($candidatesData)) return null;
+        if (empty($candidatesData)) {
+            return null;
+        }
 
         // 3. Calculer les K plus proches (on en prend 5 pour avoir une liste)
         $nearest = $this->similarityService->findNearestNeighbors($targetData, $candidatesData, 5);
 
-        if (empty($nearest)) return null;
+        if (empty($nearest)) {
+            return null;
+        }
 
         // 4. Trouver le layout du patient le plus similaire
         // Le layout_config est déjà dans candidatesData, pas besoin de refaire une requête
         $bestMatchId = $nearest[0]['pt_id'];
         $bestDistance = $nearest[0]['distance'];
-        
+
         $layout = null;
         foreach ($candidatesData as $candidate) {
             if ($candidate['pt_id'] === $bestMatchId) {
@@ -53,7 +59,9 @@ final class SuggestLayout
             }
         }
 
-        if (!$layout) return null;
+        if (!$layout) {
+            return null;
+        }
 
         // Retourner toutes les informations comme dans main
         return [

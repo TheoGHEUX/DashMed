@@ -47,16 +47,46 @@ final class Doctor
         return (string) $value;
     }
 
-    public function getId(): int { return $this->id; }
-    public function getPrenom(): string { return $this->prenom; }
-    public function getNom(): string { return $this->nom; }
-    public function getEmail(): string { return $this->email; }
-    public function getPasswordHash(): string { return $this->passwordHash; }
-    public function isEmailVerified(): bool { return $this->emailVerified; }
-    public function getVerificationToken(): ?string { return $this->verificationToken; }
-    public function getVerificationExpires(): ?string { return $this->verificationExpires; }
-    public function getSexe(): ?string { return $this->sexe; }
-    public function getSpecialite(): ?string { return $this->specialite; }
+    public function getId(): int
+    {
+        return $this->id;
+    }
+    public function getPrenom(): string
+    {
+        return $this->prenom;
+    }
+    public function getNom(): string
+    {
+        return $this->nom;
+    }
+    public function getEmail(): string
+    {
+        return $this->email;
+    }
+    public function getPasswordHash(): string
+    {
+        return $this->passwordHash;
+    }
+    public function isEmailVerified(): bool
+    {
+        return $this->emailVerified;
+    }
+    public function getVerificationToken(): ?string
+    {
+        return $this->verificationToken;
+    }
+    public function getVerificationExpires(): ?string
+    {
+        return $this->verificationExpires;
+    }
+    public function getSexe(): ?string
+    {
+        return $this->sexe;
+    }
+    public function getSpecialite(): ?string
+    {
+        return $this->specialite;
+    }
 
     public function toSessionArray(): array
     {

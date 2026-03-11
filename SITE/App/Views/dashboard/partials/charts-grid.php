@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Partial : Grille des Graphiques
  *
@@ -6,6 +7,7 @@
  *
  * @package Views/Dashboard/Partials
  */
+
 ?>
 <section class="dashboard-grid" id="dashboardGrid" aria-label="Statistiques de santé">
     <?php if (!empty($patient)) : ?>

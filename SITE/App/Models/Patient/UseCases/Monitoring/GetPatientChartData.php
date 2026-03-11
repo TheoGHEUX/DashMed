@@ -57,7 +57,9 @@ final class GetPatientChartData
         // 6. Normaliser les valeurs entre 0 et 1
         $normalizedValues = array_map(function ($item) use ($chartMin, $chartMax) {
             $val = (float)$item['valeur'];
-            if ($chartMax === $chartMin) return 0.5;
+            if ($chartMax === $chartMin) {
+                return 0.5;
+            }
             return max(0, min(1, ($val - $chartMin) / ($chartMax - $chartMin)));
         }, $valeurs);
 

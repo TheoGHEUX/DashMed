@@ -21,10 +21,13 @@ final class LogoutController extends AbstractController
             $params = session_get_cookie_params();
             $sessName = session_name() ?: 'PHPSESSID';
             setcookie(
-                $sessName, '',
+                $sessName,
+                '',
                 time() - 42000,
-                $params['path'], $params['domain'],
-                $params['secure'], $params['httponly']
+                $params['path'],
+                $params['domain'],
+                $params['secure'],
+                $params['httponly']
             );
         }
         session_destroy();

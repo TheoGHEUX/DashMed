@@ -37,7 +37,9 @@ final class MailerService implements IMailer
     private function renderTemplate(string $templateName, array $vars = []): string
     {
         $file = dirname(__DIR__, 2) . '/App/Views/emails/' . $templateName . '.php';
-        if (!file_exists($file)) return '';
+        if (!file_exists($file)) {
+            return '';
+        }
         extract($vars);
         ob_start();
         include $file;
@@ -47,7 +49,9 @@ final class MailerService implements IMailer
     private function saveToDisk(string $to, string $subject, string $body): void
     {
         $dir = dirname(__DIR__, 3) . '/storage/mails';
-        if (!is_dir($dir)) { mkdir($dir, 0755, true); }
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
         $filename = $dir . '/mail_' . date('Ymd_His') . '_' . uniqid() . '.eml';
         $content = "To: $to\r\nSubject: $subject\r\n\r\n" . $body;
         file_put_contents($filename, $content);

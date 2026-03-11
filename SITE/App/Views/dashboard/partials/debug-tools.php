@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Partial : Outils de Debug
  *
@@ -6,6 +7,7 @@
  *
  * @package Views/Dashboard/Partials
  */
+
 ?>
 <?php if (!empty($patient)) : ?>
     <div class="dashboard-actions">

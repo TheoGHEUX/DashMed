@@ -36,7 +36,9 @@ final class DashboardLayoutRepository implements IDashboardLayoutRepository, IPa
         // On vérifie juste l'existence de la relation, pas de règle métier complexe
         $stmt = $this->db->prepare('SELECT 1 FROM suivre WHERE pt_id = ? AND med_id = ?');
         $stmt->execute([$patientId, $medId]);
-        if (!$stmt->fetchColumn()) return false;
+        if (!$stmt->fetchColumn()) {
+            return false;
+        }
 
         $stmt = $this->db->prepare('
             INSERT INTO dashboard_layouts (pt_id, med_id, layout_config) VALUES (?, ?, ?)

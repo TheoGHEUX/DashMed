@@ -78,7 +78,7 @@ final class RegisterDoctor
 
         // Construire l'URL de vérification avec le service
         $url = UrlBuilder::build('/verify-email', ['token' => $tokenData['token']]);
-        
+
         // Envoyer l'email de vérification
         $this->mailer->send(
             $email->getValue(),

@@ -32,8 +32,10 @@ final class PatientSimilarityService implements IPatientSimilarityService
             }
 
             // 3. Groupe sanguin (moins important que sexe/âge)
-            if (isset($target['groupe_sanguin'], $candidate['groupe_sanguin']) 
-                && $target['groupe_sanguin'] !== $candidate['groupe_sanguin']) {
+            if (
+                isset($target['groupe_sanguin'], $candidate['groupe_sanguin'])
+                && $target['groupe_sanguin'] !== $candidate['groupe_sanguin']
+            ) {
                 $score += 0.5;
             }
 

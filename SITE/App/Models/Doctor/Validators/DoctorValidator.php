@@ -25,11 +25,13 @@ final class DoctorValidator implements IDoctorValidator
     public function validatePassword(string $password, ?string $confirm = null): array
     {
         $errors = [];
-        if (strlen($password) < 12
+        if (
+            strlen($password) < 12
             || !preg_match('/[A-Z]/', $password)
             || !preg_match('/[a-z]/', $password)
             || !preg_match('/\d/', $password)
-            || !preg_match('/[^A-Za-z0-9]/', $password)) {
+            || !preg_match('/[^A-Za-z0-9]/', $password)
+        ) {
             $errors[] = 'Le mot de passe doit faire 12 caractères min. avec Maj, Min, Chiffre et Caractère spécial.';
         }
         if ($confirm !== null && $password !== $confirm) {
@@ -46,9 +48,15 @@ final class DoctorValidator implements IDoctorValidator
     public function validateRegistration(array $data): array
     {
         $errors = [];
-        if (empty($data['nom'])) $errors[] = "Le nom est obligatoire.";
-        if (empty($data['prenom'])) $errors[] = "Le prénom est obligatoire.";
-        if (empty($data['sexe'])) $errors[] = "Veuillez sélectionner votre sexe.";
+        if (empty($data['nom'])) {
+            $errors[] = "Le nom est obligatoire.";
+        }
+        if (empty($data['prenom'])) {
+            $errors[] = "Le prénom est obligatoire.";
+        }
+        if (empty($data['sexe'])) {
+            $errors[] = "Veuillez sélectionner votre sexe.";
+        }
 
         $specialites = \App\Models\Doctor\Enums\Specialite::all();
         if (empty($data['specialite']) || !in_array($data['specialite'], $specialites, true)) {
@@ -56,7 +64,9 @@ final class DoctorValidator implements IDoctorValidator
         }
 
         $emailError = $this->validateEmail($data['email'] ?? '');
-        if ($emailError) $errors[] = $emailError;
+        if ($emailError) {
+            $errors[] = $emailError;
+        }
 
         $passwordErrors = $this->validatePassword($data['password'] ?? '', $data['confirm'] ?? null);
         $errors = array_merge($errors, $passwordErrors);

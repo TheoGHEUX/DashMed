@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Partial : Overlay Liste Patients
  *
@@ -6,6 +7,7 @@
  *
  * @package Views/Dashboard/Partials
  */
+
 ?>
 <section class="patients-list-overlay" id="patientsList">
     <div class="patients-list-content">

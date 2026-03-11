@@ -10,7 +10,6 @@ namespace Core;
 use App\Controllers\Public\HomeController;
 use App\Controllers\Public\MapController;
 use App\Controllers\Public\LegalNoticesController;
-
 // Dossier Authentication (Tu n'as plus AuthController, mais des fichiers séparés)
 use App\Controllers\Authentication\LoginController;
 use App\Controllers\Authentication\RegisterController;
@@ -18,21 +17,17 @@ use App\Controllers\Authentication\LogoutController;
 use App\Controllers\Authentication\ForgottenPasswordController;
 use App\Controllers\Authentication\ResetPasswordController;
 use App\Controllers\Authentication\VerifyEmailController;
-
 // Dossier Private
 use App\Controllers\Private\ConnectedHomeController;
-
 // Dossier Dashboard
 use App\Controllers\Dashboard\DashboardController;
 use App\Controllers\Dashboard\ChartApiController;
 use App\Controllers\Dashboard\LayoutApiController;
 use App\Controllers\Dashboard\IntelligenceApiController;
-
 // Dossier Profile
 use App\Controllers\Profile\ProfileController;
 use App\Controllers\Profile\ChangePasswordController;
 use App\Controllers\Profile\ChangeEmailController;
-
 
 final class Router
 {

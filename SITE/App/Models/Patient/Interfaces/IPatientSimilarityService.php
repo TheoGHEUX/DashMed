@@ -11,7 +11,7 @@ interface IPatientSimilarityService
 {
     /**
      * Trouve les patients les plus proches selon l'algorithme KNN
-     * 
+     *
      * @param array $target Données du patient cible
      * @param array $candidates Liste des candidats à comparer
      * @param int $k Nombre de voisins à retourner

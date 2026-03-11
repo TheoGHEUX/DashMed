@@ -28,7 +28,9 @@ include __DIR__ . '/../partials/head.php';
         <h1>Changer mon adresse email</h1>
 
         <?php if (!empty($errors)) : ?>
-            <div class="alert alert-error"><ul><?php foreach ($errors as $err) : ?><li><?= htmlspecialchars($err) ?></li><?php endforeach; ?></ul></div>
+            <div class="alert alert-error"><ul><?php foreach ($errors as $err) :
+                ?><li><?= htmlspecialchars($err) ?></li><?php
+                                               endforeach; ?></ul></div>
         <?php endif; ?>
 
         <?php if (!empty($success)) : ?>

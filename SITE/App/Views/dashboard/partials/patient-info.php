@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Partial : Fiche Info Patient
  *
@@ -6,6 +7,7 @@
  *
  * @package Views/Dashboard/Partials
  */
+
 ?>
 <section class="patient-active">
     <h2>Patient sélectionné</h2>

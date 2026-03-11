@@ -32,7 +32,7 @@ final class LayoutApiController extends AbstractController
         $similarityService = new PatientSimilarityService();
         $this->getLayout = new GetDashboardLayout($repo);
         $this->saveLayout = new SaveDashboardLayout($repo);
-        
+
         // SuggestLayout utilise uniquement l'interface IPatientSimilarity
         $this->suggestLayout = new SuggestLayout($repo, $similarityService);
     }

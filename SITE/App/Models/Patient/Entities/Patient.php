@@ -33,17 +33,50 @@ final class Patient
         $this->ville = $data['ville'] ?? null;
     }
 
-    public function getId(): int { return $this->id; }
-    public function getNom(): string { return $this->nom; }
-    public function getPrenom(): string { return $this->prenom; }
-    public function getEmail(): ?string { return $this->email; }
-    public function getSexe(): ?string { return $this->sexe; }
-    public function getGroupeSanguin(): ?string { return $this->groupeSanguin; }
-    public function getDateNaissance(): ?string { return $this->dateNaissance; }
-    public function getTelephone(): ?string { return $this->telephone; }
-    public function getAdresse(): ?string { return $this->adresse; }
-    public function getCodePostal(): ?string { return $this->codePostal; }
-    public function getVille(): ?string { return $this->ville; }
+    public function getId(): int
+    {
+        return $this->id;
+    }
+    public function getNom(): string
+    {
+        return $this->nom;
+    }
+    public function getPrenom(): string
+    {
+        return $this->prenom;
+    }
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+    public function getSexe(): ?string
+    {
+        return $this->sexe;
+    }
+    public function getGroupeSanguin(): ?string
+    {
+        return $this->groupeSanguin;
+    }
+    public function getDateNaissance(): ?string
+    {
+        return $this->dateNaissance;
+    }
+    public function getTelephone(): ?string
+    {
+        return $this->telephone;
+    }
+    public function getAdresse(): ?string
+    {
+        return $this->adresse;
+    }
+    public function getCodePostal(): ?string
+    {
+        return $this->codePostal;
+    }
+    public function getVille(): ?string
+    {
+        return $this->ville;
+    }
 
     public function toArray(): array
     {

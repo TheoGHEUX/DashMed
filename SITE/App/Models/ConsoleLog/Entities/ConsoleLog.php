@@ -34,13 +34,40 @@ final class ConsoleLog
     }
 
     // Getters
-    public function getLogId(): int { return $this->logId; }
-    public function getMedId(): int { return $this->medId; }
-    public function getTypeAction(): string { return $this->typeAction; }
-    public function getTypeActionId(): int { return $this->typeActionId; }
-    public function getPtId(): ?int { return $this->ptId; }
-    public function getIdMesure(): ?int { return $this->idMesure; }
-    public function getDateAction(): string { return $this->dateAction; }
-    public function getHeureAction(): string { return $this->heureAction; }
-    public function getNomMesure(): ?string { return $this->nomMesure; }
+    public function getLogId(): int
+    {
+        return $this->logId;
+    }
+    public function getMedId(): int
+    {
+        return $this->medId;
+    }
+    public function getTypeAction(): string
+    {
+        return $this->typeAction;
+    }
+    public function getTypeActionId(): int
+    {
+        return $this->typeActionId;
+    }
+    public function getPtId(): ?int
+    {
+        return $this->ptId;
+    }
+    public function getIdMesure(): ?int
+    {
+        return $this->idMesure;
+    }
+    public function getDateAction(): string
+    {
+        return $this->dateAction;
+    }
+    public function getHeureAction(): string
+    {
+        return $this->heureAction;
+    }
+    public function getNomMesure(): ?string
+    {
+        return $this->nomMesure;
+    }
 }

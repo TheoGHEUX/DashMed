@@ -17,7 +17,7 @@ final class Email
     public function __construct(string $email)
     {
         $normalized = strtolower(trim($email));
-        
+
         if (!filter_var($normalized, FILTER_VALIDATE_EMAIL)) {
             throw new ValidationException(['email' => 'Format d\'email invalide.']);
         }

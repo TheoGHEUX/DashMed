@@ -18,7 +18,7 @@
             // Nouveau format retourné par GetPatientChartData::execute()
             if (!empty($chartData[$jsKey]['values'])) {
                 $metric = $chartData[$jsKey];
-                
+
                 echo "window.patientChartData['$jsKey'] = {";
                 echo "id_mesure: " . json_encode($metric['id_mesure'] ?? null) . ",";
                 echo "values: " . json_encode($metric['values'], JSON_UNESCAPED_UNICODE) . ",";
@@ -27,7 +27,7 @@
                 echo "seuil_preoccupant:"     . json_encode($metric['seuil_preoccupant']      ?? null) . ",";
                 echo "seuil_urgent:"         . json_encode($metric['seuil_urgent']            ?? null) . ",";
                 echo "seuil_critique:"       . json_encode($metric['seuil_critique']          ?? null) . ",";
-                echo "seuil_preoccupant_min:". json_encode($metric['seuil_preoccupant_min']   ?? null) . ",";
+                echo "seuil_preoccupant_min:" . json_encode($metric['seuil_preoccupant_min']   ?? null) . ",";
                 echo "seuil_urgent_min:"     . json_encode($metric['seuil_urgent_min']        ?? null) . ",";
                 echo "seuil_critique_min:"   . json_encode($metric['seuil_critique_min']      ?? null);
                 echo "};\n";

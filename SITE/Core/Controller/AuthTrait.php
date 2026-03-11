@@ -8,7 +8,9 @@ trait AuthTrait
 {
     protected function checkAuth(): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
         if (empty($_SESSION['user'])) {
             $this->redirect('/login');
         }
@@ -21,6 +23,8 @@ trait AuthTrait
 
     protected function startSession(): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
     }
 }

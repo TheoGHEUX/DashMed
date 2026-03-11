@@ -13,7 +13,6 @@ function generatePatientData(int $patientId): void
     $mesures = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     foreach ($mesures as $mesure) {
-
         $id_mesure = $mesure['id_mesure'];
 
         $stmt_last = $pdo->prepare("
@@ -28,7 +27,7 @@ function generatePatientData(int $patientId): void
 
         $valeur_base = $last !== false ? (float)$last : 70;
 
-        $variation = mt_rand(-5,5)/10;
+        $variation = mt_rand(-5, 5) / 10;
         $valeur = round($valeur_base + $variation, 1);
 
         $insert = $pdo->prepare("

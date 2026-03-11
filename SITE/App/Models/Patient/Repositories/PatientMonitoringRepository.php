@@ -23,7 +23,9 @@ final class PatientMonitoringRepository implements IPatientMonitoringRepository
         $stmt->execute([$patientId, $typeMesure]);
         $mesure = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!$mesure) return null;
+        if (!$mesure) {
+            return null;
+        }
 
         $stmt = $this->db->prepare('
             SELECT valeur, date_mesure, heure_mesure 

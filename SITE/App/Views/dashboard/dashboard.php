@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Page connectée : Tableau de bord médical (Vue Principale)
  *
@@ -65,12 +66,10 @@ include __DIR__ . '/../partials/head.php';
 
     <!-- 7. Logique d'affichage principal -->
     <?php if (isset($noPatient) && $noPatient === true) : ?>
-
         <!-- Cas A : Aucun patient n'est sélectionné -->
         <?php include __DIR__ . '/partials/empty-state.php'; ?>
 
     <?php else : ?>
-
         <!-- Cas B : Affichage des graphiques -->
         <?php include __DIR__ . '/partials/charts-grid.php'; ?>
 

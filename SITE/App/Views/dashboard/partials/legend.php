@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Partial : Légende
  *
@@ -6,6 +7,7 @@
  *
  * @package Views/Dashboard/Partials
  */
+
 ?>
 <section class="thresholds-legend">
     <h2>Légende des seuils d'alerte</h2>

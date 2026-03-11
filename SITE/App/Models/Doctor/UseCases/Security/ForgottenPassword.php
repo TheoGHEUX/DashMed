@@ -38,7 +38,9 @@ final class ForgottenPassword
         }
 
         $doctor = $this->repo->findByEmail($emailVO->getValue());
-        if (!$doctor) return;
+        if (!$doctor) {
+            return;
+        }
 
         $token = TokenGenerator::generate();
         $tokenHash = TokenGenerator::hash($token);

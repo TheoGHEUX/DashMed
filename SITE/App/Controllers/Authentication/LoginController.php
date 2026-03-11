@@ -34,7 +34,7 @@ final class LoginController extends AbstractController
             ]);
             return;
         }
-        
+
         if (!$this->validateCsrf()) {
             RateLimiter::recordAttempt('login_attempts');
             $this->render('authentication/login', [
