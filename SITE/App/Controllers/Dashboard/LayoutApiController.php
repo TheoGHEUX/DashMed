@@ -32,7 +32,9 @@ final class LayoutApiController extends AbstractController
         $similarityService = new PatientSimilarityService();
         $this->getLayout = new GetDashboardLayout($repo);
         $this->saveLayout = new SaveDashboardLayout($repo);
-        $this->suggestLayout = new SuggestLayout($repo, $repo, $similarityService);
+        
+        // SuggestLayout utilise uniquement l'interface IPatientSimilarity
+        $this->suggestLayout = new SuggestLayout($repo, $similarityService);
     }
 
     /**
@@ -110,10 +112,9 @@ final class LayoutApiController extends AbstractController
             return;
         }
 
-        // Le UseCase retourne déjà toutes les infos nécessaires
         $result = $this->suggestLayout->execute($ptId, $medId);
 
-        if ($result && !empty($result)) {
+        if (!empty($result)) {
             $this->json([
                 'success' => true,
                 'suggestion' => $result

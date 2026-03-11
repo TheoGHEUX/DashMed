@@ -31,6 +31,10 @@ trait JsonResponseTrait
     protected function getJsonInput(): array
     {
         $content = file_get_contents('php://input');
-        return json_decode($content, true) ?? [];
+        if ($content === false) {
+            return [];
+        }
+        $decoded = json_decode($content, true);
+        return is_array($decoded) ? $decoded : [];
     }
 }

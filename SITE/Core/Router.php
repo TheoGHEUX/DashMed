@@ -100,26 +100,33 @@ final class Router
     public function dispatch(): void
     {
         $uri = $_SERVER['REQUEST_URI'] ?? '/';
-        $path = parse_url($uri, PHP_URL_PATH);
+        $uriString = is_string($uri) ? $uri : '/';
+        $path = parse_url($uriString, PHP_URL_PATH);
+        $pathString = is_string($path) ? $path : '/';
 
-        if ($path !== '/' && substr($path, -1) === '/') {
-            $path = rtrim($path, '/');
+        if ($pathString !== '/' && substr($pathString, -1) === '/') {
+            $pathString = rtrim($pathString, '/');
         }
 
         $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+        $methodString = is_string($method) ? $method : 'GET';
 
-        if (isset(self::ROUTES[$method][$path])) {
-            [$controllerClass, $action] = self::ROUTES[$method][$path];
+        if (isset(self::ROUTES[$methodString][$pathString])) {
+            [$controllerClass, $action] = self::ROUTES[$methodString][$pathString];
 
             if ($controllerClass === self::class) {
-                $this->$action();
+                if (method_exists($this, (string)$action)) {
+                    $this->{(string)$action}();
+                } else {
+                    $this->handle404();
+                }
                 return;
             }
 
-            if (class_exists($controllerClass)) {
+            if (class_exists((string)$controllerClass)) {
                 $controller = new $controllerClass();
-                if (method_exists($controller, $action)) {
-                    $controller->$action();
+                if (method_exists($controller, (string)$action)) {
+                    $controller->{(string)$action}();
                     return;
                 } else {
                     // Erreur si la méthode n'existe pas dans le contrôleur

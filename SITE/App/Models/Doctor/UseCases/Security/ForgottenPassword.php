@@ -16,19 +16,15 @@ use Core\Services\UrlBuilder;
 final class ForgottenPassword
 {
     private IDoctorRepository $repo;
-    private ISecurityRepository $securityRepo;
-    private DoctorValidator $validator;
     private IMailer $mailer;
 
     public function __construct(
         IDoctorRepository $repo,
         ISecurityRepository $securityRepo,
-        DoctorValidator $validator,
         IMailer $mailer
     ) {
         $this->repo = $repo;
         $this->securityRepo = $securityRepo;
-        $this->validator = $validator;
         $this->mailer = $mailer;
     }
 

@@ -13,16 +13,13 @@ use App\Models\Patient\Interfaces\IPatientSimilarityService;
  */
 final class SuggestLayout
 {
-    private IDashboardLayoutRepository $layoutRepository;
     private IPatientSimilarityRepository $similarityRepository;
     private IPatientSimilarityService $similarityService;
 
     public function __construct(
-        IDashboardLayoutRepository $layoutRepository,
         IPatientSimilarityRepository $similarityRepository,
         IPatientSimilarityService $similarityService
     ) {
-        $this->layoutRepository = $layoutRepository;
         $this->similarityRepository = $similarityRepository;
         $this->similarityService = $similarityService;
     }

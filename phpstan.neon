@@ -1,11 +1,11 @@
 parameters:
-    level: 5
+    level: 9
     paths:
         - SITE/
     excludePaths:
-        - SITE/Views/
+        - SITE/App/Views/
     scanDirectories:
         - SITE/Core/
-        - SITE/Models/
-        - SITE/Controllers/
+        - SITE/App/Models/
+        - SITE/App/Controllers/
     treatPhpDocTypesAsCertain: false

@@ -41,7 +41,7 @@ final class SecurityValidator
      * @param string|null $confirm La confirmation du mot de passe (optionnel)
      * @return array La liste des erreurs trouvées (tableau vide si tout est OK).
      */
-    public static function validatePassword(string $password, string $confirm = null): array
+    public static function validatePassword(string $password, ?string $confirm = null): array
     {
         $errors = [];
 

@@ -108,7 +108,6 @@ final class DoctorUseCaseFactory
         return new ForgottenPassword(
             self::getDoctorRepo(),
             self::getSecurityRepo(),
-            self::getValidator(),
             self::getMailer()
         );
     }

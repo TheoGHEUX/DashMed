@@ -35,8 +35,13 @@ abstract class AbstractController
         exit;
     }
 
-    protected function getPost(string $key, $default = ''): string
+    /**
+     * @param string $key
+     * @param string $default
+     * @return string
+     */
+    protected function getPost(string $key, string $default = ''): string
     {
-        return trim($_POST[$key] ?? $default);
+        return trim((string) ($_POST[$key] ?? $default));
     }
 }

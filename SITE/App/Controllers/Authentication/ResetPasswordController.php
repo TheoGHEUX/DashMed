@@ -73,8 +73,8 @@ final class ResetPasswordController extends AbstractController
             $this->render('authentication/reset-password', [
                 'errors' => $errors,
                 'success' => '',
-                'email' => $email ?? '',
-                'token' => $token ?? ''
+                'email' => $email,
+                'token' => $token
             ]);
             return;
         }
@@ -93,7 +93,7 @@ final class ResetPasswordController extends AbstractController
         } else {
             RateLimiter::recordAttempt('reset_password_attempts');
             $errs = [];
-            if (isset($result['error'])) {
+            if (isset($result['error']) && is_string($result['error'])) {
                 $errs = explode("\n", $result['error']);
             } else {
                 $errs[] = 'Une erreur inconnue est survenue. Veuillez réessayer.';
@@ -101,8 +101,8 @@ final class ResetPasswordController extends AbstractController
             $this->render('authentication/reset-password', [
                 'errors' => $errs,
                 'success' => '',
-                'email' => $email ?? '',
-                'token' => $token ?? ''
+                'email' => $email,
+                'token' => $token
             ]);
         }
     }

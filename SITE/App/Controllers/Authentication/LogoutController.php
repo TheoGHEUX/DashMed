@@ -19,8 +19,9 @@ final class LogoutController extends AbstractController
         $_SESSION = [];
         if (ini_get('session.use_cookies')) {
             $params = session_get_cookie_params();
+            $sessName = session_name() ?: 'PHPSESSID';
             setcookie(
-                session_name(), '',
+                $sessName, '',
                 time() - 42000,
                 $params['path'], $params['domain'],
                 $params['secure'], $params['httponly']

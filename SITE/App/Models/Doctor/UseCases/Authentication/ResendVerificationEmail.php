@@ -43,7 +43,7 @@ final class ResendVerificationEmail implements IResendVerificationEmail
             return ['success' => true, 'message' => 'Si ce compte existe, un email a ete envoye.'];
         }
 
-        if ($user->isEmailVerified()) {
+        if ($user->getVerificationToken() === null) {
             return ['success' => false, 'error' => 'Ce compte est déjà vérifié. Connectez-vous.'];
         }
 
@@ -54,7 +54,7 @@ final class ResendVerificationEmail implements IResendVerificationEmail
         $sent = $this->mailer->send(
             $emailVO->getValue(),
             'Confirmez votre adresse email - DashMed',
-            'verify-email',
+            'verify_email',
             [
                 'name' => $user->getPrenom(),
                 'url' => $url,
