@@ -32,11 +32,14 @@ final class IntelligenceApiController extends AbstractController
         
         $input = json_decode(file_get_contents('php://input'), true);
 
+        $ptId = isset($input['ptId']) && $input['ptId'] > 0 ? (int)$input['ptId'] : null;
+        $idMesure = isset($input['idMesure']) && $input['idMesure'] > 0 ? (int)$input['idMesure'] : null;
+
         $success = $this->logger->execute(
             $this->getCurrentUserId(),
             $input['action'] ?? '',
-            (int)($input['ptId'] ?? 0),
-            isset($input['idMesure']) ? (int)$input['idMesure'] : null
+            $ptId,
+            $idMesure
         );
 
         $this->json(['success' => $success]);

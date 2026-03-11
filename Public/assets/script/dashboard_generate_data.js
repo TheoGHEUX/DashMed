@@ -1,34 +1,45 @@
-document.getElementById('generateDataBtn').addEventListener('click', () => {
+// Gestionnaire pour le bouton de génération de données (si présent)
+const generateBtn = document.getElementById('generateDataBtn');
+if (generateBtn) {
+    generateBtn.addEventListener('click', () => {
+        const btn = document.getElementById('generateDataBtn');
+        btn.disabled = true;
+        btn.textContent = "Live en cours...";
 
-    const btn = document.getElementById('generateDataBtn');
-    btn.disabled = true;
-    btn.textContent = "Live en cours...";
+        let compteur = 0;
 
-    let compteur = 0;
+        const interval = setInterval(async () => {
+            const ptId = window.activePatient?.pt_id || null;
+            if (!ptId) {
+                console.error('Aucun patient sélectionné');
+                clearInterval(interval);
+                btn.disabled = false;
+                btn.textContent = "Générer 20 mesures";
+                return;
+            }
 
-    const interval = setInterval(async () => {
+            await fetch('/generate-data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': window.csrfToken || ''
+                },
+                body: JSON.stringify({ ptId: ptId })
+            });
 
-        await fetch('/generate-data', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRF-Token': window.csrfToken || ''
-            },
-            body: 'patient=25'
-        });
+            compteur++;
 
-        compteur++;
+            console.log("Valeur générée :", compteur);
 
-        console.log("Valeur générée :", compteur);
+            if (compteur >= 20) {
+                clearInterval(interval);
+                btn.disabled = false;
+                btn.textContent = "Générer 20 mesures";
+            }
 
-        if (compteur >= 20) {
-            clearInterval(interval);
-            btn.disabled = false;
-            btn.textContent = "Générer 20 mesures";
-        }
-
-    }, 3000); // 3 secondes
-});
+        }, 3000); // 3 secondes
+    });
+}
 
 /**
  * Mise à jour en temps réel des graphiques du dashboard

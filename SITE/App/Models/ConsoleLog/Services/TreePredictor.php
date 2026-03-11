@@ -25,7 +25,8 @@ class TreePredictor implements ITreePredictor
     {
         // Chemin par défaut vers le modèle JSON
         if ($modelPath === null) {
-            $modelPath = dirname(__DIR__, 3) . '/storage/model.json';
+            // Depuis SITE/App/Models/ConsoleLog/Services, on remonte de 4 niveaux vers SITE/
+            $modelPath = dirname(__DIR__, 4) . '/storage/model.json';
         }
 
         if (!file_exists($modelPath)) {

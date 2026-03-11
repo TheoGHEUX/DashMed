@@ -22,13 +22,13 @@ class LogHistoryRepository implements ILogHistoryRepository
     {
         $stmt = $this->db->prepare("
             SELECT 
-                c.action, 
-                DATE_FORMAT(c.heure, '%H') as heure_seule, 
+                c.type_action as action, 
+                DATE_FORMAT(c.heure_action, '%H') as heure_seule, 
                 m.type_mesure as nom_mesure
-            FROM console_log c
+            FROM historique_console c
             LEFT JOIN mesures m ON c.id_mesure = m.id_mesure
             WHERE c.med_id = :medId
-            ORDER BY c.heure DESC
+            ORDER BY c.heure_action DESC
             LIMIT :limit
         ");
 
