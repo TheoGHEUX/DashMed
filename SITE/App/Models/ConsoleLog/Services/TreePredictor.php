@@ -7,75 +7,156 @@ namespace App\Models\ConsoleLog\Services;
 use App\Models\ConsoleLog\Interfaces\ITreePredictor;
 
 /**
- * Service de prédiction d'actions via arbre de décision (Python)
+ * Prédicteur d'actions basé sur un arbre de décision exporté en JSON.
+ * Remplace l'appel Python pour des prédictions instantanées en PHP pur.
  */
 class TreePredictor implements ITreePredictor
 {
-    private string $scriptPath;
+    private array $model;
 
-    public function __construct()
+    private const ACTION_MAP = [
+        'ajouter'   => 0,
+        'supprimer' => 1,
+        'réduire'   => 2,
+        'agrandir'  => 3,
+    ];
+
+    public function __construct(?string $modelPath = null)
     {
-        // Chemin absolu vers ton script predict_action.py
-        $this->scriptPath = __DIR__ . '/../../../Scripts/predict_action.py';
+        // Chemin par défaut vers le modèle JSON
+        if ($modelPath === null) {
+            $modelPath = dirname(__DIR__, 3) . '/storage/model.json';
+        }
+
+        if (!file_exists($modelPath)) {
+            throw new \RuntimeException("Modèle IA non trouvé : $modelPath");
+        }
+
+        $json = file_get_contents($modelPath);
+        if ($json === false) {
+            throw new \RuntimeException('Impossible de lire le modèle JSON');
+        }
+
+        $decoded = json_decode($json, true);
+        if (!is_array($decoded)) {
+            throw new \RuntimeException('Modèle JSON invalide');
+        }
+
+        $this->model = $decoded;
     }
 
     /**
-     * Prédit la prochaine action en appelant le script Python.
-     * @param array $history Tableau d'objets ConsoleLog
+     * Prédit la prochaine action à partir de l'action et mesure courantes.
+     *
+     * @param string $action Action actuelle (ajouter, supprimer, réduire, agrandir)
+     * @param string $mesure Type de mesure (ex: "Tension artérielle")
+     * @param int $heure Heure de la journée (0-23)
+     * @param int $position Position dans la séquence
+     * @return array{success: bool, prediction?: array, confidence?: float, top_predictions?: array, error?: string}
      */
-    public function predict(array $history): ?string
+    public function predict(string $action, string $mesure, int $heure, int $position): array
     {
-        if (empty($history)) {
-            return null;
+        // Validation de l'action
+        if (!isset(self::ACTION_MAP[$action])) {
+            return ['success' => false, 'error' => "Action inconnue : {$action}"];
         }
 
-        // 1. Récupérer la dernière action effectuée pour prédire la SUIVANTE
-        // On suppose que l'historique est trié du plus récent au plus ancien ($history[0] est le dernier)
-        $lastLog = $history[0];
+        // Validation de la mesure
+        $mesureClasses = $this->model['mesure_classes'];
+        $mesureIdx = array_search($mesure, $mesureClasses, true);
+        if ($mesureIdx === false) {
+            return ['success' => false, 'error' => "Mesure inconnue : {$mesure}"];
+        }
 
-        // 2. Préparer les arguments pour Python
-        // Usage: python predict_action.py <action> <type_mesure> <heure> <position>
-
-        $action = $lastLog->getTypeAction(); // ex: "ajouter"
-
-        // ⚠️ ATTENTION : Ton script Python attend le NOM de la mesure (ex: "Tension artérielle")
-        // Mais ton objet ConsoleLog n'a peut-être que l'ID ($lastLog->getMesureId()).
-        // Idéalement, il faudrait récupérer le nom via une jointure SQL.
-        // Pour l'instant, on passe une valeur par défaut ou l'ID si le Python le gère.
-        $mesure = "Tension artérielle"; // TODO: Récupérer le vrai nom de la mesure via le Repo
-
-        $heure = (int)substr($lastLog->getHeure(), 0, 2);
-        $position = 0; // On simplifie pour l'instant (ou calculable via count($history))
-
-        // 3. Construction de la commande Shell
-        // On utilise escapeshellarg pour la sécurité
-        $cmd = sprintf(
-            'python3 %s %s %s %d %d',
-            escapeshellarg($this->scriptPath),
-            escapeshellarg($action),
-            escapeshellarg($mesure),
+        // Construction du vecteur de features
+        $features = [
+            self::ACTION_MAP[$action],
+            $mesureIdx,
             $heure,
-            $position
-        );
+            $position,
+        ];
 
-        // 4. Exécution
-        $output = shell_exec($cmd);
+        // Parcourir l'arbre pour chaque output (action, mesure)
+        $actionProbas = $this->traverse($this->model['tree']['action'], $features);
+        $mesureProbas = $this->traverse($this->model['tree']['mesure'], $features);
 
-        if (!$output) {
-            error_log("[TreePredictor] Erreur : Pas de réponse du script Python.");
-            return null;
+        $actionMapInv = $this->model['action_map_inv'];
+        $actionClasses = $this->model['action_classes'];
+        $mesureOutputClasses = $this->model['mesure_output_classes'];
+
+        // Trier par probabilité décroissante
+        arsort($actionProbas);
+        arsort($mesureProbas);
+
+        $topActionKeys = array_keys($actionProbas);
+        $topMesureKeys = array_keys($mesureProbas);
+
+        $bestActionIdx = $topActionKeys[0];
+        $bestMesureIdx = $topMesureKeys[0];
+
+        $bestAction = $actionMapInv[(string) $actionClasses[$bestActionIdx]] ?? 'ajouter';
+        $bestMesure = $mesureClasses[$mesureOutputClasses[$bestMesureIdx]] ?? $mesure;
+
+        $actionConf = $actionProbas[$bestActionIdx];
+        $mesureConf = $mesureProbas[$bestMesureIdx];
+        $confidence = round($actionConf * $mesureConf, 3);
+
+        // Top combinaisons (top 3 actions × top 3 mesures)
+        $topPredictions = [];
+        $topActions = array_slice($topActionKeys, 0, 3, true);
+        $topMesures = array_slice($topMesureKeys, 0, 3, true);
+
+        foreach ($topActions as $aIdx) {
+            foreach ($topMesures as $mIdx) {
+                $aProb = $actionProbas[$aIdx];
+                $mProb = $mesureProbas[$mIdx];
+                $combined = round($aProb * $mProb, 3);
+                if ($combined < 0.05) {
+                    continue;
+                }
+                $topPredictions[] = [
+                    'action'      => $actionMapInv[(string) $actionClasses[$aIdx]] ?? 'ajouter',
+                    'mesure'      => $mesureClasses[$mesureOutputClasses[$mIdx]] ?? $mesure,
+                    'probability' => $combined,
+                ];
+            }
         }
 
-        // 5. Décodage du JSON renvoyé par Python
-        $result = json_decode($output, true);
+        usort($topPredictions, fn(array $a, array $b) => $b['probability'] <=> $a['probability']);
+        $topPredictions = array_slice($topPredictions, 0, 3);
 
-        if ($result && isset($result['success']) && $result['success'] === true) {
-            // On retourne l'action prédite (ex: "supprimer")
-            return $result['prediction']['action'] ?? null;
-        } else {
-            // En cas d'erreur Python (ex: modèle pas encore entraîné)
-            error_log("[TreePredictor] Erreur Python : " . ($result['error'] ?? $output));
-            return null;
+        if (empty($topPredictions)) {
+            return ['success' => false, 'error' => 'Aucune prédiction suffisamment fiable'];
         }
+
+        return [
+            'success'    => true,
+            'prediction' => ['action' => $bestAction, 'mesure' => $bestMesure],
+            'confidence' => $confidence,
+            'details'    => [
+                'action_confidence' => round($actionConf, 3),
+                'mesure_confidence' => round($mesureConf, 3),
+            ],
+            'top_predictions' => $topPredictions,
+        ];
+    }
+
+    /**
+     * Parcourt récursivement un nœud de l'arbre et retourne les probabilités.
+     *
+     * @param array $node Nœud actuel de l'arbre
+     * @param array $features Vecteur de features [action_idx, mesure_idx, heure, position]
+     * @return array Liste des probabilités pour chaque classe
+     */
+    private function traverse(array $node, array $features): array
+    {
+        if ($node['leaf']) {
+            return $node['probas'];
+        }
+
+        if ($features[$node['feature']] <= $node['threshold']) {
+            return $this->traverse($node['left'], $features);
+        }
+        return $this->traverse($node['right'], $features);
     }
 }

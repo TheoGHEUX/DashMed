@@ -69,6 +69,7 @@ final class Router
             '/api/dashboard-layout' => [LayoutApiController::class, 'load'],
             '/api/dashboard/chart-data' => [ChartApiController::class, 'getData'],
             '/api/suggest-layout' => [LayoutApiController::class, 'suggest'],
+            '/api/ai-availability' => [LayoutApiController::class, 'checkAvailability'],
             '/health' => [self::class, 'healthCheck'],
         ],
 

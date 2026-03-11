@@ -46,14 +46,16 @@ final class LayoutApiController extends AbstractController
             return;
         }
 
-        $layout = $this->getLayout->execute($medId, $ptId);
+        // Signature correcte : execute(int $patientId, int $medId)
+        $layout = $this->getLayout->execute($ptId, $medId);
 
-        if ($layout) {
-            $this->json(['success' => true, 'layout' => $layout]);
-        } else {
-            // Pas de layout personnalisé, succès quand même (le JS utilisera le défaut)
-            $this->json(['success' => true, 'layout' => null]);
-        }
+        // Le UseCase retourne toujours un array (avec layout par défaut si null en BDD)
+        $isDefault = empty($layout) || (isset($layout['widgets']) && empty($layout['widgets']));
+        $this->json([
+            'success' => true,
+            'layout' => $layout,
+            'isDefault' => $isDefault
+        ]);
     }
 
     /**
@@ -62,22 +64,34 @@ final class LayoutApiController extends AbstractController
     public function save(): void
     {
         $this->checkAuth();
+        $this->validateApiCsrf();
 
         // Récupérer le JSON envoyé par fetch()
-        $input = json_decode(file_get_contents('php://input'), true);
+        $input = $this->getJsonInput();
 
         $ptId = (int)($input['ptId'] ?? 0);
         $config = $input['config'] ?? null;
         $medId = $this->getCurrentUserId();
 
-        if (!$ptId || !$config) {
+        if (!$ptId || !is_array($config)) {
             $this->json(['success' => false, 'error' => 'Données invalides'], 400);
             return;
         }
 
-        $this->saveLayout->execute($medId, $ptId, $config);
+        // Valider la structure
+        if (!isset($config['visible']) || !is_array($config['visible'])) {
+            $this->json(['success' => false, 'error' => 'Configuration invalide'], 400);
+            return;
+        }
 
-        $this->json(['success' => true]);
+        // Signature correcte : execute(int $patientId, int $medId, array $config)
+        $success = $this->saveLayout->execute($ptId, $medId, $config);
+
+        if ($success) {
+            $this->json(['success' => true]);
+        } else {
+            $this->json(['success' => false, 'error' => 'Échec de la sauvegarde - Le médecin ne suit peut-être pas ce patient'], 500);
+        }
     }
 
     /**
@@ -87,13 +101,40 @@ final class LayoutApiController extends AbstractController
     {
         $this->checkAuth();
         $ptId = (int)($_GET['ptId'] ?? 0);
+        $medId = $this->getCurrentUserId();
 
-        $layout = $this->suggestLayout->execute($ptId, $this->getCurrentUserId());
-
-        if ($layout) {
-            $this->json(['success' => true, 'suggestion' => ['layout' => $layout]]);
-        } else {
-            $this->json(['success' => false, 'message' => 'Aucune suggestion disponible']);
+        if (!$ptId) {
+            $this->json(['success' => false, 'error' => 'ID patient manquant'], 400);
+            return;
         }
+
+        $layout = $this->suggestLayout->execute($ptId, $medId);
+
+        if ($layout && !empty($layout)) {
+            $this->json([
+                'success' => true,
+                'suggestion' => [
+                    'layout' => $layout
+                ]
+            ]);
+        } else {
+            $this->json([
+                'success' => false,
+                'message' => 'Aucune suggestion disponible - Aucun patient similaire avec un agencement personnalisé'
+            ]);
+        }
+    }
+
+    /**
+     * GET /api/ai-availability
+     * Vérifie si l'IA est disponible
+     */
+    public function checkAvailability(): void
+    {
+        $this->json([
+            'available' => true,
+            'implementation' => 'PHP KNN Algorithm',
+            'message' => 'IA intégrée, aucune installation requise'
+        ]);
     }
 }

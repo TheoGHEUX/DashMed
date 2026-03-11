@@ -26,18 +26,24 @@ class PatientSimilarityService implements IPatientSimilarityService
             $ageDiff = ($target['age'] - $candidate['age']) / 100;
             $score += $ageDiff * $ageDiff;
 
-            // 2. Sexe (Binaire)
+            // 2. Sexe (Binaire : 0 si identique, 1 si différent)
             if ($target['sexe'] !== $candidate['sexe']) {
                 $score += 1;
             }
 
-            // 3. Constantes vitales (Distance Euclidienne pondérée)
+            // 3. Groupe sanguin (moins important que sexe/âge)
+            if (isset($target['groupe_sanguin'], $candidate['groupe_sanguin']) 
+                && $target['groupe_sanguin'] !== $candidate['groupe_sanguin']) {
+                $score += 0.5;
+            }
+
+            // 4. Constantes vitales (Distance Euclidienne pondérée)
             // On compare les moyennes si elles existent
             $metrics = [
-                'avg_tension' => 80, // Écart type approximatif
-                'avg_fc' => 40,
-                'avg_spo2' => 10,
-                'avg_temp' => 2
+                'avg_tension' => 80, // Écart type approximatif pour normaliser
+                'avg_fc' => 95,      // Fréquence cardiaque
+                'avg_temp' => 5,     // Température
+                'avg_spo2' => 10     // Saturation oxygène
             ];
 
             foreach ($metrics as $key => $divider) {

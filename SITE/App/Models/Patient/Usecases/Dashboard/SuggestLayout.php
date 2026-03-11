@@ -42,8 +42,17 @@ class SuggestLayout
 
         if (empty($nearest)) return null;
 
-        // 4. Récupérer le layout du meilleur candidat (via Repo de layout)
+        // 4. Trouver le layout du patient le plus similaire
+        // Le layout_config est déjà dans candidatesData, pas besoin de refaire une requête
         $bestMatchId = $nearest[0]['pt_id'];
-        return $this->layoutRepository->getDashboardLayout($bestMatchId, $medId);
+        
+        foreach ($candidatesData as $candidate) {
+            if ($candidate['pt_id'] === $bestMatchId) {
+                // Décoder le JSON du layout_config
+                return json_decode($candidate['layout_config'], true);
+            }
+        }
+
+        return null;
     }
 }

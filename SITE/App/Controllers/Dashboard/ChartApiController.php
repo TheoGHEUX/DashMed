@@ -21,6 +21,7 @@ final class ChartApiController extends AbstractController
 
     /**
      * LECTURE : Récupère les données pour les graphiques (GET)
+     * Compatible avec l'ancien endpoint /api/dashboard/chart-data
      */
     public function getData(): void
     {
@@ -32,15 +33,15 @@ final class ChartApiController extends AbstractController
             return;
         }
 
-        // Mapping Clé JS => Nom BDD
+        // Configuration des métriques (comme dans le main)
         $metrics = [
-            'temperature'       => 'Temperature', // ou 'Température corporelle' selon ta BDD
-            'blood-pressure'    => 'Tension',
-            'heart-rate'        => 'Frequence_Cardiaque',
-            'respiration'       => 'Frequence_Respiratoire',
-            'glucose-trend'     => 'Glycemie',
+            'temperature'       => 'Température corporelle',
+            'blood-pressure'    => 'Tension artérielle',
+            'heart-rate'        => 'Fréquence cardiaque',
+            'respiration'       => 'Fréquence respiratoire',
+            'glucose-trend'     => 'Glycémie',
             'weight'            => 'Poids',
-            'oxygen-saturation' => 'Oxygene'
+            'oxygen-saturation' => 'Saturation en oxygène'
         ];
 
         $results = [];
@@ -63,6 +64,7 @@ final class ChartApiController extends AbstractController
     public function generateData(): void
     {
         $this->checkAuth();
+        $this->validateApiCsrf();
 
         $input = $this->getJsonInput();
         $patientId = (int)($input['ptId'] ?? $_POST['ptId'] ?? 0);
