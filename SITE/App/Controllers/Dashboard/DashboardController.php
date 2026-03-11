@@ -22,64 +22,74 @@ final class DashboardController extends AbstractController
 
     public function index(): void
     {
-        $this->checkAuth();
-        $medId = $_SESSION['user']['id'] ?? 0;
+        try {
+            $this->checkAuth();
+            $medId = $_SESSION['user']['id'] ?? 0;
 
-        // 1. Récupération des patients
-        $patientsObjects = $this->getPatientsUseCase->execute($medId);
+            // 1. Récupération des patients
+            $patientsObjects = $this->getPatientsUseCase->execute($medId);
 
-        if (empty($patientsObjects)) {
+            if (empty($patientsObjects)) {
+                $this->render('dashboard/dashboard', [
+                    'noPatient' => true,
+                    'patients' => [],
+                    'patient' => null,
+                    'chartData' => []
+                ]);
+                return;
+            }
+
+            $patientsArray = [];
+            foreach ($patientsObjects as $patientObj) {
+                $patientsArray[] = method_exists($patientObj, 'toArray')
+                    ? $patientObj->toArray()
+                    : (array)$patientObj;
+            }
+
+            $currentPatientId = $this->resolveCurrentPatientId($patientsArray);
+
+            $currentPatient = null;
+            foreach ($patientsArray as $p) {
+                if ((int)$p['pt_id'] === $currentPatientId) {
+                    $currentPatient = $p;
+                    break;
+                }
+            }
+
+            // MAPPING STRICT : clé JS => nom EXACTEMENT comme en BDD
+            $metricsMap = [
+                'temperature'       => 'Température corporelle',
+                'blood-pressure'    => 'Tension artérielle',
+                'heart-rate'        => 'Fréquence cardiaque',
+                'respiration'       => 'Fréquence respiratoire',
+                'glucose-trend'     => 'Glycémie',
+                'weight'            => 'Poids',
+                'oxygen-saturation' => 'Saturation en oxygène',
+            ];
+
+            $chartData = [];
+            foreach ($metricsMap as $jsKey => $dbName) {
+                $data = $this->getChartsUseCase->execute($currentPatientId, $dbName);
+                if (!empty($data)) {
+                    $chartData[$jsKey] = $data;
+                }
+            }
+
+            $this->render('dashboard/dashboard', [
+                'noPatient' => false,
+                'patients' => $patientsArray,
+                'patient' => $currentPatient,
+                'chartData' => $chartData
+            ]);
+        } catch (\Throwable $e) {
+            error_log('[DASHBOARD] ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
             $this->render('dashboard/dashboard', [
                 'noPatient' => true,
                 'patients' => [],
                 'patient' => null,
                 'chartData' => []
             ]);
-            return;
         }
-
-        $patientsArray = [];
-        foreach ($patientsObjects as $patientObj) {
-            $patientsArray[] = method_exists($patientObj, 'toArray')
-                ? $patientObj->toArray()
-                : (array)$patientObj;
-        }
-
-        $currentPatientId = $this->resolveCurrentPatientId($patientsArray);
-
-        $currentPatient = null;
-        foreach ($patientsArray as $p) {
-            if ((int)$p['pt_id'] === $currentPatientId) {
-                $currentPatient = $p;
-                break;
-            }
-        }
-
-        // MAPPING STRICT : clé JS => nom EXACTEMENT comme en BDD (cf ta table mesures)
-        $metricsMap = [
-            'temperature'       => 'Température corporelle',
-            'blood-pressure'    => 'Tension artérielle',
-            'heart-rate'        => 'Fréquence cardiaque',
-            'respiration'       => 'Fréquence respiratoire',
-            'glucose-trend'     => 'Glycémie',
-            'weight'            => 'Poids',
-            'oxygen-saturation' => 'Saturation en oxygène',
-        ];
-
-        $chartData = [];
-        foreach ($metricsMap as $jsKey => $dbName) {
-            $data = $this->getChartsUseCase->execute($currentPatientId, $dbName);
-            if (!empty($data)) {
-                $chartData[$jsKey] = $data;
-            }
-        }
-
-        $this->render('dashboard/dashboard', [
-            'noPatient' => false,
-            'patients' => $patientsArray,
-            'patient' => $currentPatient,
-            'chartData' => $chartData
-        ]);
     }
 
     private function resolveCurrentPatientId(array $patients): int

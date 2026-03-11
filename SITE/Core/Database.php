@@ -49,12 +49,19 @@ final class Database
                 $dsn = "mysql:host={$host};port={$port};dbname={$name};charset=utf8mb4";
 
                 try {
-                    self::$pdo = new PDO($dsn, $user, $pass, [
+                    $candidate = new PDO($dsn, $user, $pass, [
                         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
                         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                         PDO::ATTR_EMULATE_PREPARES   => false, // Sécurité : force les vraies requêtes préparées
                         PDO::ATTR_PERSISTENT         => false,
                     ]);
+
+                    if (!self::hasRequiredTables($candidate)) {
+                        error_log("[DB Error][{$name}] Schéma incomplet: tables métier manquantes.");
+                        continue;
+                    }
+
+                    self::$pdo = $candidate;
                     break;
                 } catch (PDOException $e) {
                     $lastError = $e;
@@ -71,6 +78,30 @@ final class Database
             }
         }
         return self::$pdo;
+    }
+
+    /**
+     * Vérifie que les tables minimales nécessaires existent dans la base.
+     */
+    private static function hasRequiredTables(PDO $pdo): bool
+    {
+        $requiredTables = [
+            'medecin',
+            'patient',
+            'suivre',
+            'mesures',
+            'valeurs_mesures',
+            'seuil_alerte',
+        ];
+
+        foreach ($requiredTables as $table) {
+            $stmt = $pdo->query("SHOW TABLES LIKE " . $pdo->quote($table));
+            if ($stmt === false || $stmt->fetch() === false) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
