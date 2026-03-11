@@ -11,6 +11,6 @@ class LegalNoticesController extends AbstractController
     public function show(): void
     {
         // Utilise la nouvelle méthode render() de l'AbstractController
-        $this->render('Public/legal-notices');
+        $this->render('public/legal-notices');
     }
 }

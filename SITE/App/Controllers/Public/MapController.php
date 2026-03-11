@@ -10,6 +10,6 @@ class MapController extends AbstractController
 {
     public function show(): void
     {
-        $this->render('Public/map');
+        $this->render('public/map');
     }
 }

@@ -32,7 +32,7 @@ final class DashboardController extends AbstractController
         $patientsObjects = $this->getPatientsUseCase->execute($medId);
 
         if (empty($patientsObjects)) {
-            $this->render('Dashboard/dashboard', [
+            $this->render('dashboard/dashboard', [
                 'noPatient' => true,
                 'patients' => [],
                 'patient' => null,
@@ -77,7 +77,7 @@ final class DashboardController extends AbstractController
             }
         }
 
-        $this->render('Dashboard/dashboard', [
+        $this->render('dashboard/dashboard', [
             'noPatient' => false,
             'patients' => $patientsArray,
             'patient' => $currentPatient,

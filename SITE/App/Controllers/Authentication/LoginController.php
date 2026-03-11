@@ -16,7 +16,7 @@ final class LoginController extends AbstractController
 {
     public function show(): void
     {
-        $this->render('Authentication/login', [
+        $this->render('authentication/login', [
             'errors' => [],
             'success' => $_GET['reset'] ?? '',
             'old' => ['email' => '']
@@ -28,7 +28,7 @@ final class LoginController extends AbstractController
         $this->startSession();
 
         if (RateLimiter::isBlocked('login_attempts', 5, 900)) {
-            $this->render('Authentication/login', [
+            $this->render('authentication/login', [
                 'errors' => ['Trop de tentatives. Veuillez réessayer dans 15 minutes.'],
                 'old' => ['email' => $this->getPost('email')]
             ]);
@@ -37,7 +37,7 @@ final class LoginController extends AbstractController
         
         if (!$this->validateCsrf()) {
             RateLimiter::recordAttempt('login_attempts');
-            $this->render('Authentication/login', [
+            $this->render('authentication/login', [
                 'errors' => ['Session expirée.'],
                 'old' => ['email' => $this->getPost('email')]
             ]);
@@ -57,14 +57,14 @@ final class LoginController extends AbstractController
                 $this->redirect('/dashboard');
             } else {
                 RateLimiter::recordAttempt('login_attempts');
-                $this->render('Authentication/login', [
+                $this->render('authentication/login', [
                     'errors' => ['Identifiants incorrects.'],
                     'old' => ['email' => $email]
                 ]);
             }
         } catch (\Exception $e) {
             RateLimiter::recordAttempt('login_attempts');
-            $this->render('Authentication/login', [
+            $this->render('authentication/login', [
                 'errors' => [$e->getMessage()],
                 'old' => ['email' => $this->getPost('email')]
             ]);

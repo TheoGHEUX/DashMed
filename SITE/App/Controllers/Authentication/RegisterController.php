@@ -19,7 +19,7 @@ final class RegisterController extends AbstractController
         $this->startSession();
         $csrf_token = \Core\Csrf::token();
 
-        $this->render('Authentication/register', [
+        $this->render('authentication/register', [
             'csrf_token' => $csrf_token,
             'errors' => [],
             'success' => '',
@@ -35,7 +35,7 @@ final class RegisterController extends AbstractController
         $posted = $_POST['csrf_token'] ?? '';
         $session = $_SESSION['csrf_token'] ?? '';
         if (empty($posted) || empty($session) || !hash_equals($session, $posted)) {
-            $this->render('Authentication/register', [
+            $this->render('authentication/register', [
                 'errors' => ["Session expirée. Veuillez recharger la page et réessayer."],
                 'old' => [],
                 'specialites' => Specialite::all(),
@@ -58,7 +58,7 @@ final class RegisterController extends AbstractController
         $result = $useCase->execute($data);
 
         if ($result['success']) {
-            $this->render('Authentication/register', [
+            $this->render('authentication/register', [
                 'success' => "Compte créé ! Un lien de vérification a été envoyé à " . htmlspecialchars($data['email']),
                 'errors' => [],
                 'old' => [],
@@ -66,7 +66,7 @@ final class RegisterController extends AbstractController
                 'csrf_token' => \Core\Csrf::token()
             ]);
         } else {
-            $this->render('Authentication/register', [
+            $this->render('authentication/register', [
                 'errors' => $result['errors'],
                 'old' => $data,
                 'specialites' => Specialite::all(),

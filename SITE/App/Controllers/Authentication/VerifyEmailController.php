@@ -19,7 +19,7 @@ final class VerifyEmailController extends AbstractController
         $useCase = DoctorUseCaseFactory::createVerifyEmail();
         $result = $useCase->execute($token);
 
-        $this->render('Authentication/verify-email', [
+        $this->render('authentication/verify-email', [
             'errors' => isset($result['error']) ? [$result['error']] : [],
             'success' => $result['message'] ?? '',
         ]);

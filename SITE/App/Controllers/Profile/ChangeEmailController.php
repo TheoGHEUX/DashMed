@@ -15,7 +15,7 @@ final class ChangeEmailController extends AbstractController
 {
     public function showForm(): void
     {
-        $this->render('Profile/change-email', [
+        $this->render('profile/change-email', [
             'errors' => [],
             'success' => ''
         ]);
@@ -26,7 +26,7 @@ final class ChangeEmailController extends AbstractController
         $this->startSession();
 
         if (RateLimiter::isBlocked('change_email_attempts', 5, 900)) {
-            $this->render('Profile/change-email', [
+            $this->render('profile/change-email', [
                 'errors' => ['Trop de tentatives. Veuillez réessayer dans 15 minutes.'],
                 'success' => ''
             ]);
@@ -34,7 +34,7 @@ final class ChangeEmailController extends AbstractController
         }
         if (!$this->validateCsrf()) {
             RateLimiter::recordAttempt('change_email_attempts');
-            $this->render('Profile/change-email', [
+            $this->render('profile/change-email', [
                 'errors' => ['Session expirée.'],
                 'success' => ''
             ]);
@@ -55,13 +55,13 @@ final class ChangeEmailController extends AbstractController
 
         if ($result['success']) {
             RateLimiter::clear('change_email_attempts');
-            $this->render('Profile/change-email', [
+            $this->render('profile/change-email', [
                 'errors' => [],
                 'success' => $result['message']
             ]);
         } else {
             RateLimiter::recordAttempt('change_email_attempts');
-            $this->render('Profile/change-email', [
+            $this->render('profile/change-email', [
                 'errors' => [$result['error'] ?? 'Erreur inconnue'],
                 'success' => ''
             ]);

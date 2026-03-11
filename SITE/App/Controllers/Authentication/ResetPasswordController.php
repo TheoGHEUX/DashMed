@@ -16,7 +16,7 @@ final class ResetPasswordController extends AbstractController
 
     public function show(): void
     {
-        $this->render('Authentication/reset-password', [
+        $this->render('authentication/reset-password', [
             'errors'  => [],
             'success' => '',
             'email'   => $_GET['email'] ?? '',
@@ -45,7 +45,7 @@ final class ResetPasswordController extends AbstractController
         }
 
         if (!empty($errors)) {
-            $this->render('Authentication/reset-password', [
+            $this->render('authentication/reset-password', [
                 'errors' => $errors,
                 'success' => '',
                 'email' => $email ?? '',
@@ -58,7 +58,7 @@ final class ResetPasswordController extends AbstractController
         $result = $useCase->execute($email, $token, $password);
 
         if ($result['success']) {
-            $this->render('Authentication/reset-password', [
+            $this->render('authentication/reset-password', [
                 'errors' => [],
                 'success' => "Votre mot de passe a bien été réinitialisé. Vous pouvez maintenant vous connecter.",
                 'email'   => '',
@@ -71,7 +71,7 @@ final class ResetPasswordController extends AbstractController
             } else {
                 $errs[] = 'Une erreur inconnue est survenue. Veuillez réessayer.';
             }
-            $this->render('Authentication/reset-password', [
+            $this->render('authentication/reset-password', [
                 'errors' => $errs,
                 'success' => '',
                 'email' => $email ?? '',

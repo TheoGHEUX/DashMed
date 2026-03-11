@@ -15,7 +15,7 @@ final class ChangePasswordController extends AbstractController
 {
     public function showForm(): void
     {
-        $this->render('Profile/change-password', [
+        $this->render('profile/change-password', [
             'errors' => [],
             'success' => ''
         ]);
@@ -26,7 +26,7 @@ final class ChangePasswordController extends AbstractController
         $this->startSession();
 
         if (RateLimiter::isBlocked('change_password_attempts', 5, 900)) {
-            $this->render('Profile/change-password', [
+            $this->render('profile/change-password', [
                 'errors' => ['Trop de tentatives. Veuillez réessayer dans 15 minutes.'],
                 'success' => ''
             ]);
@@ -34,7 +34,7 @@ final class ChangePasswordController extends AbstractController
         }
         if (!$this->validateCsrf()) {
             RateLimiter::recordAttempt('change_password_attempts');
-            $this->render('Profile/change-password', [
+            $this->render('profile/change-password', [
                 'errors' => ['Session expirée.'],
                 'success' => ''
             ]);
@@ -56,13 +56,13 @@ final class ChangePasswordController extends AbstractController
 
         if ($result['success']) {
             RateLimiter::clear('change_password_attempts');
-            $this->render('Profile/change-password', [
+            $this->render('profile/change-password', [
                 'errors' => [],
                 'success' => $result['message']
             ]);
         } else {
             RateLimiter::recordAttempt('change_password_attempts');
-            $this->render('Profile/change-password', [
+            $this->render('profile/change-password', [
                 'errors' => [$result['error'] ?? 'Erreur inconnue'],
                 'success' => ''
             ]);

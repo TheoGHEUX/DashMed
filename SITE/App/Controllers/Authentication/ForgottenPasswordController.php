@@ -16,7 +16,7 @@ final class ForgottenPasswordController extends AbstractController
 
     public function show(): void
     {
-        $this->render('Authentication/forgotten-password', [
+        $this->render('authentication/forgotten-password', [
             'errors' => [],
             'success' => '',
             'old' => []
@@ -30,7 +30,7 @@ final class ForgottenPasswordController extends AbstractController
         // ===== Ratelimit désactivé pour DEV =====
         /*
         if (RateLimiter::isBlocked('forgot_password_attempts', 5, 3600)) {
-            $this->render('Authentication/forgotten-password', [
+            $this->render('authentication/forgotten-password', [
                 'errors' => ["Trop de tentatives récentes. Veuillez patienter une heure avant de réessayer."],
                 'success' => '',
                 'old' => []
@@ -42,7 +42,7 @@ final class ForgottenPasswordController extends AbstractController
 
         if (!$this->validateCsrf()) {
             // RateLimiter::recordAttempt('forgot_password_attempts');
-            $this->render('Authentication/forgotten-password', [
+            $this->render('authentication/forgotten-password', [
                 'errors' => ['Session expirée.'],
                 'success' => '',
                 'old' => []
@@ -55,7 +55,7 @@ final class ForgottenPasswordController extends AbstractController
         // Validation email vide ou mauvais format
         if (empty($email)) {
             // RateLimiter::recordAttempt('forgot_password_attempts');
-            $this->render('Authentication/forgotten-password', [
+            $this->render('authentication/forgotten-password', [
                 'errors' => ["Veuillez renseigner une adresse email."],
                 'success' => '',
                 'old' => []
@@ -63,7 +63,7 @@ final class ForgottenPasswordController extends AbstractController
             return;
         } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             // RateLimiter::recordAttempt('forgot_password_attempts');
-            $this->render('Authentication/forgotten-password', [
+            $this->render('authentication/forgotten-password', [
                 'errors' => ["Veuillez saisir une adresse email valide."],
                 'success' => '',
                 'old' => ['email' => $email]
@@ -75,7 +75,7 @@ final class ForgottenPasswordController extends AbstractController
         $useCase->execute($email);
         // RateLimiter::recordAttempt('forgot_password_attempts');
 
-        $this->render('Authentication/forgotten-password', [
+        $this->render('authentication/forgotten-password', [
             'errors' => [],
             'success' => "Si un compte existe à cette adresse, un email de réinitialisation a été envoyé.",
             'old' => []
