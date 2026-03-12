@@ -20,8 +20,11 @@ use App\Models\Doctor\UseCases\Profile\ChangeEmail;
 use Core\Services\MailerService;
 
 /**
- * Factory pour créer les Use Cases liés aux médecins
- * Centralise la configuration des dépendances
+ * Factory pour créer les Use Cases liés aux médecins.
+ *
+ * Une factory centralise la création des objets complexes (use cases, services, etc.)
+ * pour simplifier l'instanciation et la gestion des dépendances dans le code métier.
+ * Elle permet d'éviter la duplication de logique d'initialisation et facilite la maintenance.
  */
 final class DoctorUseCaseFactory
 {

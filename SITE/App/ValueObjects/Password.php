@@ -16,6 +16,9 @@ final class Password
 
     private string $value;
 
+    /**
+     * Construit un mot de passe et valide sa force.
+     */
     public function __construct(string $password)
     {
         if (strlen($password) < self::MIN_LENGTH) {
@@ -45,11 +48,17 @@ final class Password
         $this->value = $password;
     }
 
+    /**
+     * Retourne le hash du mot de passe.
+     */
     public function hash(): string
     {
         return password_hash($this->value, PASSWORD_DEFAULT);
     }
 
+    /**
+     * Vérifie le mot de passe par rapport à un hash.
+     */
     public function verify(string $hash): bool
     {
         return password_verify($this->value, $hash);

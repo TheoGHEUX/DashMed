@@ -9,6 +9,12 @@ use App\Models\Patient\Entities\Patient;
 use App\Models\Patient\Interfaces\IPatientManagementRepository;
 use PDO;
 
+/**
+ * Repository pour la gestion des patients d'un médecin.
+ *
+ * Un repository est une classe qui fait le lien entre le code métier et la base de données.
+ * Il centralise les requêtes SQL et permet de manipuler les données de façon structurée.
+ */
 final class PatientManagementRepository implements IPatientManagementRepository
 {
     private PDO $db;

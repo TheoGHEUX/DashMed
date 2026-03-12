@@ -7,7 +7,7 @@ namespace App\Models\ConsoleLog\UseCases\Intelligence;
 use App\Models\ConsoleLog\Interfaces\ITreePredictor;
 
 /**
- * Use Case : Prédit la prochaine action probable du médecin
+ * Use case pour prédire la prochaine action probable du médecin.
  */
 final class PredictNextAction
 {

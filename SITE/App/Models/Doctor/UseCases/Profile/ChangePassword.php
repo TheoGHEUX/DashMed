@@ -9,6 +9,12 @@ use App\Models\Doctor\Validators\DoctorValidator;
 use App\ValueObjects\Password;
 use App\Exceptions\ValidationException;
 
+/**
+ * Use case pour le changement de mot de passe médecin.
+ *
+ * Un use case (cas d'usage) regroupe la logique métier pour une action précise du domaine.
+ * Il orchestre les appels aux repositories, validators, etc., pour réaliser une tâche métier complète.
+ */
 final class ChangePassword
 {
     private IDoctorRepository $repo;

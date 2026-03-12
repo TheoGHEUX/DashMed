@@ -7,8 +7,9 @@ namespace App\Models\Patient\UseCases\Dashboard;
 use App\Models\Patient\Interfaces\IPatientSimilarityService;
 
 /**
- * Service de calcul de similarité entre patients via KNN
- * Note: Déplacé dans Services serait plus approprié, mais on garde la compatibilité
+ * Service de calcul de similarité entre patients via KNN.
+ *
+ * Un service métier qui fournit des méthodes de comparaison mathématique entre patients.
  */
 final class PatientSimilarityService implements IPatientSimilarityService
 {

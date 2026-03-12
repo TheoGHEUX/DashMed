@@ -11,6 +11,11 @@ use App\Models\ConsoleLog\Services\TreePredictor;
 use App\Models\ConsoleLog\UseCases\Logging\LogDashboardAction;
 use App\Models\ConsoleLog\UseCases\Intelligence\PredictNextAction;
 
+/**
+ * Contrôleur pour les fonctionnalités avancées du dashboard (logs et prédictions).
+ *
+ * Permet d'enregistrer les actions utilisateur et de prédire la prochaine action à l'aide d'un modèle IA.
+ */
 final class IntelligenceApiController extends AbstractController
 {
     private LogDashboardAction $logger;
@@ -24,13 +29,13 @@ final class IntelligenceApiController extends AbstractController
             return;
         }
 
-        // Fallback compatibilité déploiement ancien/incomplet
         $this->logger = new LogDashboardAction(new ActionLoggerRepository());
         $this->predictor = new PredictNextAction(new TreePredictor());
     }
-
     /**
-     * POST /api/log-graph-action
+     * Enregistre une action utilisateur sur le dashboard.
+     *
+     * Utilisé pour l'analyse des interactions et l'amélioration de l'expérience.
      */
     public function logAction(): void
     {
@@ -53,8 +58,9 @@ final class IntelligenceApiController extends AbstractController
     }
 
     /**
-     * POST /api/predict-action
-     * Prédit la prochaine action du médecin en fonction du contexte actuel
+     * Prédit la prochaine action probable du médecin selon le contexte.
+     *
+     * Utilise un modèle IA pour suggérer l'action la plus pertinente.
      */
     public function predict(): void
     {

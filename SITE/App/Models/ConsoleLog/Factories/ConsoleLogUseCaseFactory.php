@@ -9,6 +9,9 @@ use App\Models\ConsoleLog\Services\TreePredictor;
 use App\Models\ConsoleLog\UseCases\Intelligence\PredictNextAction;
 use App\Models\ConsoleLog\UseCases\Logging\LogDashboardAction;
 
+/**
+ * Factory pour créer les use cases liés aux logs du dashboard.
+ */
 final class ConsoleLogUseCaseFactory
 {
     private static ?ActionLoggerRepository $loggerRepo = null;

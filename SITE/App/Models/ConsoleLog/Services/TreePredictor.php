@@ -7,8 +7,8 @@ namespace App\Models\ConsoleLog\Services;
 use App\Models\ConsoleLog\Interfaces\ITreePredictor;
 
 /**
- * Prédicteur d'actions basé sur un arbre de décision exporté en JSON.
- * Remplace l'appel Python pour des prédictions instantanées en PHP pur.
+ * Service de prédiction d'actions basé sur un arbre de décision JSON.
+ * Permet de prédire la prochaine action sans appel Python.
  */
 final class TreePredictor implements ITreePredictor
 {

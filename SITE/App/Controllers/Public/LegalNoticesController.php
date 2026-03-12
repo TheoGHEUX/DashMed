@@ -9,8 +9,12 @@ use Core\Controller\AbstractController;
 final class LegalNoticesController extends AbstractController
 {
     public function show(): void
+/**
+ * Contrôleur des mentions légales.
+ *
+ * Affiche la page des mentions légales du site.
+ */
     {
-        // Utilise la nouvelle méthode render() de l'AbstractController
         $this->render('public/legal-notices');
     }
 }

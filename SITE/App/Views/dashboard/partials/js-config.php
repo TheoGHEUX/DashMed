@@ -1,3 +1,9 @@
+<?php
+/**
+ * Ce fichier injecte dans le JavaScript global du dashboard les données patient et les métriques nécessaires aux graphiques.
+ * Il prépare les variables JS (CSRF, patient, données de mesures) pour l'affichage dynamique côté client.
+ */
+?>
 <script>
     window.csrfToken = <?= json_encode(\Core\Csrf::token(), JSON_HEX_TAG | JSON_HEX_AMP) ?>;
     window.activePatient = <?= json_encode($patient ?? [], JSON_UNESCAPED_UNICODE) ?>;
@@ -15,7 +21,6 @@
 
     if (!empty($chartData)) {
         foreach ($metricsMap as $jsKey => $libelle) {
-            // Nouveau format retourné par GetPatientChartData::execute()
             if (!empty($chartData[$jsKey]['values'])) {
                 $metric = $chartData[$jsKey];
 

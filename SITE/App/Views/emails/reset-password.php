@@ -1,10 +1,3 @@
-<?php
-
-/**
- * @var string $url  // Lien pour réinitialiser le mot de passe (contient &email=...)
- * @var string $name // Prénom Nom pour l'affichage
- */
-?>
 <!DOCTYPE html>
 <html>
 <head>

@@ -6,6 +6,12 @@ namespace App\Models\Doctor\Validators;
 
 use App\Models\Doctor\Interfaces\IDoctorValidator;
 
+/**
+ * Service de validation des données liées aux médecins.
+ *
+ * Un validator regroupe les règles pour vérifier que les données saisies par l'utilisateur
+ * respectent les contraintes attendues (format email, mot de passe, etc).
+ */
 final class DoctorValidator implements IDoctorValidator
 {
     /**

@@ -7,7 +7,7 @@ namespace App\Exceptions;
 use Exception;
 
 /**
- * Exception de base pour toutes les exceptions métier de l'application
+ * Exception de base pour toutes les exceptions métier de l'application.
  */
 abstract class DomainException extends Exception
 {

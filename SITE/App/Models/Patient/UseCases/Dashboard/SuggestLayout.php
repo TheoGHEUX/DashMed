@@ -9,7 +9,10 @@ use App\Models\Patient\Interfaces\IPatientSimilarityRepository;
 use App\Models\Patient\Interfaces\IPatientSimilarityService;
 
 /**
- * Use Case : Suggère un layout de dashboard basé sur des patients similaires
+ * Use case pour suggérer un layout de dashboard basé sur des patients similaires.
+ *
+ * Un use case (cas d'usage) regroupe la logique métier pour une action précise du domaine.
+ * Il orchestre les appels aux repositories, services, etc., pour réaliser une tâche métier complète.
  */
 final class SuggestLayout
 {
@@ -46,14 +49,12 @@ final class SuggestLayout
         }
 
         // 4. Trouver le layout du patient le plus similaire
-        // Le layout_config est déjà dans candidatesData, pas besoin de refaire une requête
         $bestMatchId = $nearest[0]['pt_id'];
         $bestDistance = $nearest[0]['distance'];
 
         $layout = null;
         foreach ($candidatesData as $candidate) {
             if ($candidate['pt_id'] === $bestMatchId) {
-                // Décoder le JSON du layout_config
                 $layout = json_decode($candidate['layout_config'], true);
                 break;
             }
@@ -63,7 +64,6 @@ final class SuggestLayout
             return null;
         }
 
-        // Retourner toutes les informations comme dans main
         return [
             'similar_patient_id' => $bestMatchId,
             'distance' => round($bestDistance, 2),

@@ -9,10 +9,15 @@ use Core\Security\RateLimiter;
 use App\Models\Doctor\Factories\DoctorUseCaseFactory;
 
 /**
- * Contrôleur de changement d'email
+ * Contrôleur de changement d'email utilisateur.
+ *
+ * Affiche le formulaire et traite la demande de modification d'adresse email.
  */
 final class ChangeEmailController extends AbstractController
 {
+    /**
+     * Affiche le formulaire de changement d'email.
+     */
     public function showForm(): void
     {
         $this->render('profile/change-email', [

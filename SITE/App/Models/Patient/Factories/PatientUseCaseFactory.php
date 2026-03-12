@@ -14,6 +14,12 @@ use App\Models\Patient\UseCases\Dashboard\SuggestLayout;
 use App\Models\Patient\UseCases\Management\GetDoctorPatients;
 use App\Models\Patient\UseCases\Monitoring\GetPatientChartData;
 
+/**
+ * Factory pour créer les use cases liés aux patients.
+ *
+ * Une factory centralise la création des objets complexes (use cases, services, etc.)
+ * pour simplifier l'instanciation et la gestion des dépendances dans le code métier.
+ */
 final class PatientUseCaseFactory
 {
     private static ?PatientManagementRepository $managementRepo = null;

@@ -14,6 +14,12 @@ use App\Models\Patient\UseCases\Monitoring\GetPatientChartData;
 final class DashboardController extends AbstractController
 {
     private GetDoctorPatients $getPatientsUseCase;
+/**
+ * Contrôleur principal du dashboard médecin.
+ *
+ * Affiche la liste des patients et leurs données principales.
+ * Gère la récupération des patients et des données de suivi.
+ */
     private GetPatientChartData $getChartsUseCase;
 
     public function __construct()
@@ -24,7 +30,6 @@ final class DashboardController extends AbstractController
             return;
         }
 
-        // Fallback compatibilité déploiement ancien/incomplet
         $managementRepo = new PatientManagementRepository();
         $monitoringRepo = new PatientMonitoringRepository();
         $this->getPatientsUseCase = new GetDoctorPatients($managementRepo);
@@ -67,7 +72,6 @@ final class DashboardController extends AbstractController
                 }
             }
 
-            // MAPPING STRICT : clé JS => nom EXACTEMENT comme en BDD
             $metricsMap = [
                 'temperature'       => 'Température corporelle',
                 'blood-pressure'    => 'Tension artérielle',

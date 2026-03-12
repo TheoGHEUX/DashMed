@@ -6,6 +6,12 @@ namespace App\Models\Patient\UseCases\Monitoring;
 
 use App\Models\Patient\Interfaces\IPatientMonitoringRepository;
 
+/**
+ * Use case pour récupérer les données de suivi patient pour les graphiques.
+ *
+ * Un use case (cas d'usage) regroupe la logique métier pour une action précise du domaine.
+ * Il orchestre les appels aux repositories, services, etc., pour réaliser une tâche métier complète.
+ */
 final class GetPatientChartData
 {
     private IPatientMonitoringRepository $repository;
@@ -40,7 +46,7 @@ final class GetPatientChartData
         // 4. Récupérer les seuils
         $seuils = $this->repository->getAllSeuilsForMetric($patientId, $typeMesure);
 
-        // 5. Calculer min/max pour l'échelle (logique du main)
+        // 5. Calculer min/max pour l'échelle
         $vals = array_column($valeurs, 'valeur');
         $minVal = min($vals);
         $maxVal = max($vals);
@@ -63,7 +69,7 @@ final class GetPatientChartData
             return max(0, min(1, ($val - $chartMin) / ($chartMax - $chartMin)));
         }, $valeurs);
 
-        // 7. Retourner le format attendu par le JavaScript (compatible main)
+        // 7. Retourner le format attendu par le JavaScript
         $result = [
             'id_mesure' => $data['id_mesure'] ?? null,
             'values' => $normalizedValues,

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 /**
- * Exception levée lors d'erreur de validation des données
+ * Exception pour erreur de validation des données utilisateur.
  */
 final class ValidationException extends DomainException
 {

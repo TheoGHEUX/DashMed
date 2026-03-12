@@ -9,10 +9,15 @@ use Core\Security\RateLimiter;
 use App\Models\Doctor\Factories\DoctorUseCaseFactory;
 
 /**
- * Contrôleur de changement de mot de passe
+ * Contrôleur de changement de mot de passe utilisateur.
+ *
+ * Affiche le formulaire et traite la demande de modification du mot de passe.
  */
 final class ChangePasswordController extends AbstractController
 {
+    /**
+     * Affiche le formulaire de changement de mot de passe.
+     */
     public function showForm(): void
     {
         $this->render('profile/change-password', [

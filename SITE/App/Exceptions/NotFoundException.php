@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 /**
- * Exception levée quand une ressource n'est pas trouvée
+ * Exception pour ressource non trouvée.
  */
 final class NotFoundException extends DomainException
 {

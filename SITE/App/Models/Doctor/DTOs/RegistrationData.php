@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Models\Doctor\DTOs;
 
 /**
- * Data Transfer Object pour les données d'inscription
+ * Data Transfer Object (DTO) pour les données d'inscription d'un médecin.
+ *
+ * Un DTO sert à transporter des données entre différentes couches de l'application
+ * (ex : entre le contrôleur et la base de données) sans logique métier.
  */
 final class RegistrationData
 {

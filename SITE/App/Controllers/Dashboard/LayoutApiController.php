@@ -15,6 +15,11 @@ use App\Models\Patient\UseCases\Dashboard\SuggestLayout;
 final class LayoutApiController extends AbstractController
 {
     private GetDashboardLayout $getLayout;
+/**
+ * API pour la gestion des layouts de dashboard patient.
+ *
+ * Permet de charger, sauvegarder et suggérer des layouts personnalisés.
+ */
     private SaveDashboardLayout $saveLayout;
     private SuggestLayout $suggestLayout;
 
@@ -38,7 +43,9 @@ final class LayoutApiController extends AbstractController
     }
 
     /**
-     * GET /api/dashboard-layout
+     * Charge le layout personnalisé d'un patient pour le dashboard.
+     *
+     * Vérifie l'authentification et retourne le layout associé au patient et au médecin.
      */
     public function load(): void
     {
@@ -63,7 +70,9 @@ final class LayoutApiController extends AbstractController
     }
 
     /**
-     * POST /api/save-dashboard-layout
+     * Sauvegarde le layout personnalisé d'un patient pour le dashboard.
+     *
+     * Valide les données reçues et enregistre la configuration si elle est correcte.
      */
     public function save(): void
     {
@@ -99,7 +108,9 @@ final class LayoutApiController extends AbstractController
     }
 
     /**
-     * GET /api/suggest-layout
+     * Suggère un layout de dashboard basé sur des patients similaires.
+     *
+     * Retourne une suggestion si des patients comparables existent.
      */
     public function suggest(): void
     {
@@ -128,8 +139,7 @@ final class LayoutApiController extends AbstractController
     }
 
     /**
-     * GET /api/ai-availability
-     * Vérifie si l'IA est disponible
+     * Indique si la fonctionnalité d'IA (suggestion de layout) est disponible.
      */
     public function checkAvailability(): void
     {

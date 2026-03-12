@@ -1,4 +1,9 @@
+
 <?php
+/**
+ * Trait pour la gestion de la validation CSRF dans les contrôleurs.
+ * Propose des méthodes pour sécuriser les formulaires et les API contre les attaques CSRF.
+ */
 
 declare(strict_types=1);
 

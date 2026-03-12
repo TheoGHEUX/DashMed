@@ -8,6 +8,12 @@ use Core\Database;
 use App\Models\Patient\Interfaces\IPatientMonitoringRepository;
 use PDO;
 
+/**
+ * Repository pour la gestion des mesures et seuils de suivi patient.
+ *
+ * Un repository est une classe qui fait le lien entre le code métier et la base de données.
+ * Il centralise les requêtes SQL et permet de manipuler les données de façon structurée.
+ */
 final class PatientMonitoringRepository implements IPatientMonitoringRepository
 {
     private PDO $db;
@@ -55,11 +61,6 @@ final class PatientMonitoringRepository implements IPatientMonitoringRepository
         ");
         $stmt->execute([$typeMesure, $patientId]);
 
-        // On retourne les données brutes. Le formatage des clés (seuil_urgent_min...)
-        // pourra être fait ici car c'est du mapping SQL->Code, ce qui est acceptable dans un Repo.
-        // Si tu veux être ultra-strict, retourne juste $stmt->fetchAll() et le UseCase triera.
-        // Pour l'instant, garder le mapping ici est un bon compromis "Infrastructure".
-
         $result = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $statut = str_replace(['é', 'è'], ['e', 'e'], strtolower($row['statut']));
@@ -71,7 +72,6 @@ final class PatientMonitoringRepository implements IPatientMonitoringRepository
 
     /**
      * Génère une nouvelle valeur pour chaque mesure active du patient.
-     * Basé sur generate_data_online.php (version simplifiée de main) avec ranges optionnels
      */
     public function generateSimulationData(int $patientId): int
     {
@@ -102,7 +102,6 @@ final class PatientMonitoringRepository implements IPatientMonitoringRepository
 
             $valeur_base = $last !== false ? (float)$last : 70;
 
-            // Variation simple comme dans main : -0.5 à +0.5
             $variation = mt_rand(-5, 5) / 10;
             $valeur = round($valeur_base + $variation, 1);
 

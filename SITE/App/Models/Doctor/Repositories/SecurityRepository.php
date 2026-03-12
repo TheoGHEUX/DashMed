@@ -8,6 +8,12 @@ use Core\Database;
 use App\Models\Doctor\Interfaces\ISecurityRepository;
 use PDO;
 
+/**
+ * Repository pour la gestion des tokens de sécurité (reset password).
+ *
+ * Un repository est une classe qui fait le lien entre le code métier et la base de données.
+ * Il centralise les requêtes SQL et permet de manipuler les données de façon structurée.
+ */
 final class SecurityRepository implements ISecurityRepository
 {
     private PDO $db;
@@ -18,7 +24,7 @@ final class SecurityRepository implements ISecurityRepository
     }
 
     // Récupérer le dernier token pour un email
-    public function findResetToken(string $email): ?array
+c function findResetToken(string $email): ?array
     {
         $stmt = $this->db->prepare('SELECT * FROM password_resets WHERE email = ? AND expires_at > NOW() AND used_at IS NULL ORDER BY id DESC LIMIT 1');
         $stmt->execute([$email]);

@@ -10,9 +10,11 @@ use App\Models\Patient\Interfaces\IPatientSimilarityRepository;
 use PDO;
 
 /**
- * Repository unifié qui implémente à la fois les layouts ET la similarité
- * Les deux interfaces sont séparées pour respecter l'ISP, mais l'implémentation
- * peut rester dans une seule classe car elle partage la même source de données
+ * Repository unifié pour la gestion des layouts et de la similarité patient.
+ *
+ * Un repository est une classe qui fait le lien entre le code métier et la base de données.
+ * Il centralise les requêtes SQL et permet de manipuler les données de façon structurée.
+ * Ici, il implémente deux interfaces pour mutualiser l'accès aux mêmes données.
  */
 final class DashboardLayoutRepository implements IDashboardLayoutRepository, IPatientSimilarityRepository
 {

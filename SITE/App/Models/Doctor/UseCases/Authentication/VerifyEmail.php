@@ -6,6 +6,12 @@ namespace App\Models\Doctor\UseCases\Authentication;
 
 use App\Models\Doctor\Interfaces\IDoctorVerificationRepository;
 
+/**
+ * Use case pour la validation d'email médecin.
+ *
+ * Un use case (cas d'usage) regroupe la logique métier pour une action précise du domaine.
+ * Il orchestre les appels aux repositories, validators, etc., pour réaliser une tâche métier complète.
+ */
 final class VerifyEmail
 {
     private IDoctorVerificationRepository $verifyRepo;

@@ -8,6 +8,9 @@ use Core\Database;
 use App\Models\ConsoleLog\Interfaces\ILogHistoryRepository;
 use PDO;
 
+/**
+ * Repository pour l'historique des actions du dashboard.
+ */
 final class LogHistoryRepository implements ILogHistoryRepository
 {
     private PDO $db;
@@ -32,7 +35,6 @@ final class LogHistoryRepository implements ILogHistoryRepository
             LIMIT :limit
         ");
 
-        // PDO::PARAM_INT est important pour LIMIT
         $stmt->bindValue(':medId', $medId, PDO::PARAM_INT);
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
 

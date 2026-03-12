@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 /**
- * Exception levée quand l'accès à une ressource est refusé
+ * Exception pour accès refusé à une ressource.
  */
 final class AuthorizationException extends DomainException
 {

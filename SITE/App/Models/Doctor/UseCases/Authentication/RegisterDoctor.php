@@ -14,6 +14,12 @@ use App\Exceptions\ValidationException;
 use Core\Services\TokenGenerator;
 use Core\Services\UrlBuilder;
 
+/**
+ * Use case pour l'inscription d'un médecin.
+ *
+ * Un use case (cas d'usage) regroupe la logique métier pour une action précise du domaine.
+ * Il orchestre les appels aux repositories, validators, etc., pour réaliser une tâche métier complète.
+ */
 final class RegisterDoctor
 {
     private IDoctorRepository $repo;

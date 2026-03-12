@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 /**
- * Exception levée lors d'une erreur de logique métier
+ * Exception pour erreur de logique métier.
  */
 final class BusinessLogicException extends DomainException
 {

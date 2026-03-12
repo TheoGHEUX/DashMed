@@ -1,4 +1,9 @@
+
 <?php
+/**
+ * Trait d'authentification pour les contrôleurs.
+ * Permet de vérifier la connexion utilisateur et de récupérer l'identifiant courant.
+ */
 
 declare(strict_types=1);
 

@@ -8,7 +8,12 @@ use Core\Controller\AbstractController;
 
 final class ConnectedHomeController extends AbstractController
 {
-    /**
+
+/**
+ * Page d'accueil pour utilisateur connecté.
+ *
+ * Affiche la page d'accueil privée après connexion.
+ */
      * Affiche la page d'accueil connectée.
      * Utilise checkAuth() du parent pour sécuriser l'accès.
      */

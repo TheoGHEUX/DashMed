@@ -6,6 +6,9 @@ namespace App\Models\ConsoleLog\UseCases\Logging;
 
 use App\Models\ConsoleLog\Interfaces\IActionLoggerRepository;
 
+/**
+ * Use case pour enregistrer une action utilisateur sur le dashboard.
+ */
 final class LogDashboardAction
 {
     private IActionLoggerRepository $repository;
@@ -34,20 +37,20 @@ final class LogDashboardAction
 
         // 2. Validation : Est-ce une action connue ?
         if (!array_key_exists($lowerAction, self::ACTION_MAP)) {
-            // Action inconnue : on ne loggue pas (ou on pourrait logguer en "Autre" = 99)
+            // Action inconnue : on ne loggue pas
             return false;
         }
 
         // 3. Récupération de l'ID technique
         $actionId = self::ACTION_MAP[$lowerAction];
 
-        // 4. Appel au Repository (Signature stricte respectée)
+        // 4. Appel au Repository 
         return $this->repository->log(
-            $medId,        // int $medId
-            $lowerAction,  // string $typeAction
-            $actionId,     // int $typeActionId
-            $patientId,    // ?int $ptId
-            $mesureId      // ?int $idMesure
+            $medId,        
+            $lowerAction,  
+            $actionId,     
+            $patientId,    
+            $mesureId      
         );
     }
 }

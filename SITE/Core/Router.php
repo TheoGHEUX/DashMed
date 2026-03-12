@@ -1,4 +1,10 @@
+
 <?php
+/**
+ * Routeur principal de l'application.
+ * Associe chaque URL à un contrôleur et une méthode, gère la navigation HTTP (GET/POST),
+ * et centralise la logique de dispatch côté serveur. Affiche une 404 si la route n'existe pas.
+ */
 
 declare(strict_types=1);
 
@@ -57,7 +63,6 @@ final class Router
             '/home' => [ConnectedHomeController::class, 'index'],
             '/dashboard' => [DashboardController::class, 'index'],
             '/profile' => [ProfileController::class, 'show'],
-            '/profil' => [ProfileController::class, 'show'],
             '/change-password' => [ChangePasswordController::class, 'showForm'],
             '/change-email' => [ChangeEmailController::class, 'showForm'],
 
@@ -74,7 +79,6 @@ final class Router
             '/login' => [LoginController::class, 'login'],       // Méthode de soumission
             '/register' => [RegisterController::class, 'register'], // Méthode de soumission
             '/logout' => [LogoutController::class, 'logout'],
-            '/deconnexion' => [LogoutController::class, 'logout'],
 
             '/forgotten-password' => [ForgottenPasswordController::class, 'submit'],
             '/reset-password' => [ResetPasswordController::class, 'submit'],

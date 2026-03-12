@@ -6,6 +6,12 @@ use App\Models\Doctor\Interfaces\IDoctorVerificationRepository;
 use PDO;
 use Core\Database;
 
+/**
+ * Repository pour la gestion des tokens de vérification email médecin.
+ *
+ * Un repository est une classe qui fait le lien entre le code métier et la base de données.
+ * Il centralise les requêtes SQL et permet de manipuler les données de façon structurée.
+ */
 final class DoctorVerificationRepository implements IDoctorVerificationRepository
 {
     private PDO $db;
@@ -15,6 +21,9 @@ final class DoctorVerificationRepository implements IDoctorVerificationRepositor
         $this->db = Database::getConnection();
     }
 
+    /**
+     * Enregistre un token de vérification pour un email donné.
+     */
     public function setVerificationToken(string $email, string $token, string $expires): bool
     {
         $stmt = $this->db->prepare(
@@ -30,6 +39,9 @@ final class DoctorVerificationRepository implements IDoctorVerificationRepositor
         ]);
     }
 
+    /**
+     * Recherche un utilisateur par token de vérification.
+     */
     public function findByVerificationToken(string $token): ?array
     {
         $stmt = $this->db->prepare(
@@ -40,6 +52,9 @@ final class DoctorVerificationRepository implements IDoctorVerificationRepositor
         return $row ?: null;
     }
 
+    /**
+     * Valide l'email à partir du token fourni.
+     */
     public function verifyEmailToken(string $token): bool
     {
         $stmt = $this->db->prepare(

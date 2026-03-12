@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Models\ConsoleLog\Interfaces;
 
 /**
- * Interface pour le service de prédiction d'actions via arbre de décision
+ * Interface pour les services de prédiction d'actions (arbre de décision).
  */
 interface ITreePredictor
 {

@@ -8,6 +8,9 @@ use Core\Database;
 use App\Models\ConsoleLog\Interfaces\IActionLoggerRepository;
 use PDO;
 
+/**
+ * Repository pour enregistrer les actions utilisateur dans la base de données.
+ */
 final class ActionLoggerRepository implements IActionLoggerRepository
 {
     private PDO $db;
@@ -23,7 +26,7 @@ final class ActionLoggerRepository implements IActionLoggerRepository
     public function log(int $medId, string $typeAction, int $typeActionId, ?int $ptId = null, ?int $idMesure = null): bool
     {
         try {
-            // Génération d'un ID unique basé sur le timestamp (comme dans main)
+            // Génération d'un ID unique basé sur le timestamp
             $logId = (int)(microtime(true) * 10000) + random_int(1, 999);
 
             $stmt = $this->db->prepare("

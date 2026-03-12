@@ -13,6 +13,12 @@ use App\ValueObjects\Email;
 use Core\Services\TokenGenerator;
 use Core\Services\UrlBuilder;
 
+/**
+ * Use case pour la demande de réinitialisation de mot de passe médecin.
+ *
+ * Un use case (cas d'usage) regroupe la logique métier pour une action précise du domaine.
+ * Il orchestre les appels aux repositories, validators, etc., pour réaliser une tâche métier complète.
+ */
 final class ForgottenPassword
 {
     private IDoctorRepository $repo;

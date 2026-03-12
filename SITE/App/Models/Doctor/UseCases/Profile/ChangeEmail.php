@@ -13,6 +13,12 @@ use App\ValueObjects\Email;
 use Core\Services\TokenGenerator;
 use Core\Services\UrlBuilder;
 
+/**
+ * Use case pour le changement d'email médecin.
+ *
+ * Un use case (cas d'usage) regroupe la logique métier pour une action précise du domaine.
+ * Il orchestre les appels aux repositories, validators, etc., pour réaliser une tâche métier complète.
+ */
 final class ChangeEmail
 {
     private IDoctorRepository $repo;

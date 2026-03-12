@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace App\Models\Patient\Entities;
 
+/**
+ * Entité représentant un patient dans l'application.
+ *
+ * Une entité est une classe qui modélise une donnée principale du métier (ici, un patient).
+ * Elle regroupe les propriétés et la logique liées à cet objet, et sert à manipuler les données métier dans le code.
+ */
 final class Patient
 {
     private int $id;

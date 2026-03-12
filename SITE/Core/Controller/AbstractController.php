@@ -1,4 +1,10 @@
+
 <?php
+/**
+ * Contrôleur abstrait de base pour l'application.
+ * Fournit les méthodes utilitaires communes (render, redirect, accès POST) et intègre les traits d'authentification, CSRF et JSON.
+ * Tous les contrôleurs applicatifs héritent de cette classe.
+ */
 
 declare(strict_types=1);
 

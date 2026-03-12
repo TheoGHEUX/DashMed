@@ -8,6 +8,12 @@ use App\Models\Doctor\Interfaces\IDoctorRepository;
 use App\ValueObjects\Email;
 use App\Exceptions\ValidationException;
 
+/**
+ * Use case pour la connexion d'un médecin.
+ *
+ * Un use case (cas d'usage) regroupe la logique métier pour une action précise du domaine.
+ * Il orchestre les appels aux repositories, validators, etc., pour réaliser une tâche métier complète.
+ */
 final class LoginDoctor
 {
     private IDoctorRepository $repo;

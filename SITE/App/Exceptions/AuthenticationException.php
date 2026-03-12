@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 /**
- * Exception levée lors d'une tentative d'authentification échouée
+ * Exception pour échec d'authentification.
  */
 final class AuthenticationException extends DomainException
 {

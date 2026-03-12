@@ -12,6 +12,11 @@ use App\Models\Patient\UseCases\Monitoring\GetPatientChartData;
 final class ChartApiController extends AbstractController
 {
     private GetPatientChartData $useCase;
+/**
+ * API pour les données de graphiques du dashboard patient.
+ *
+ * Fournit les données nécessaires à l'affichage des courbes et indicateurs..
+ */
 
     public function __construct()
     {
@@ -19,15 +24,12 @@ final class ChartApiController extends AbstractController
             $this->useCase = PatientUseCaseFactory::createGetPatientChartData();
             return;
         }
-
-        // Fallback compatibilité déploiement ancien/incomplet
         $repo = new PatientMonitoringRepository();
         $this->useCase = new GetPatientChartData($repo);
     }
 
     /**
      * LECTURE : Récupère les données pour les graphiques (GET)
-     * Compatible avec l'ancien endpoint /api/dashboard/chart-data
      */
     public function getData(): void
     {
@@ -39,7 +41,7 @@ final class ChartApiController extends AbstractController
             return;
         }
 
-        // Configuration des métriques (comme dans le main)
+        // Configuration des métriques
         $metrics = [
             'temperature'       => 'Température corporelle',
             'blood-pressure'    => 'Tension artérielle',
@@ -66,7 +68,7 @@ final class ChartApiController extends AbstractController
      */
 
     /**
-     * ECRITURE : Simule de nouvelles données (basé sur generate_data_online.php)
+     * ECRITURE : Simule de nouvelles données
      * Route : POST /generate-data
      */
     public function generateData(): void
@@ -80,7 +82,6 @@ final class ChartApiController extends AbstractController
             if ($formPatientId === '') {
                 $formPatientId = $this->getPost('ptId', '0');
             }
-            // Support 'patient' (comme main) et 'ptId' (nouvelle architecture)
             $patientId = (int)($input['patient'] ?? $input['ptId'] ?? $formPatientId);
 
             if ($patientId <= 0) {
@@ -88,7 +89,6 @@ final class ChartApiController extends AbstractController
                 return;
             }
 
-            // Utiliser directement le script generate_data_online.php (comme dans main)
             require_once dirname(__DIR__, 3) . '/Scripts/generate_data_online.php';
             generatePatientData($patientId);
 

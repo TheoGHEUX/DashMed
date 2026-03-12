@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models\ConsoleLog\Entities;
 
+/**
+ * Entité représentant une action enregistrée sur le dashboard.
+ */
 final class ConsoleLog
 {
     private int $logId;

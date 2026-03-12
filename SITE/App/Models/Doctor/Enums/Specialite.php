@@ -2,6 +2,9 @@
 
 namespace App\Models\Doctor\Enums;
 
+/**
+ * Enumération des spécialités médicales disponibles.
+ */
 final class Specialite
 {
     public const LISTE = [

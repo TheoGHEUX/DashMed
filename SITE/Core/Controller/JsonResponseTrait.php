@@ -1,4 +1,9 @@
+
 <?php
+/**
+ * Trait pour faciliter l'envoi de réponses JSON depuis les contrôleurs.
+ * Centralise les helpers pour les retours API (succès, erreur, décodage input).
+ */
 
 declare(strict_types=1);
 
