@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Core\Controller;
 
+/**
+ * Trait pour faciliter les réponses JSON standardisées dans les contrôleurs d’API.
+ */
 trait JsonResponseTrait
 {
     /**
-     * Envoie une réponse JSON (Méthode principale utilisée par les contrôleurs).
+     * Envoie une réponse JSON.
      */
     protected function json(array $data, int $status = 200): void
     {
@@ -17,17 +20,25 @@ trait JsonResponseTrait
         exit;
     }
 
-    // Helpers (Bonus)
+    /**
+     * Envoie une réponse succès JSON.
+     */
     protected function jsonSuccess(array $data = []): void
     {
         $this->json(['success' => true, ...$data]);
     }
 
+    /**
+     * Envoie une erreur en JSON.
+     */
     protected function jsonError(string $message, int $code = 400): void
     {
         $this->json(['success' => false, 'error' => $message], $code);
     }
 
+    /**
+     * Récupère la donnée JSON envoyée en POST.
+     */
     protected function getJsonInput(): array
     {
         $content = file_get_contents('php://input');

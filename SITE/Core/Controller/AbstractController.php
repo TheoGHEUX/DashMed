@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace Core\Controller;
 
+/**
+ * Classe abstraite centrale pour tous les contrôleurs.
+ * Regroupe les traits Auth, CSRF et JSON pour une API rapide et sécurisée.
+ * Fournit un rendu de vue et du helper POST.
+ */
 abstract class AbstractController
 {
     use AuthTrait;
@@ -11,8 +16,7 @@ abstract class AbstractController
     use JsonResponseTrait;
 
     /**
-     * Affiche une vue.
-     * Remplace l'ancienne classe View::render().
+     * Affiche une vue demandée, en lui passant $data.
      */
     protected function render(string $viewPath, array $data = []): void
     {
@@ -29,6 +33,9 @@ abstract class AbstractController
         }
     }
 
+    /**
+     * Redirige vers une URL.
+     */
     protected function redirect(string $url): void
     {
         header("Location: $url");
@@ -36,9 +43,7 @@ abstract class AbstractController
     }
 
     /**
-     * @param string $key
-     * @param string $default
-     * @return string
+     * Récupère un champ du POST et le trim (avec valeur par défaut).
      */
     protected function getPost(string $key, string $default = ''): string
     {

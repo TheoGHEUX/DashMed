@@ -8,7 +8,6 @@ namespace Core;
  * Service d'envoi d'emails générique.
  *
  * Responsabilité unique : Envoyer un email HTML via la fonction mail() de PHP.
- * Ne contient aucune logique métier (pas de "sendWelcome" ou "sendReset").
  *
  * @package Core
  */
@@ -41,7 +40,7 @@ final class Mailer
         // Envoi réel
         $success = mail($to, $subject, $htmlBody, implode("\r\n", $headers));
 
-        // En mode DEBUG (local), on sauvegarde aussi dans un fichier pour vérifier sans serveur SMTP
+        // En local, on sauvegarde aussi dans un fichier pour vérifier sans serveur SMTP
         if ((getenv('APP_DEBUG') === '1') || !$success) {
             self::logMailToFile($to, $subject, $htmlBody);
         }

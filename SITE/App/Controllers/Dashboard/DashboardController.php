@@ -11,11 +11,22 @@ use App\Models\Patient\Repositories\PatientMonitoringRepository;
 use App\Models\Patient\UseCases\Management\GetDoctorPatients;
 use App\Models\Patient\UseCases\Monitoring\GetPatientChartData;
 
+/**
+ * Contrôleur principal du tableau de bord.
+ *
+ * Permet :
+ * - De lister et d’afficher tous les patients du médecin connecté.
+ * - D’afficher les mesures suivies pour un patient (données pour graphiques).
+ */
 final class DashboardController extends AbstractController
 {
     private GetDoctorPatients $getPatientsUseCase;
     private GetPatientChartData $getChartsUseCase;
 
+    /**
+     * Prépare les usecases patients et graphiques.
+     * Utilise la factory si disponible, sinon fallback via repository direct.
+     */
     public function __construct()
     {
         if (class_exists(PatientUseCaseFactory::class)) {
@@ -23,24 +34,23 @@ final class DashboardController extends AbstractController
             $this->getChartsUseCase = PatientUseCaseFactory::createGetPatientChartData();
             return;
         }
-
-        // Fallback compatibilité déploiement ancien/incomplet
-        $managementRepo = new PatientManagementRepository();
-        $monitoringRepo = new PatientMonitoringRepository();
-        $this->getPatientsUseCase = new GetDoctorPatients($managementRepo);
-        $this->getChartsUseCase = new GetPatientChartData($monitoringRepo);
     }
 
+    /**
+     * Affiche la page principale du tableau de bord avec la liste des patients
+     * et le suivi graphique du patient sélectionné.
+     */
     public function index(): void
     {
         try {
             $this->checkAuth();
             $medId = $_SESSION['user']['id'] ?? 0;
 
-            // 1. Récupération des patients
+            // Récupère les patients du médecin connecté via le use case
             $patientsObjects = $this->getPatientsUseCase->execute($medId);
 
             if (empty($patientsObjects)) {
+                // Aucun patient n’est attribué à ce médecin
                 $this->render('dashboard/dashboard', [
                     'noPatient' => true,
                     'patients' => [],
@@ -50,6 +60,7 @@ final class DashboardController extends AbstractController
                 return;
             }
 
+            // Extraction des patients sous forme de tableaux associatifs pour la vue
             $patientsArray = [];
             foreach ($patientsObjects as $patientObj) {
                 $patientsArray[] = method_exists($patientObj, 'toArray')
@@ -57,6 +68,7 @@ final class DashboardController extends AbstractController
                     : (array)$patientObj;
             }
 
+            // Détermine le patient sélectionné (demande, précédent ou premier)
             $currentPatientId = $this->resolveCurrentPatientId($patientsArray);
 
             $currentPatient = null;
@@ -67,7 +79,7 @@ final class DashboardController extends AbstractController
                 }
             }
 
-            // MAPPING STRICT : clé JS => nom EXACTEMENT comme en BDD
+            // Définition stricte du mapping JS <-> base pour les métriques
             $metricsMap = [
                 'temperature'       => 'Température corporelle',
                 'blood-pressure'    => 'Tension artérielle',
@@ -78,6 +90,7 @@ final class DashboardController extends AbstractController
                 'oxygen-saturation' => 'Saturation en oxygène',
             ];
 
+            // Récupère les mesures du patient sélectionné
             $chartData = [];
             foreach ($metricsMap as $jsKey => $dbName) {
                 $data = $this->getChartsUseCase->execute($currentPatientId, $dbName);
@@ -86,6 +99,7 @@ final class DashboardController extends AbstractController
                 }
             }
 
+            // Affiche la vue Dashboard avec toutes les infos nécessaires
             $this->render('dashboard/dashboard', [
                 'noPatient' => false,
                 'patients' => $patientsArray,
@@ -103,6 +117,15 @@ final class DashboardController extends AbstractController
         }
     }
 
+    /**
+     * Détermine le patient à sélectionner pour l’affichage :
+     * - Si un ID valide est demandé parmi les patients, il est sélectionné et enregistré en session
+     * - Sinon, si un précédent est mémorisé, on le reprend s’il est autorisé
+     * - Sinon, on prend le premier de la liste
+     *
+     * @param array $patients Liste des patients (tableaux associatifs)
+     * @return int ID du patient à afficher
+     */
     private function resolveCurrentPatientId(array $patients): int
     {
         $requestedId = (int)($_GET['patient'] ?? 0);

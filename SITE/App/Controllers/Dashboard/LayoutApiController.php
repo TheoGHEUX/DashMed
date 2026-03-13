@@ -12,12 +12,21 @@ use App\Models\Patient\UseCases\Dashboard\GetDashboardLayout;
 use App\Models\Patient\UseCases\Dashboard\SaveDashboardLayout;
 use App\Models\Patient\UseCases\Dashboard\SuggestLayout;
 
+/**
+ * Contrôleur API pour la gestion et la suggestion d'agencement du dashboard patient (layout).
+ *
+ * - Permet de charger, sauvegarder et suggérer automatiquement l’agencement de l’interface patient pour un médecin.
+ * - Prend en compte la personnalisation utilisateur et l’IA pour proposer des suggestions de mise en page issues de patients similaires.
+ */
 final class LayoutApiController extends AbstractController
 {
     private GetDashboardLayout $getLayout;
     private SaveDashboardLayout $saveLayout;
     private SuggestLayout $suggestLayout;
 
+    /**
+     * Prépare les usecases pour le layout du dashboard.
+     */
     public function __construct()
     {
         if (class_exists(PatientUseCaseFactory::class)) {
@@ -27,18 +36,11 @@ final class LayoutApiController extends AbstractController
             return;
         }
 
-        // Fallback compatibilité déploiement ancien/incomplet
-        $repo = new DashboardLayoutRepository();
-        $similarityService = new PatientSimilarityService();
-        $this->getLayout = new GetDashboardLayout($repo);
-        $this->saveLayout = new SaveDashboardLayout($repo);
 
-        // SuggestLayout utilise uniquement l'interface IPatientSimilarity
-        $this->suggestLayout = new SuggestLayout($repo, $similarityService);
     }
 
     /**
-     * GET /api/dashboard-layout
+     * Charge la configuration d’affichage (layout) du dashboard patient pour le médecin connecté.
      */
     public function load(): void
     {
@@ -51,10 +53,9 @@ final class LayoutApiController extends AbstractController
             return;
         }
 
-        // Signature correcte : execute(int $patientId, int $medId)
+        // Récupère la configuration de layout. Si n'existe pas, valeur null (=layout par défaut ou suggestion IA)
         $layout = $this->getLayout->execute($ptId, $medId);
 
-        // Si null, le JavaScript utilisera le layout par défaut ou fera une suggestion IA
         $this->json([
             'success' => true,
             'layout' => $layout,
@@ -63,14 +64,13 @@ final class LayoutApiController extends AbstractController
     }
 
     /**
-     * POST /api/save-dashboard-layout
+     * Sauvegarde la configuration d’affichage (layout) personnalisée de l’utilisateur.
      */
     public function save(): void
     {
         $this->checkAuth();
         $this->validateApiCsrf();
 
-        // Récupérer le JSON envoyé par fetch()
         $input = $this->getJsonInput();
 
         $ptId = (int)($input['ptId'] ?? 0);
@@ -82,13 +82,13 @@ final class LayoutApiController extends AbstractController
             return;
         }
 
-        // Valider la structure
+        // Vérifie que la structure envoyée contient bien les champs attendus
         if (!isset($config['visible']) || !is_array($config['visible'])) {
             $this->json(['success' => false, 'error' => 'Configuration invalide'], 400);
             return;
         }
 
-        // Signature correcte : execute(int $patientId, int $medId, array $config)
+        // Sauvegarde le usecase retourne true/false selon le succès
         $success = $this->saveLayout->execute($ptId, $medId, $config);
 
         if ($success) {
@@ -99,7 +99,7 @@ final class LayoutApiController extends AbstractController
     }
 
     /**
-     * GET /api/suggest-layout
+     * Suggère automatiquement un agencement (layout) basé sur les patients similaires.
      */
     public function suggest(): void
     {
@@ -128,8 +128,7 @@ final class LayoutApiController extends AbstractController
     }
 
     /**
-     * GET /api/ai-availability
-     * Vérifie si l'IA est disponible
+     * Vérifie la disponibilité de la fonctionnalité IA côté serveur.
      */
     public function checkAvailability(): void
     {

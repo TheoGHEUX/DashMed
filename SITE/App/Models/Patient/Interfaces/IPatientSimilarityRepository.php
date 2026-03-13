@@ -6,7 +6,6 @@ namespace App\Models\Patient\Interfaces;
 
 /**
  * Interface pour les opérations de similarité entre patients
- * Séparée de IDashboardLayoutRepository pour respecter l'ISP (Interface Segregation Principle)
  */
 interface IPatientSimilarityRepository
 {

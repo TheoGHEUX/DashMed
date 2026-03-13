@@ -10,9 +10,8 @@ use App\Models\Patient\Interfaces\IPatientSimilarityRepository;
 use PDO;
 
 /**
- * Repository unifié qui implémente à la fois les layouts ET la similarité
- * Les deux interfaces sont séparées pour respecter l'ISP, mais l'implémentation
- * peut rester dans une seule classe car elle partage la même source de données
+ * Repository unifié: layouts dashboard ET données de similarité patients.
+ * Implemente IPatientSimilarityRepository et IDashboardLayoutRepository.
  */
 final class DashboardLayoutRepository implements IDashboardLayoutRepository, IPatientSimilarityRepository
 {
@@ -33,7 +32,7 @@ final class DashboardLayoutRepository implements IDashboardLayoutRepository, IPa
 
     public function saveDashboardLayout(int $patientId, int $medId, array $config): bool
     {
-        // On vérifie juste l'existence de la relation, pas de règle métier complexe
+        // Vérifie qu’on suit bien ce patient avant de sauvegarder son layout
         $stmt = $this->db->prepare('SELECT 1 FROM suivre WHERE pt_id = ? AND med_id = ?');
         $stmt->execute([$patientId, $medId]);
         if (!$stmt->fetchColumn()) {
@@ -48,8 +47,7 @@ final class DashboardLayoutRepository implements IDashboardLayoutRepository, IPa
     }
 
     /**
-     * Récupère les données brutes nécessaires au calcul de similarité (KNN).
-     * Le calcul lui-même se fera dans un Service.
+     * Récupère les données brut nécessaires au calcul de similarité (KNN).
      */
     public function getPatientDataForSimilarity(int $patientId): ?array
     {
@@ -75,14 +73,14 @@ final class DashboardLayoutRepository implements IDashboardLayoutRepository, IPa
     }
 
     /**
-     * Récupère les candidats potentiels (autres patients du même médecin)
+     * Récupère tous les patients suivis, pour comparaison KNN/similarité + leur layout.
      */
     public function getCandidatesForSimilarity(int $medId, int $excludePatientId): array
     {
         $stmt = $this->db->prepare('
             SELECT DISTINCT
                 p.pt_id,
-                dl.layout_config, -- <--- AJOUT CRITIQUE ICI (Sinon on ne peut pas récupérer le layout suggéré)
+                dl.layout_config,
                 TIMESTAMPDIFF(YEAR, p.date_naissance, CURDATE()) as age,
                 p.sexe,
                 p.groupe_sanguin,
@@ -96,7 +94,7 @@ final class DashboardLayoutRepository implements IDashboardLayoutRepository, IPa
             LEFT JOIN mesures m ON p.pt_id = m.pt_id
             LEFT JOIN valeurs_mesures vm ON m.id_mesure = vm.id_mesure
             WHERE s.med_id = ? AND p.pt_id != ?
-            GROUP BY p.pt_id, dl.layout_config -- Ajout au GROUP BY par sécurité (bonnes pratiques SQL)
+            GROUP BY p.pt_id, dl.layout_config
         ');
         $stmt->execute([$medId, $excludePatientId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);

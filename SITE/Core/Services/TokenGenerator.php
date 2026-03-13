@@ -39,7 +39,7 @@ final class TokenGenerator
     }
 
     /**
-     * Hash un token (pour stockage sécurisé en base)
+     * Hash un token
      *
      * @param string $token Token en clair
      * @return string Hash du token

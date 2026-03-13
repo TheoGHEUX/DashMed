@@ -7,8 +7,10 @@ namespace App\Models\ConsoleLog\Services;
 use App\Models\ConsoleLog\Interfaces\ITreePredictor;
 
 /**
- * Prédicteur d'actions basé sur un arbre de décision exporté en JSON.
- * Remplace l'appel Python pour des prédictions instantanées en PHP pur.
+ * Prédicteur d’actions (arbre de décision JSON embarqué).
+ *
+ * Prend les décisions sur la prochaine action probable d’un médecin
+ * selon son contexte (action courante, mesure, heure, position).
  */
 final class TreePredictor implements ITreePredictor
 {
@@ -21,11 +23,16 @@ final class TreePredictor implements ITreePredictor
         'agrandir'  => 3,
     ];
 
+    /**
+     * Initialise le prédicteur et charge le modèle JSON.
+     *
+     * @param string|null $modelPath Chemin vers le fichier du modèle
+     * @throws \RuntimeException Si le modèle manque ou est invalide
+     */
     public function __construct(?string $modelPath = null)
     {
         // Chemin par défaut vers le modèle JSON
         if ($modelPath === null) {
-            // Depuis SITE/App/Models/ConsoleLog/Services, on remonte de 4 niveaux vers SITE/
             $modelPath = dirname(__DIR__, 4) . '/storage/model.json';
         }
 
@@ -77,7 +84,7 @@ final class TreePredictor implements ITreePredictor
             $position,
         ];
 
-        // Parcourir l'arbre pour chaque output (action, mesure)
+        // Parcourt l'arbre pour chaque output (action, mesure)
         $actionProbas = $this->traverse($this->model['tree']['action'], $features);
         $mesureProbas = $this->traverse($this->model['tree']['mesure'], $features);
 

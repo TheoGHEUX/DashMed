@@ -9,11 +9,20 @@ use Core\Security\RateLimiter;
 use App\Models\Doctor\Factories\DoctorUseCaseFactory;
 
 /**
- * Contrôleur de réinitialisation de mot de passe
- * Gère la réinitialisation après vérification du token
+ * Contrôleur responsable de la réinitialisation du mot de passe.
+ *
+ * Ce contrôleur gère l'affichage du formulaire de réinitialisation ainsi que son traitement:
+ * - Vérification du token envoyé par mail
+ * - Validation CSRF et anti-force brute
+ * - Appel du use case pour effectuer la modification du mot de passe
  */
 final class ResetPasswordController extends AbstractController
 {
+    /**
+     * Affiche le formulaire pour choisir un nouveau mot de passe.
+     *
+     * Pré-remplit l’email et le token si présents en GET dans l’URL .
+     */
     public function show(): void
     {
         $this->startSession();
@@ -26,6 +35,14 @@ final class ResetPasswordController extends AbstractController
         ]);
     }
 
+    /**
+     * Traite la soumission du formulaire de réinitialisation.
+     *
+     * - Vérifie s'il y a trop d'essais récents.
+     * - Contrôle la validité du token CSRF.
+     * - Vérifie la cohérence des nouveaux mots de passe (présence et confirmation).
+     * - Affiche des messages adaptés selon la réussite ou l’échec.
+     */
     public function submit(): void
     {
         $this->startSession();
@@ -33,7 +50,7 @@ final class ResetPasswordController extends AbstractController
         $postedEmail = $this->getPost('email');
         $postedToken = $this->getPost('token');
 
-        // Protection force brute
+        // Vérification anti-brute force: max 5 tentatives par 15 min
         if (RateLimiter::isBlocked('reset_password_attempts', 5, 900)) {
             $this->render('authentication/reset-password', [
                 'errors' => ['Trop de tentatives. Veuillez réessayer dans 15 minutes.'],
@@ -44,7 +61,7 @@ final class ResetPasswordController extends AbstractController
             return;
         }
 
-        // Validation CSRF
+        // Validation du CSRF
         if (!$this->validateCsrf()) {
             RateLimiter::recordAttempt('reset_password_attempts');
             $this->render('authentication/reset-password', [
@@ -61,6 +78,7 @@ final class ResetPasswordController extends AbstractController
         $password = $this->getPost('password');
         $confirm  = $this->getPost('password_confirm');
 
+        // Contrôle basique du nouveau mot de passe
         $errors = [];
         if (empty($password) || empty($confirm)) {
             $errors[] = "Veuillez renseigner et confirmer votre nouveau mot de passe.";
@@ -78,6 +96,7 @@ final class ResetPasswordController extends AbstractController
             return;
         }
 
+        // Appel du use case dédié
         $useCase = DoctorUseCaseFactory::createResetPassword();
         $result = $useCase->execute($email, $token, $password);
 

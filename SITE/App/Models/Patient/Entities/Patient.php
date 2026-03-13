@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models\Patient\Entities;
 
+/**
+ * Entité représentant un patient géré par l'application.
+ *
+ * Stocke toutes les informations d'un patient.
+ */
 final class Patient
 {
     private int $id;
@@ -18,6 +23,9 @@ final class Patient
     private ?string $codePostal;
     private ?string $ville;
 
+    /**
+     * Instancie un patient à partir d'un tableau associatif issu de la BDD.
+     */
     public function __construct(array $data)
     {
         $this->id = (int) ($data['pt_id'] ?? 0);
@@ -33,51 +41,21 @@ final class Patient
         $this->ville = $data['ville'] ?? null;
     }
 
-    public function getId(): int
-    {
-        return $this->id;
-    }
-    public function getNom(): string
-    {
-        return $this->nom;
-    }
-    public function getPrenom(): string
-    {
-        return $this->prenom;
-    }
-    public function getEmail(): ?string
-    {
-        return $this->email;
-    }
-    public function getSexe(): ?string
-    {
-        return $this->sexe;
-    }
-    public function getGroupeSanguin(): ?string
-    {
-        return $this->groupeSanguin;
-    }
-    public function getDateNaissance(): ?string
-    {
-        return $this->dateNaissance;
-    }
-    public function getTelephone(): ?string
-    {
-        return $this->telephone;
-    }
-    public function getAdresse(): ?string
-    {
-        return $this->adresse;
-    }
-    public function getCodePostal(): ?string
-    {
-        return $this->codePostal;
-    }
-    public function getVille(): ?string
-    {
-        return $this->ville;
-    }
+    public function getId(): int { return $this->id; }
+    public function getNom(): string { return $this->nom; }
+    public function getPrenom(): string { return $this->prenom; }
+    public function getEmail(): ?string { return $this->email; }
+    public function getSexe(): ?string { return $this->sexe; }
+    public function getGroupeSanguin(): ?string { return $this->groupeSanguin; }
+    public function getDateNaissance(): ?string { return $this->dateNaissance; }
+    public function getTelephone(): ?string { return $this->telephone; }
+    public function getAdresse(): ?string { return $this->adresse; }
+    public function getCodePostal(): ?string { return $this->codePostal; }
+    public function getVille(): ?string { return $this->ville; }
 
+    /**
+     * Retourne les infos patient sous forme de tableau associatif.
+     */
     public function toArray(): array
     {
         return [

@@ -9,6 +9,9 @@ use App\Models\Patient\Entities\Patient;
 use App\Models\Patient\Interfaces\IPatientManagementRepository;
 use PDO;
 
+/**
+ * Repository principal pour la gestion administrative des patients
+ */
 final class PatientManagementRepository implements IPatientManagementRepository
 {
     private PDO $db;

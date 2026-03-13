@@ -12,6 +12,9 @@ use App\ValueObjects\Email;
 use App\ValueObjects\Password;
 use Core\Services\TokenGenerator;
 
+/**
+ * Use Case pour finaliser la réinitialisation du mot de passe (token).
+ */
 final class ResetPassword
 {
     private IDoctorRepository $repo;
@@ -28,6 +31,10 @@ final class ResetPassword
         $this->validator = $validator;
     }
 
+    /**
+     * Valide le token+mail, vérifie le mot de passe et effectue la modification.
+     * Retourne un tableau résultat (clé success + error/message).
+     */
     public function execute(string $email, string $token, string $newPassword): array
     {
         try {

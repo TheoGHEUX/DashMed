@@ -7,13 +7,18 @@ namespace App\Models\Patient\UseCases\Dashboard;
 use App\Models\Patient\Interfaces\IPatientSimilarityService;
 
 /**
- * Service de calcul de similarité entre patients via KNN
- * Note: Déplacé dans Services serait plus approprié, mais on garde la compatibilité
+ * Service pour le calcul de similarité entre patients (KNN).
+ * Permet d’identifier les plus proches voisins via diverses caractéristiques.
  */
 final class PatientSimilarityService implements IPatientSimilarityService
 {
     /**
-     * Algorithme KNN : Trouve les patients les plus proches mathématiquement.
+     * Algorithme KNN simple pour trouver les patients les plus proches (similaires).
+     *
+     * @param array $target       Patient cible
+     * @param array $candidates   Patients candidats
+     * @param int $k              Nombre de voisins souhaités
+     * @return array              Liste triée des plus proches voisins
      */
     public function findNearestNeighbors(array $target, array $candidates, int $k = 5): array
     {
@@ -22,16 +27,16 @@ final class PatientSimilarityService implements IPatientSimilarityService
         foreach ($candidates as $candidate) {
             $score = 0;
 
-            // 1. Âge (Normalisé sur 100 ans)
+            // 1. Âge (normalisé)
             $ageDiff = ($target['age'] - $candidate['age']) / 100;
             $score += $ageDiff * $ageDiff;
 
-            // 2. Sexe (Binaire : 0 si identique, 1 si différent)
+            // 2. Sexe
             if ($target['sexe'] !== $candidate['sexe']) {
                 $score += 1;
             }
 
-            // 3. Groupe sanguin (moins important que sexe/âge)
+            // 3. Groupe sanguin
             if (
                 isset($target['groupe_sanguin'], $candidate['groupe_sanguin'])
                 && $target['groupe_sanguin'] !== $candidate['groupe_sanguin']
@@ -39,13 +44,12 @@ final class PatientSimilarityService implements IPatientSimilarityService
                 $score += 0.5;
             }
 
-            // 4. Constantes vitales (Distance Euclidienne pondérée)
-            // On compare les moyennes si elles existent
+            // 4. Constantes vitales (distance euclidienne pondérée)
             $metrics = [
-                'avg_tension' => 80, // Écart type approximatif pour normaliser
-                'avg_fc' => 95,      // Fréquence cardiaque
-                'avg_temp' => 5,     // Température
-                'avg_spo2' => 10     // Saturation oxygène
+                'avg_tension' => 80,
+                'avg_fc' => 95,
+                'avg_temp' => 5,
+                'avg_spo2' => 10
             ];
 
             foreach ($metrics as $key => $divider) {
@@ -61,8 +65,7 @@ final class PatientSimilarityService implements IPatientSimilarityService
             ];
         }
 
-        // Tri croissant (plus petite distance = plus grande similarité)
-        usort($distances, fn($a, $b) => $a['distance'] <=> $b['distance']);
+        usort($distances, fn($a, $b) => $b['distance'] <=> $a['distance']);
 
         return array_slice($distances, 0, $k);
     }

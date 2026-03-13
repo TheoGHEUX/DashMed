@@ -6,11 +6,16 @@ namespace App\Controllers\Public;
 
 use Core\Controller\AbstractController;
 
+/**
+ * Contrôleur des mentions légales.
+ */
 final class LegalNoticesController extends AbstractController
 {
+    /**
+     * Affiche la page des mentions légales.
+     */
     public function show(): void
     {
-        // Utilise la nouvelle méthode render() de l'AbstractController
         $this->render('public/legal-notices');
     }
 }

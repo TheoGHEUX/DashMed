@@ -10,11 +10,19 @@ use App\Models\Doctor\Factories\DoctorUseCaseFactory;
 use App\Models\Doctor\Enums\Specialite;
 
 /**
- * Contrôleur d'inscription
- * Gère l'affichage du formulaire et le traitement de l'inscription
+ * Contrôleur dédié à l’inscription d’un nouveau médecin.
+ *
+ * Ce contrôleur affiche le formulaire d’inscription
+ * et s’assure de la sécurité du processus (limitation d’essais, protection CSRF, etc.).
+ * L’utilisateur choisit sa spécialité lors de l’inscription.
  */
 final class RegisterController extends AbstractController
 {
+    /**
+     * Affiche le formulaire d'inscription au site.
+     *
+     * Génère un token CSRF et récupère la liste des spécialités disponibles pour l’afficher à l’utilisateur.
+     */
     public function show(): void
     {
         $this->startSession();
@@ -29,11 +37,20 @@ final class RegisterController extends AbstractController
         ]);
     }
 
+    /**
+     * Traite la soumission du formulaire d'inscription.
+     *
+     * - Vérifie le nombre de tentatives récentes.
+     * - Valide le token CSRF.
+     * - Récupère et nettoie les données envoyées par l’utilisateur.
+     * - Passe les infos au use case qui gère réellement l’inscription.
+     * - Réagit en cas de succès (nettoie le rate limiter et affiche un message positif) ou d’échec (affiche les erreurs).
+     */
     public function register(): void
     {
         $this->startSession();
 
-        // Protection contre le spam d'inscriptions
+        // Protection contre le spam d'inscriptions : max 5 tentatives par heure
         if (RateLimiter::isBlocked('register_attempts', 5, 3600)) {
             $this->render('authentication/register', [
                 'errors' => ['Trop de tentatives. Veuillez réessayer dans 1 heure.'],
@@ -44,7 +61,7 @@ final class RegisterController extends AbstractController
             return;
         }
 
-        // Validation CSRF via la méthode standard
+        // Validation du token CSRF
         if (!$this->validateCsrf()) {
             RateLimiter::recordAttempt('register_attempts');
             $this->render('authentication/register', [

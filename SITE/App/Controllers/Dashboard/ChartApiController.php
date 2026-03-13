@@ -9,10 +9,20 @@ use App\Models\Patient\Factories\PatientUseCaseFactory;
 use App\Models\Patient\Repositories\PatientMonitoringRepository;
 use App\Models\Patient\UseCases\Monitoring\GetPatientChartData;
 
+/**
+ * Contrôleur API lié aux graphiques de suivi patient (Dashboard).
+ *
+ * - Permet de récupérer les données pour alimenter les graphiques du dashboard d’un patient.
+ * - Offre aussi un endpoint pour générer des données de test (pour la démo ou le dev).
+ */
 final class ChartApiController extends AbstractController
 {
     private GetPatientChartData $useCase;
 
+    /**
+     * Prépare le use case pour la récupération des données du patient.
+     * Utilise la factory si disponible, sinon un fallback avec repository direct.
+     */
     public function __construct()
     {
         if (class_exists(PatientUseCaseFactory::class)) {
@@ -20,26 +30,23 @@ final class ChartApiController extends AbstractController
             return;
         }
 
-        // Fallback compatibilité déploiement ancien/incomplet
-        $repo = new PatientMonitoringRepository();
-        $this->useCase = new GetPatientChartData($repo);
     }
 
     /**
-     * LECTURE : Récupère les données pour les graphiques (GET)
-     * Compatible avec l'ancien endpoint /api/dashboard/chart-data
+     * GET: Récupère les données de santé du patient pour affichage graphique.
      */
     public function getData(): void
     {
         $this->checkAuth();
 
+        // Récupère et contrôle l’identifiant du patient depuis la requête
         $patientId = (int)($_GET['ptId'] ?? 0);
         if ($patientId <= 0) {
             $this->json(['success' => false, 'error' => 'ID Patient invalide'], 400);
             return;
         }
 
-        // Configuration des métriques (comme dans le main)
+        // Définition des métriques disponibles pour les graphiques
         $metrics = [
             'temperature'       => 'Température corporelle',
             'blood-pressure'    => 'Tension artérielle',
@@ -51,6 +58,7 @@ final class ChartApiController extends AbstractController
         ];
 
         $results = [];
+        // Récupère les séries de données une par une via le use case
         foreach ($metrics as $jsKey => $dbLabel) {
             $data = $this->useCase->execute($patientId, $dbLabel);
             if ($data) {
@@ -62,12 +70,9 @@ final class ChartApiController extends AbstractController
     }
 
     /**
-     * ECRITURE : Génère des données pour tester (POST)
-     */
-
-    /**
-     * ECRITURE : Simule de nouvelles données (basé sur generate_data_online.php)
-     * Route : POST /generate-data
+     * POST: Génère et insère des données pour un patient (sandbox/dev).
+     *
+     * Utilise en interne le script generate_data_online.php, accepte l’id patient en POST ou dans le JSON d’entrée.
      */
     public function generateData(): void
     {
@@ -80,7 +85,6 @@ final class ChartApiController extends AbstractController
             if ($formPatientId === '') {
                 $formPatientId = $this->getPost('ptId', '0');
             }
-            // Support 'patient' (comme main) et 'ptId' (nouvelle architecture)
             $patientId = (int)($input['patient'] ?? $input['ptId'] ?? $formPatientId);
 
             if ($patientId <= 0) {
@@ -88,7 +92,7 @@ final class ChartApiController extends AbstractController
                 return;
             }
 
-            // Utiliser directement le script generate_data_online.php (comme dans main)
+            // Génère des données fictives par appel du script existant
             require_once dirname(__DIR__, 3) . '/Scripts/generate_data_online.php';
             generatePatientData($patientId);
 

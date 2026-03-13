@@ -7,10 +7,19 @@ use App\Models\Doctor\Entities\Doctor;
 use App\Models\Doctor\Interfaces\IDoctorRepository;
 use PDO;
 
+/**
+ * Repository pour l'accès aux médecins (table medecin).
+ *
+ * Permet de chercher, créer ou modifier des utilisateurs médecin
+ * dans la base de données.
+ */
 final class DoctorRepository implements IDoctorRepository
 {
     private PDO $db;
 
+    /**
+     * Initialise le repository avec la connexion à la base.
+     */
     public function __construct()
     {
         $this->db = Database::getConnection();
@@ -67,7 +76,6 @@ final class DoctorRepository implements IDoctorRepository
         return $stmt->execute([$email, $id]);
     }
 
-    // Bonus : méthode pour activer (en option si tu veux gérer compte_actif)
     public function activateByEmail(string $email): bool
     {
         $stmt = $this->db->prepare('UPDATE medecin SET compte_actif = 1 WHERE LOWER(email) = LOWER(?)');

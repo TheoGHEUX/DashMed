@@ -8,16 +8,24 @@ use Core\Database;
 use App\Models\ConsoleLog\Interfaces\ILogHistoryRepository;
 use PDO;
 
+/**
+ * Repository pour la récupération de l’historique des actions d’un médecin sur la console.
+ */
 final class LogHistoryRepository implements ILogHistoryRepository
 {
     private PDO $db;
 
+    /**
+     * Instancie le repository avec un accès PDO à la base.
+     */
     public function __construct()
     {
         $this->db = Database::getConnection();
     }
 
-    // On ajoute la valeur par défaut ici aussi pour matcher l'interface
+    /**
+     * Récupère l’historique des actions pour un médecin donné.
+     */
     public function getHistoryByMedId(int $medId, int $limit = 100): array
     {
         $stmt = $this->db->prepare("
@@ -32,7 +40,6 @@ final class LogHistoryRepository implements ILogHistoryRepository
             LIMIT :limit
         ");
 
-        // PDO::PARAM_INT est important pour LIMIT
         $stmt->bindValue(':medId', $medId, PDO::PARAM_INT);
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
 

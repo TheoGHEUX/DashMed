@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Models\Doctor\DTOs;
 
 /**
- * Data Transfer Object pour les données d'inscription
+ * Data Transfer Object pour rassembler les données du formulaire d’inscription médecin.
+ *
+ * Facilite la transmission des informations entre le contrôleur et la logique métier.
  */
 final class RegistrationData
 {
@@ -17,6 +19,9 @@ final class RegistrationData
     public string $specialite;
     public ?string $sexe;
 
+    /**
+     * Initialise le DTO à partir d’un tableau associatif.
+     */
     public function __construct(array $data)
     {
         $this->prenom = trim($data['prenom'] ?? '');
@@ -28,6 +33,9 @@ final class RegistrationData
         $this->sexe = $data['sexe'] ?? null;
     }
 
+    /**
+     * Retourne les informations sous forme de tableau associatif.
+     */
     public function toArray(): array
     {
         return [

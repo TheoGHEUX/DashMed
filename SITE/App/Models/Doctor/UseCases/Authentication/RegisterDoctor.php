@@ -14,6 +14,10 @@ use App\Exceptions\ValidationException;
 use Core\Services\TokenGenerator;
 use Core\Services\UrlBuilder;
 
+/**
+ * Use Case pour l’inscription d’un nouveau médecin.
+ * Gère toutes les validations métier, l'envoi du mail de validation et la création.
+ */
 final class RegisterDoctor
 {
     private IDoctorRepository $repo;
@@ -33,15 +37,18 @@ final class RegisterDoctor
         $this->mailer = $mailer;
     }
 
+    /**
+     * Exécute l’enregistrement, la vérification, et le mail d’accueil.
+     * Retourne ['success'=>bool, 'errors'=>array] en cas d’échec.
+     */
     public function execute(array $data): array
     {
-        // Validation basique via le validator
+        // Validation via le validator
         $validationErrors = $this->validator->validateRegistration($data);
         if (!empty($validationErrors)) {
             return ['success' => false, 'errors' => $validationErrors];
         }
 
-        // Utilisation des Value Objects pour validation renforcée
         try {
             $email = new Email($data['email']);
             $password = new Password($data['password']);
@@ -68,7 +75,7 @@ final class RegisterDoctor
             return ['success' => false, 'errors' => ['Erreur technique lors de l\'enregistrement.']];
         }
 
-        // Générer le token de vérification avec le service
+        // Générer le token de vérification
         $tokenData = TokenGenerator::generateWithExpiry(32, '+24 hours');
         $this->verifyRepo->setVerificationToken(
             $email->getValue(),
@@ -76,7 +83,7 @@ final class RegisterDoctor
             $tokenData['expires']
         );
 
-        // Construire l'URL de vérification avec le service
+        // Construire l'URL de vérification
         $url = UrlBuilder::build('/verify-email', ['token' => $tokenData['token']]);
 
         // Envoyer l'email de vérification

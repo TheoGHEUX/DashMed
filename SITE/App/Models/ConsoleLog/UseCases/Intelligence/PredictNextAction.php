@@ -7,7 +7,7 @@ namespace App\Models\ConsoleLog\UseCases\Intelligence;
 use App\Models\ConsoleLog\Interfaces\ITreePredictor;
 
 /**
- * Use Case : Prédit la prochaine action probable du médecin
+ * Use case: interroge le service d’IA pour prédire la prochaine action probable du médecin.
  */
 final class PredictNextAction
 {
@@ -19,11 +19,8 @@ final class PredictNextAction
     }
 
     /**
-     * @param string $action Action actuelle
-     * @param string $mesure Type de mesure
-     * @param int $heure Heure de la journée (0-23)
-     * @param int $position Position dans la séquence
-     * @return array Résultat de la prédiction
+     * Exécute la prédiction du modèle, en passant tous les paramètres nécessaires pour
+     * obtenir la prochaine suggestion pertinente (action, mesure, heure, position…).
      */
     public function execute(string $action, string $mesure, int $heure, int $position): array
     {

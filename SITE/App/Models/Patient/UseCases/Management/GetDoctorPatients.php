@@ -7,6 +7,9 @@ namespace App\Models\Patient\UseCases\Management;
 use App\Models\Patient\Interfaces\IPatientManagementRepository;
 use App\Models\Patient\Entities\Patient;
 
+/**
+ * Use Case — Permet d’obtenir la liste des patients rattachés à un médecin.
+ */
 final class GetDoctorPatients
 {
     private IPatientManagementRepository $repository;
@@ -16,9 +19,6 @@ final class GetDoctorPatients
         $this->repository = $repository;
     }
 
-    /**
-     * @return Patient[]
-     */
     public function execute(int $medId): array
     {
         return $this->repository->getPatientsForDoctor($medId);

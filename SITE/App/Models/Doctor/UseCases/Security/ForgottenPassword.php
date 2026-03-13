@@ -13,6 +13,9 @@ use App\ValueObjects\Email;
 use Core\Services\TokenGenerator;
 use Core\Services\UrlBuilder;
 
+/**
+ * Use Case pour la gestion d’un mot de passe oublié (envoi de lien de reset).
+ */
 final class ForgottenPassword
 {
     private IDoctorRepository $repo;
@@ -29,6 +32,9 @@ final class ForgottenPassword
         $this->mailer = $mailer;
     }
 
+    /**
+     * Traite la demande d'oubli (génère token, enregistre, envoie le mail).
+     */
     public function execute(string $email): void
     {
         try {

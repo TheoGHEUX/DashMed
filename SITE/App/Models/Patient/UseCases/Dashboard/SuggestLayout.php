@@ -9,7 +9,7 @@ use App\Models\Patient\Interfaces\IPatientSimilarityRepository;
 use App\Models\Patient\Interfaces\IPatientSimilarityService;
 
 /**
- * Use Case : Suggère un layout de dashboard basé sur des patients similaires
+ * Use Case — Suggère un layout dashboard basé sur les patients les plus proches (KNN).
  */
 final class SuggestLayout
 {
@@ -24,36 +24,37 @@ final class SuggestLayout
         $this->similarityService = $similarityService;
     }
 
+    /**
+     * Trouve, pour un patient, le layout du patient le plus proche (avec layout renseigné), ou null sinon.
+     */
     public function execute(int $patientId, int $medId): ?array
     {
-        // 1. Récupérer les données du patient cible (via Repo de similarité)
+        // 1. Récupérer les données du patient cible
         $targetData = $this->similarityRepository->getPatientDataForSimilarity($patientId);
         if (!$targetData) {
             return null;
         }
 
-        // 2. Récupérer les candidats (via Repo de similarité)
+        // 2. Récupérer les candidats
         $candidatesData = $this->similarityRepository->getCandidatesForSimilarity($medId, $patientId);
         if (empty($candidatesData)) {
             return null;
         }
 
-        // 3. Calculer les K plus proches (on en prend 5 pour avoir une liste)
+        // 3. Calcul KNN (on en prend 5 pour une liste)
         $nearest = $this->similarityService->findNearestNeighbors($targetData, $candidatesData, 5);
 
         if (empty($nearest)) {
             return null;
         }
 
-        // 4. Trouver le layout du patient le plus similaire
-        // Le layout_config est déjà dans candidatesData, pas besoin de refaire une requête
+        // 4. Sélection et décodage du layout du plus proche
         $bestMatchId = $nearest[0]['pt_id'];
         $bestDistance = $nearest[0]['distance'];
 
         $layout = null;
         foreach ($candidatesData as $candidate) {
             if ($candidate['pt_id'] === $bestMatchId) {
-                // Décoder le JSON du layout_config
                 $layout = json_decode($candidate['layout_config'], true);
                 break;
             }
@@ -63,7 +64,6 @@ final class SuggestLayout
             return null;
         }
 
-        // Retourner toutes les informations comme dans main
         return [
             'similar_patient_id' => $bestMatchId,
             'distance' => round($bestDistance, 2),

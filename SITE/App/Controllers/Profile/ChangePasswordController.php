@@ -9,10 +9,16 @@ use Core\Security\RateLimiter;
 use App\Models\Doctor\Factories\DoctorUseCaseFactory;
 
 /**
- * Contrôleur de changement de mot de passe
+ * Contrôleur responsable du changement de mot de passe pour l’utilisateur connecté.
+ *
+ * - Affiche le formulaire de changement de mot de passe.
+ * - Protège contre les attaques par force brute (limitation d’essais) et vérifie le token CSRF.
  */
 final class ChangePasswordController extends AbstractController
 {
+    /**
+     * Affiche le formulaire pour modifier le mot de passe.
+     */
     public function showForm(): void
     {
         $this->render('profile/change-password', [
@@ -21,10 +27,20 @@ final class ChangePasswordController extends AbstractController
         ]);
     }
 
+    /**
+     * Traite la demande de changement de mot de passe.
+     *
+     * - Limite les tentatives pour éviter les attaques par force brute.
+     * - Vérifie la validité du token CSRF.
+     * - Vérifie que l’utilisateur est bien connecté.
+     * - Passe les données au use case de changement de mot de passe.
+     * - Affiche le résultat (succès ou erreurs) à l’utilisateur.
+     */
     public function submit(): void
     {
         $this->startSession();
 
+        // Si trop de tentatives récentes, bloque temporairement
         if (RateLimiter::isBlocked('change_password_attempts', 5, 900)) {
             $this->render('profile/change-password', [
                 'errors' => ['Trop de tentatives. Veuillez réessayer dans 15 minutes.'],
@@ -32,6 +48,8 @@ final class ChangePasswordController extends AbstractController
             ]);
             return;
         }
+
+        // Vérifie le token CSRF
         if (!$this->validateCsrf()) {
             RateLimiter::recordAttempt('change_password_attempts');
             $this->render('profile/change-password', [
@@ -41,6 +59,7 @@ final class ChangePasswordController extends AbstractController
             return;
         }
 
+        // Vérifie que l’utilisateur est connecté
         if (empty($_SESSION['user'])) {
             $this->redirect('/login');
             return;

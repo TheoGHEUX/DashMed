@@ -6,6 +6,9 @@ namespace App\Models\Doctor\UseCases\Authentication;
 
 use App\Models\Doctor\Interfaces\IDoctorVerificationRepository;
 
+/**
+ * Use case pour la vérification d’un compte via le lien/token reçu par mail.
+ */
 final class VerifyEmail
 {
     private IDoctorVerificationRepository $verifyRepo;
@@ -15,6 +18,10 @@ final class VerifyEmail
         $this->verifyRepo = $verifyRepo;
     }
 
+    /**
+     * Tente de valider un compte via le token fourni.
+     * Retourne un array ['message' => ...] ou ['error' => ...]
+     */
     public function execute(string $token): array
     {
         if (!$token) {

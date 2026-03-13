@@ -8,6 +8,9 @@ use App\Models\Doctor\Interfaces\IDoctorRepository;
 use App\ValueObjects\Email;
 use App\Exceptions\ValidationException;
 
+/**
+ * Use Case pour l’authentification (login d’un médecin).
+ */
 final class LoginDoctor
 {
     private IDoctorRepository $repo;
@@ -17,13 +20,17 @@ final class LoginDoctor
         $this->repo = $repo;
     }
 
+    /**
+     * Authentifie un médecin à partir de son email et mot de passe.
+     * Retourne l'entité Doctor ou null si échec.
+     */
     public function execute(string $email, string $password)
     {
         // Valider le format email
         try {
             $emailVO = new Email($email);
         } catch (ValidationException $e) {
-            return null; // Format email invalide
+            return null;
         }
 
         $doctor = $this->repo->findByEmail($emailVO->getValue());
@@ -32,7 +39,6 @@ final class LoginDoctor
             return null;
         }
 
-        // Vérifier le mot de passe (pas de validation stricte, juste vérification du hash)
         if (!password_verify($password, $doctor->getPasswordHash())) {
             return null;
         }

@@ -9,6 +9,9 @@ use App\Models\Doctor\Validators\DoctorValidator;
 use App\ValueObjects\Password;
 use App\Exceptions\ValidationException;
 
+/**
+ * Use Case: changement de mot de passe pour un médecin.
+ */
 final class ChangePassword
 {
     private IDoctorRepository $repo;
@@ -20,6 +23,9 @@ final class ChangePassword
         $this->validator = $validator;
     }
 
+    /**
+     * Valide les mots de passe puis effectue la modification si tout est correct.
+     */
     public function execute(int $userId, string $oldPassword, string $newPassword, string $confirmPassword): array
     {
         // Validation basique

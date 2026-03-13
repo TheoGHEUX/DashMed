@@ -2,6 +2,11 @@
 
 namespace App\Models\Doctor\Enums;
 
+/**
+ * Enumération des spécialités médicales gérées dans l’application.
+ *
+ * Fournit la liste complète et une méthode pour la récupération.
+ */
 final class Specialite
 {
     public const LISTE = [
@@ -42,6 +47,11 @@ final class Specialite
         'Urologie'
     ];
 
+    /**
+     * Retourne la liste complète des spécialités.
+     *
+     * @return string[]
+     */
     public static function all()
     {
         return self::LISTE;

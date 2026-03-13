@@ -6,6 +6,11 @@ namespace App\Models\Doctor\Validators;
 
 use App\Models\Doctor\Interfaces\IDoctorValidator;
 
+/**
+ * Service de validation pour toutes les opérations sur les entités médecins.
+ *
+ * Fournit une validation centralisée pour les emails et mots de passe.
+ */
 final class DoctorValidator implements IDoctorValidator
 {
     /**
@@ -20,7 +25,7 @@ final class DoctorValidator implements IDoctorValidator
     }
 
     /**
-     * Valide un mot de passe (avec confirmation)
+     * Valide un mot de passe (avec confirmation).
      */
     public function validatePassword(string $password, ?string $confirm = null): array
     {
@@ -43,7 +48,7 @@ final class DoctorValidator implements IDoctorValidator
     /**
      * Valide toutes les données d'inscription d'un médecin.
      * @param array $data Les données du formulaire d'inscription.
-     * @return array La liste des erreurs (vide si OK)
+     * @return array Liste des erreurs (vide si OK)
      */
     public function validateRegistration(array $data): array
     {

@@ -6,6 +6,11 @@ namespace App\Models\Doctor\Interfaces;
 
 use App\Models\Doctor\Entities\Doctor;
 
+/**
+ * Interface pour le repository des médecins.
+ *
+ * Définit les méthodes d’accès/modification aux donnéees "Doctor" dans la BDD.
+ */
 interface IDoctorRepository
 {
     public function findByEmail(string $email): ?Doctor;

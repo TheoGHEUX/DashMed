@@ -6,6 +6,9 @@ use App\Models\Doctor\Interfaces\IDoctorVerificationRepository;
 use PDO;
 use Core\Database;
 
+/**
+ * Repository pour les opérations sur la vérification email des médecins (table medecin).
+ */
 final class DoctorVerificationRepository implements IDoctorVerificationRepository
 {
     private PDO $db;

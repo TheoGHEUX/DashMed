@@ -2,6 +2,9 @@
 
 namespace App\Models\Doctor\Interfaces;
 
+/**
+ * Contrat pour le repository de gestion des tokens de vérification email.
+ */
 interface IDoctorVerificationRepository
 {
     /**

@@ -8,8 +8,6 @@ namespace Core;
  * Autoloader PSR-4 Universel
  *
  * Charge automatiquement les classes en fonction de leur namespace.
- * - App\...  -> SITE/App/...
- * - Core\... -> SITE/Core/...
  */
 final class AutoLoader
 {

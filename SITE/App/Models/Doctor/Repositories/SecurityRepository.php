@@ -8,6 +8,9 @@ use Core\Database;
 use App\Models\Doctor\Interfaces\ISecurityRepository;
 use PDO;
 
+/**
+ * Repository pour les opérations multiples liées à la sécurité et aux tokens de reset.
+ */
 final class SecurityRepository implements ISecurityRepository
 {
     private PDO $db;
@@ -17,7 +20,9 @@ final class SecurityRepository implements ISecurityRepository
         $this->db = Database::getConnection();
     }
 
-    // Récupérer le dernier token pour un email
+    /**
+     * Récupère le dernier token de reset (valide) pour cet email.
+     */
     public function findResetToken(string $email): ?array
     {
         $stmt = $this->db->prepare('SELECT * FROM password_resets WHERE email = ? AND expires_at > NOW() AND used_at IS NULL ORDER BY id DESC LIMIT 1');
@@ -26,7 +31,9 @@ final class SecurityRepository implements ISecurityRepository
         return $data ?: null;
     }
 
-    // Récupérer un token spécifique
+    /**
+     * Récupère un token spécifique (valide) pour un email donné.
+     */
     public function findResetTokenByEmailAndToken(string $email, string $tokenHash): ?array
     {
         $stmt = $this->db->prepare('SELECT * FROM password_resets WHERE email = ? AND token_hash = ? AND expires_at > NOW() AND used_at IS NULL LIMIT 1');
@@ -35,7 +42,9 @@ final class SecurityRepository implements ISecurityRepository
         return $data ?: null;
     }
 
-    // Stocker un nouveau token de reset, en supprimant les anciens
+    /**
+     * Stocke un nouveau token de reset et supprime les anciens pour ce mail.
+     */
     public function storeResetToken(string $email, string $tokenHash, string $expiresAt): void
     {
         // Nettoie les tokens expirés OU de ce mail
@@ -49,7 +58,9 @@ final class SecurityRepository implements ISecurityRepository
         $stmt->execute([$email, $tokenHash, $expiresAt]);
     }
 
-    // Supprimer les tokens pour cet email
+    /**
+     * Supprime tous les tokens associés à cet email.
+     */
     public function deleteResetToken(string $email): void
     {
         $stmt = $this->db->prepare('DELETE FROM password_resets WHERE email = ?');

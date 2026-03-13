@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Core;
 
-// --- 1. Importation des contrôleurs avec les BONS dossiers ---
+// --- 1. Importation des contrôleurs ---
 
 // Dossier Public
 use App\Controllers\Public\HomeController;
 use App\Controllers\Public\MapController;
 use App\Controllers\Public\LegalNoticesController;
-// Dossier Authentication (Tu n'as plus AuthController, mais des fichiers séparés)
+// Dossier Authentication
 use App\Controllers\Authentication\LoginController;
 use App\Controllers\Authentication\RegisterController;
 use App\Controllers\Authentication\LogoutController;
@@ -40,9 +40,7 @@ final class Router
             '/legal-notices' => [LegalNoticesController::class, 'show'],
             '/mentions-legales' => [LegalNoticesController::class, 'show'],
 
-            // --- Authentification (Affichage des formulaires) ---
-            // Attention : J'assume que tes méthodes s'appellent 'show'.
-            // Si c'est 'index' ou 'showLogin', change le 2ème paramètre.
+            // --- Authentification ---
             '/login' => [LoginController::class, 'show'],
             '/connexion' => [LoginController::class, 'show'],
             '/register' => [RegisterController::class, 'show'],
@@ -57,7 +55,6 @@ final class Router
             '/home' => [ConnectedHomeController::class, 'index'],
             '/dashboard' => [DashboardController::class, 'index'],
             '/profile' => [ProfileController::class, 'show'],
-            '/profil' => [ProfileController::class, 'show'],
             '/change-password' => [ChangePasswordController::class, 'showForm'],
             '/change-email' => [ChangeEmailController::class, 'showForm'],
 
@@ -71,10 +68,9 @@ final class Router
 
         'POST' => [
             // --- Authentification (Actions) ---
-            '/login' => [LoginController::class, 'login'],       // Méthode de soumission
-            '/register' => [RegisterController::class, 'register'], // Méthode de soumission
+            '/login' => [LoginController::class, 'login'],
+            '/register' => [RegisterController::class, 'register'],
             '/logout' => [LogoutController::class, 'logout'],
-            '/deconnexion' => [LogoutController::class, 'logout'],
 
             '/forgotten-password' => [ForgottenPasswordController::class, 'submit'],
             '/reset-password' => [ResetPasswordController::class, 'submit'],

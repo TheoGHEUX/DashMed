@@ -13,6 +13,9 @@ use App\ValueObjects\Email;
 use Core\Services\TokenGenerator;
 use Core\Services\UrlBuilder;
 
+/**
+ * Use Case pour renvoyer le mail de validation d’un compte.
+ */
 final class ResendVerificationEmail implements IResendVerificationEmail
 {
     private IDoctorRepository $repo;

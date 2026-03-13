@@ -14,6 +14,11 @@ use App\Models\Patient\UseCases\Dashboard\SuggestLayout;
 use App\Models\Patient\UseCases\Management\GetDoctorPatients;
 use App\Models\Patient\UseCases\Monitoring\GetPatientChartData;
 
+/**
+ * Factory centralisée pour obtenir les Use Cases liés aux patients.
+ *
+ * Singleton pour chaque repository/service pour assurer cohérence et éviter les multiples connexions.
+ */
 final class PatientUseCaseFactory
 {
     private static ?PatientManagementRepository $managementRepo = null;
@@ -53,26 +58,33 @@ final class PatientUseCaseFactory
         return self::$similarityService;
     }
 
+    // Use Cases
+
+    /** Récupère tous les patients d’un médecin. */
     public static function createGetDoctorPatients(): GetDoctorPatients
     {
         return new GetDoctorPatients(self::getManagementRepo());
     }
 
+    /** Récupère les séries de mesure pour un patient. */
     public static function createGetPatientChartData(): GetPatientChartData
     {
         return new GetPatientChartData(self::getMonitoringRepo());
     }
 
+    /** Récupère le layout dashboard d’un patient pour un médecin. */
     public static function createGetDashboardLayout(): GetDashboardLayout
     {
         return new GetDashboardLayout(self::getLayoutRepo());
     }
 
+    /** Sauvegarde le layout dashboard d’un patient pour un médecin. */
     public static function createSaveDashboardLayout(): SaveDashboardLayout
     {
         return new SaveDashboardLayout(self::getLayoutRepo());
     }
 
+    /** Suggère automatiquement un layout à partir de patients similaires. */
     public static function createSuggestLayout(): SuggestLayout
     {
         return new SuggestLayout(self::getLayoutRepo(), self::getSimilarityService());

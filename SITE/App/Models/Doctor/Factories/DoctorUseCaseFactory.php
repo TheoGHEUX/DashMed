@@ -20,8 +20,10 @@ use App\Models\Doctor\UseCases\Profile\ChangeEmail;
 use Core\Services\MailerService;
 
 /**
- * Factory pour créer les Use Cases liés aux médecins
- * Centralise la configuration des dépendances
+ * Factory pour créer tous les Use Cases liés aux médecins (authentification, sécurité, etc).
+ *
+ * Centralise la récupération des dépendances (repositories, services, etc.)
+ * en singleton pour éviter les doubles instanciations.
  */
 final class DoctorUseCaseFactory
 {
@@ -31,7 +33,7 @@ final class DoctorUseCaseFactory
     private static ?DoctorValidator $validator = null;
     private static ?IMailer $mailer = null;
 
-    // Repositories (Singleton pattern pour éviter multiples connexions)
+    // Repositories
     private static function getDoctorRepo(): DoctorRepository
     {
         if (self::$doctorRepo === null) {

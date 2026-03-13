@@ -9,11 +9,17 @@ use Core\Security\RateLimiter;
 use App\Models\Doctor\Factories\DoctorUseCaseFactory;
 
 /**
- * Contrôleur de vérification d'email
- * Gère la validation du compte via token
+ * Contrôleur dédié à la validation et à la vérification d’adresse email.
+ *
+ * Permet de :
+ * - Vérifier le compte d’un utilisateur à l’aide d’un token reçu par email
+ * - Renvoyer un email de validation en cas de besoin, avec protection anti-abus
  */
 final class VerifyEmailController extends AbstractController
 {
+    /**
+     * Affiche le formulaire permettant de redemander l’envoi du mail de vérification.
+     */
     public function showResend(): void
     {
         $this->startSession();
@@ -25,6 +31,12 @@ final class VerifyEmailController extends AbstractController
         ]);
     }
 
+    /**
+     * Valide le compte d’un utilisateur via le token passé en GET.
+     *
+     * Appelle le use case de vérification d’email.
+     * Affiche un message d’erreur ou de succès selon le résultat.
+     */
     public function verify(): void
     {
         $token = $_GET['token'] ?? '';
@@ -37,10 +49,18 @@ final class VerifyEmailController extends AbstractController
         ]);
     }
 
+    /**
+     * Traite la demande de renvoi d’email de vérification.
+     *
+     * - Protège contre les abus via RateLimiter (max 5 par heure).
+     * - Vérifie le token CSRF du formulaire.
+     * - Vérifie le format de l’email puis transmet la demande au use case.
+     */
     public function resend(): void
     {
         $this->startSession();
 
+        // Protection contre l’abus de demandes répétées
         if (RateLimiter::isBlocked('resend_verification_attempts', 5, 3600)) {
             $this->render('authentication/resend-verification', [
                 'errors' => ['Trop de tentatives. Veuillez réessayer dans 1 heure.'],
@@ -50,6 +70,7 @@ final class VerifyEmailController extends AbstractController
             return;
         }
 
+        // Vérification du token CSRF
         if (!$this->validateCsrf()) {
             RateLimiter::recordAttempt('resend_verification_attempts');
             $this->render('authentication/resend-verification', [
@@ -71,6 +92,7 @@ final class VerifyEmailController extends AbstractController
             return;
         }
 
+        // Relance l’envoi du mail via le use case
         $useCase = DoctorUseCaseFactory::createResendVerificationEmail();
         $result = $useCase->execute($email);
         RateLimiter::recordAttempt('resend_verification_attempts');

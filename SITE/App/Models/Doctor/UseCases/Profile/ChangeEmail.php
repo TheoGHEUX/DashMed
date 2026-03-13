@@ -13,6 +13,11 @@ use App\ValueObjects\Email;
 use Core\Services\TokenGenerator;
 use Core\Services\UrlBuilder;
 
+/**
+ * Use Case: traite le changement d’email d’un médecin.
+ *
+ * Gère la vérification du mot de passe, la validation et l’envoi mail de confirmation.
+ */
 final class ChangeEmail
 {
     private IDoctorRepository $repo;
@@ -32,6 +37,9 @@ final class ChangeEmail
         $this->mailer = $mailer;
     }
 
+    /**
+     * Exécute le changement d’email: validation, update DB, envoi mail avec nouveau lien.
+     */
     public function execute(int $userId, string $currentPassword, string $newEmail): array
     {
         try {
